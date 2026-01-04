@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TECH-PLAN MEP | Taller Tecnología + IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #10B981;
+            --accent: #8B5CF6;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+        }
+        
+        .btn-ia {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+        }
+        
+        .tab-btn {
+            color: #9CA3AF;
+            border-bottom: 3px solid transparent;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .tab-btn.active {
+            color: white;
+            border-bottom-color: #3B82F6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .camera-active {
+            border: 3px solid #10B981 !important;
+        }
+        
+        .recording {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="p-4 border-b border-gray-800">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-3 rounded-xl">
+                    <i class="fas fa-robot text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        TECH-PLAN MEP
+                    </h1>
+                    <p class="text-sm text-gray-400">Taller de Tecnología • IA • REA MEP</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div id="status" class="inline-flex items-center px-3 py-1 rounded-full bg-green-600 text-sm">
+                    <span class="mr-2">🟢</span> Conectado
+                </div>
+                <div class="text-xs text-gray-400 mt-1" id="apiStatus">IA: No configurada</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegación -->
+    <nav class="border-b border-gray-800">
+        <div class="max-w-6xl mx-auto flex overflow-x-auto">
+            <button data-tab="evaluar" class="tab-btn active">
+                <i class="fas fa-mobile-alt mr-2"></i>Evaluar
+            </button>
+            <button data-tab="ia" class="tab-btn">
+                <i class="fas fa-brain mr-2"></i>Asistente IA
+            </button>
+            <button data-tab="proyectos" class="tab-btn">
+                <i class="fas fa-project-diagram mr-2"></i>Proyectos
+            </button>
+            <button data-tab="reportes" class="tab-btn">
+                <i class="fas fa-chart-bar mr-2"></i>Reportes
+            </button>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-6xl mx-auto p-4" id="app-content">
+        <!-- Cargando... -->
+        <div id="loading" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+            <p class="text-gray-400">Cargando sistema TECH-PLAN MEP con IA...</p>
+        </div>
+    </main>
+
+    <!-- Notificaciones -->
+    <div id="notifications" class="fixed bottom-4 right-4 space-y-2 max-w-sm z-50"></div>
+
+    <!-- Script principal -->
+    <script>
+        // ==================== SISTEMA PRINCIPAL ====================
+        class TechPlanApp {
+            constructor() {
+                this.db = null;
+                this.currentStream = null;
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.currentProject = null;
+                this.aiApiKey = localStorage.getItem('openai_api_key');
+                this.init();
+            }
+
+            async init() {
+                console.log('🚀 Iniciando TECH-PLAN MEP con IA...');
+                await this.initDatabase();
+                this.setupUI();
+                await this.loadInitialData();
+                this.showNotification('✅ Sistema listo para el taller', 'success');
+                
+                // Verificar estado IA
+                this.updateAIStatus();
+            }
+
+            // ==================== BASE DE DATOS ====================
+            async initDatabase() {
+                if (!window.idb) {
+                    // Cargar IndexedDB polyfill si es necesario
+                    const idbScript = document.createElement('script');
+                    idbScript.src = 'https://cdn.jsdelivr.net/npm/idb@7/build/umd.js';
+                    document.head.appendChild(idbScript);
+                    await new Promise(resolve => idbScript.onload = resolve);
+                }
+
+                this.db = await idb.openDB('TechPlanDB', 1, {
+                    upgrade(db) {
+                        if (!db.objectStoreNames.contains('proyectos')) {
+                            db.createObjectStore('proyectos', { keyPath: 'id' });
+                        }
+                        if (!db.objectStoreNames.contains('evaluaciones')) {
+                            const store = db.createObjectStore('evaluaciones', { keyPath: 'id', autoIncrement: true });
+                            store.createIndex('proyectoId', 'proyectoId');
+                        }
+                        if (!db.objectStoreNames.contains('evidencias')) {
+                            const store = db.createObjectStore('evidencias', { keyPath: 'id', autoIncrement: true });
+                            store.createIndex('proyectoId', 'proyectoId');
+                        }
+                    }
+                });
+            }
+
+            // ==================== IA ASSISTANT ====================
+            async callOpenAI(prompt) {
+                if (!this.aiApiKey || this.aiApiKey === 'TU_API_KEY_AQUI') {
+                    throw new Error('Configura tu API Key de OpenAI primero');
+                }
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.aiApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'Eres un experto en evaluación de Formación Tecnológica en Costa Rica, especializado en el MEP y REA.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1500
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0].message.content;
+            }
+
+            async generarRubricaIA(descripcionProyecto, nivel) {
+                this.showNotification('🤖 Generando rúbrica con IA...', 'info');
+                
+                const prompt = `Como experto en tecnología educativa, crea una rúbrica para:
+
+PROYECTO: ${descripcionProyecto}
+NIVEL: ${nivel}
+
+Genera 4 criterios técnicos específicos con descriptores para niveles Inicial (65-69), Intermedio (70-84) y Avanzado (85-100).
+
+Formato JSON:
+{
+  "criterios": [
+    {
+      "nombre": "string",
+      "descripcion": "string",
+      "inicial": "string",
+      "intermedio": "string",
+      "avanzado": "string",
+      "peso": number
+    }
+  ]
+}`;
+
+                try {
+                    const response = await this.callOpenAI(prompt);
+                    const rubrica = JSON.parse(response);
+                    this.mostrarRubricaIA(rubrica);
+                    this.showNotification('✅ Rúbrica generada con IA', 'success');
+                } catch (error) {
+                    console.error('Error IA:', error);
+                    this.mostrarRubricaPorDefecto(descripcionProyecto, nivel);
+                }
+            }
+
+            async generarFeedbackIA(estudiante, proyecto, calificacion) {
+                const prompt = `Escribe feedback para un estudiante de tecnología:
+
+ESTUDIANTE: ${estudiante}
+PROYECTO: ${proyecto}
+CALIFICACIÓN: ${calificacion}/100
+
+Escribe 3 oraciones: 1) Reconocimiento de logros técnicos, 2) Sugerencia de mejora concreta, 3) Mensaje motivador.
+
+Máximo 100 palabras. Tono constructivo.`;
+
+                try {
+                    return await this.callOpenAI(prompt);
+                } catch (error) {
+                    return `Excelente trabajo en ${proyecto}. Sigue practicando tus habilidades técnicas.`;
+                }
+            }
+
+            // ==================== CÁMARA Y AUDIO ====================
+            async startCamera() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' }
+                    });
+                    
+                    this.currentStream = stream;
+                    const video = document.getElementById('videoElement');
+                    if (video) {
+                        video.srcObject = stream;
+                        video.classList.add('camera-active');
+                    }
+                    return true;
+                } catch (err) {
+                    this.showNotification('No se pudo acceder a la cámara', 'error');
+                    return false;
+                }
+            }
+
+            async capturePhoto() {
+                const video = document.getElementById('videoElement');
+                if (!video?.srcObject) {
+                    this.showNotification('Activa la cámara primero', 'warning');
+                    return;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                const photoData = canvas.toDataURL('image/jpeg');
+                
+                // Guardar en base de datos
+                await this.db.add('evidencias', {
+                    tipo: 'foto',
+                    data: photoData,
+                    proyectoId: this.currentProject?.id,
+                    fecha: new Date().toISOString()
+                });
+                
+                this.showNotification('📸 Foto guardada', 'success');
+                return photoData;
+            }
+
+            // ==================== INTERFAZ ====================
+            setupUI() {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.loadView(btn.dataset.tab);
+                    });
+                });
+
+                document.addEventListener('click', async (e) => {
+                    if (e.target.id === 'startCameraBtn') {
+                        await this.startCamera();
+                    } else if (e.target.id === 'captureBtn') {
+                        await this.capturePhoto();
+                    } else if (e.target.id === 'generarRubricaBtn') {
+                        const proyecto = prompt('Describe el proyecto tecnológico:', 'Brazo robótico con Arduino');
+                        const nivel = prompt('Nivel educativo:', '8º año');
+                        if (proyecto && nivel) {
+                            await this.generarRubricaIA(proyecto, nivel);
+                        }
+                    } else if (e.target.id === 'configurarApiBtn') {
+                        await this.configurarAPIKey();
+                    }
+                });
+
+                this.loadView('evaluar');
+            }
+
+            loadView(view) {
+                const content = document.getElementById('app-content');
+                content.innerHTML = '';
+                content.classList.add('fade-in');
+                
+                switch(view) {
+                    case 'evaluar':
+                        content.innerHTML = this.getEvaluacionView();
+                        break;
+                    case 'ia':
+                        content.innerHTML = this.getIAView();
+                        break;
+                    case 'proyectos':
+                        content.innerHTML = this.getProyectosView();
+                        break;
+                    case 'reportes':
+                        content.innerHTML = this.getReportesView();
+                        break;
+                }
+                
+                setTimeout(() => content.classList.remove('fade-in'), 300);
+            }
+
+            getEvaluacionView() {
+                return `
+                    <div class="space-y-4">
+                        <div class="card p-6">
+                            <h2 class="text-xl font-bold mb-4 flex items-center">
+                                <i class="fas fa-tools mr-2"></i> Evaluación en Taller
+                            </h2>
+                            
+                            <div class="mb-6">
+                                <button id="startCameraBtn" class="btn btn-primary w-full mb-2">
+                                    <i class="fas fa-camera mr-2"></i> Activar Cámara
+                                </button>
+                                <p class="text-sm text-gray-400 text-center">Para capturar evidencias de prototipos</p>
+                            </div>
+                            
+                            <div class="camera-container mb-4 hidden" id="cameraContainer">
+                                <video id="videoElement" autoplay playsinline class="w-full rounded-lg"></video>
+                                <div class="flex justify-center mt-4">
+                                    <button id="captureBtn" class="btn btn-success">
+                                        <i class="fas fa-camera-retro mr-2"></i> Capturar Foto
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-2 mt-6">
+                                <button class="btn bg-green-600 hover:bg-green-700" onclick="app.quickEvaluate(95)">
+                                    ✅ 95
+                                </button>
+                                <button class="btn bg-blue-600 hover:bg-blue-700" onclick="app.quickEvaluate(85)">
+                                    👍 85
+                                </button>
+                                <button class="btn bg-yellow-600 hover:bg-yellow-700" onclick="app.quickEvaluate(75)">
+                                    ⚠️ 75
+                                </button>
+                                <button class="btn bg-red-600 hover:bg-red-700" onclick="app.quickEvaluate(65)">
+                                    🔄 65
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h3 class="font-bold mb-3">📊 Proyecto Activo</h3>
+                            ${this.currentProject ? `
+                                <div class="p-3 bg-blue-900/30 rounded-lg">
+                                    <p class="font-semibold">${this.currentProject.nombre}</p>
+                                    <p class="text-sm text-gray-400">${this.currentProject.nivel} • ${this.currentProject.estudiante}</p>
+                                </div>
+                            ` : `
+                                <p class="text-gray-400 text-center py-4">No hay proyecto seleccionado</p>
+                                <button onclick="app.seleccionarProyecto()" class="btn btn-primary w-full">
+                                    <i class="fas fa-plus mr-2"></i> Seleccionar Proyecto
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }
+
+            getIAView() {
+                return `
+                    <div class="space-y-4">
+                        <div class="card p-6 bg-gradient-to-r from-purple-900/50 to-blue-900/50">
+                            <h2 class="text-xl font-bold mb-4 flex items-center">
+                                <i class="fas fa-brain mr-2"></i> Asistente de IA
+                            </h2>
+                            
+                            <div class="mb-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <span>Estado de la IA:</span>
+                                    <span id="aiStatusBadge" class="px-3 py-1 rounded-full text-sm 
+                                        ${this.aiApiKey && this.aiApiKey !== 'TU_API_KEY_AQUI' 
+                                            ? 'bg-green-600' 
+                                            : 'bg-red-600'}">
+                                        ${this.aiApiKey && this.aiApiKey !== 'TU_API_KEY_AQUI' 
+                                            ? '✅ Configurada' 
+                                            : '❌ No configurada'}
+                                    </span>
+                                </div>
+                                
+                                <button id="configurarApiBtn" class="btn btn-ia w-full mb-4">
+                                    <i class="fas fa-key mr-2"></i> Configurar API Key
+                                </button>
+                                
+                                <p class="text-sm text-gray-300">
+                                    Necesitas una clave de <a href="https://platform.openai.com/api-keys" 
+                                    target="_blank" class="text-blue-300 hover:underline">OpenAI</a> 
+                                    para usar las funciones de IA.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h3 class="font-bold mb-4">🛠️ Herramientas IA para Tecnología</h3>
+                            
+                            <div class="space-y-3">
+                                <button id="generarRubricaBtn" class="btn btn-primary w-full text-left">
+                                    <i class="fas fa-clipboard-list mr-2"></i> Generar Rúbrica Específica
+                                </button>
+                                
+                                <button onclick="app.generarPlanClaseIA()" 
+                                        class="btn btn-primary w-full text-left">
+                                    <i class="fas fa-calendar-alt mr-2"></i> Plan de Clase con IA
+                                </button>
+                                
+                                <button onclick="app.analizarEvidenciaIA()" 
+                                        class="btn btn-primary w-full text-left">
+                                    <i class="fas fa-search mr-2"></i> Analizar Evidencia Técnica
+                                </button>
+                                
+                                <button onclick="app.generarFeedbackIA()" 
+                                        class="btn btn-success w-full text-left">
+                                    <i class="fas fa-comment-alt mr-2"></i> Feedback Personalizado
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="card p-6">
+                            <h3 class="font-bold mb-3">📝 Rúbrica Generada</h3>
+                            <div id="rubricaContainer">
+                                <p class="text-gray-400 text-center py-8">
+                                    Genera tu primera rúbrica con IA
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            getProyectosView() {
+                return `
+                    <div class="card p-6">
+                        <h2 class="text-xl font-bold mb-4">📋 Proyectos de Tecnología</h2>
+                        
+                        <div class="space-y-3">
+                            <div class="p-4 border border-gray-700 rounded-lg hover:border-blue-500 cursor-pointer"
+                                 onclick="app.seleccionarProyectoDemo('P001')">
+                                <div class="flex justify-between">
+                                    <span class="font-semibold">Semáforo Inteligente</span>
+                                    <span class="text-xs bg-blue-600 px-2 py-1 rounded">7º</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1">Arduino, LEDs, programación</p>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-700 rounded-lg hover:border-green-500 cursor-pointer"
+                                 onclick="app.seleccionarProyectoDemo('P002')">
+                                <div class="flex justify-between">
+                                    <span class="font-semibold">Brazo Robótico</span>
+                                    <span class="text-xs bg-green-600 px-2 py-1 rounded">8º</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1">Servomotores, control, mecánica</p>
+                            </div>
+                            
+                            <div class="p-4 border border-gray-700 rounded-lg hover:border-purple-500 cursor-pointer"
+                                 onclick="app.seleccionarProyectoDemo('P003')">
+                                <div class="flex justify-between">
+                                    <span class="font-semibold">Sistema de Riego</span>
+                                    <span class="text-xs bg-purple-600 px-2 py-1 rounded">9º</span>
+                                </div>
+                                <p class="text-sm text-gray-400 mt-1">Sensores, automatización, IoT</p>
+                            </div>
+                        </div>
+                        
+                        <button onclick="app.crearNuevoProyecto()" class="btn btn-primary w-full mt-6">
+                            <i class="fas fa-plus-circle mr-2"></i> Nuevo Proyecto
+                        </button>
+                    </div>
+                `;
+            }
+
+            getReportesView() {
+                return `
+                    <div class="card p-6">
+                        <h2 class="text-xl font-bold mb-4">📊 Reportes MEP</h2>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-blue-400">0</div>
+                                <div class="text-sm text-gray-400">Proyectos</div>
+                            </div>
+                            <div class="bg-gray-800 p-4 rounded-lg text-center">
+                                <div class="text-3xl font-bold text-green-400">0%</div>
+                                <div class="text-sm text-gray-400">Aprobación</div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="app.generarReporteMEP()" class="btn btn-primary w-full">
+                            <i class="fas fa-file-pdf mr-2"></i> Generar Reporte Oficial
+                        </button>
+                        
+                        <div class="mt-6">
+                            <h3 class="font-bold mb-3">📈 Estadísticas por Nivel</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <span class="w-20">7º Año:</span>
+                                    <div class="flex-1 bg-gray-700 rounded-full h-4">
+                                        <div class="bg-blue-500 h-4 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                    <span class="ml-2">75%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-20">8º Año:</span>
+                                    <div class="flex-1 bg-gray-700 rounded-full h-4">
+                                        <div class="bg-green-500 h-4 rounded-full" style="width: 82%"></div>
+                                    </div>
+                                    <span class="ml-2">82%</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-20">9º Año:</span>
+                                    <div class="flex-1 bg-gray-700 rounded-full h-4">
+                                        <div class="bg-purple-500 h-4 rounded-full" style="width: 68%"></div>
+                                    </div>
+                                    <span class="ml-2">68%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // ==================== UTILIDADES ====================
+            mostrarRubricaIA(rubrica) {
+                const container = document.getElementById('rubricaContainer');
+                container.innerHTML = rubrica.criterios.map(criterio => `
+                    <div class="mb-4 p-4 border border-gray-700 rounded-lg">
+                        <div class="flex justify-between mb-2">
+                            <strong>${criterio.nombre}</strong>
+                            <span class="text-sm bg-gray-700 px-2 py-1 rounded">${criterio.peso}%</span>
+                        </div>
+                        <p class="text-sm text-gray-400 mb-3">${criterio.descripcion}</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                            <div class="p-2 bg-red-900/30 rounded">
+                                <div class="font-semibold text-red-300">Inicial (65-69)</div>
+                                <div class="text-red-200">${criterio.inicial}</div>
+                            </div>
+                            <div class="p-2 bg-yellow-900/30 rounded">
+                                <div class="font-semibold text-yellow-300">Intermedio (70-84)</div>
+                                <div class="text-yellow-200">${criterio.intermedio}</div>
+                            </div>
+                            <div class="p-2 bg-green-900/30 rounded">
+                                <div class="font-semibold text-green-300">Avanzado (85-100)</div>
+                                <div class="text-green-200">${criterio.avanzado}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            mostrarRubricaPorDefecto(proyecto, nivel) {
+                const rubricaDefault = {
+                    criterios: [
+                        {
+                            nombre: "Diseño Técnico",
+                            descripcion: "Calidad del diseño y planificación",
+                            inicial: "Diseño básico sin consideraciones técnicas",
+                            intermedio: "Diseño funcional con algunos elementos técnicos",
+                            avanzado: "Diseño innovador con optimización técnica",
+                            peso: 30
+                        },
+                        {
+                            nombre: "Ejecución",
+                            descripcion: "Calidad de construcción y ensamblaje",
+                            inicial: "Requiere asistencia constante",
+                            intermedio: "Ejecución independiente con algunos errores",
+                            avanzado: "Ejecución precisa y eficiente",
+                            peso: 40
+                        },
+                        {
+                            nombre: "Funcionalidad",
+                            descripcion: "Cumplimiento de objetivos técnicos",
+                            inicial: "Funciona parcialmente con asistencia",
+                            intermedio: "Cumple objetivos básicos",
+                            avanzado: "Supera expectativas técnicas",
+                            peso: 20
+                        },
+                        {
+                            nombre: "Documentación",
+                            descripcion: "Registro del proceso técnico",
+                            inicial: "Documentación mínima o incompleta",
+                            intermedio: "Documenta los pasos principales",
+                            avanzado: "Documentación técnica profesional",
+                            peso: 10
+                        }
+                    ]
+                };
+                
+                this.mostrarRubricaIA(rubricaDefault);
+                this.showNotification('Usando rúbrica predeterminada', 'warning');
+            }
+
+            async configurarAPIKey() {
+                const apiKey = prompt('Ingresa tu API Key de OpenAI:', this.aiApiKey || '');
+                
+                if (apiKey && apiKey !== 'TU_API_KEY_AQUI') {
+                    this.aiApiKey = apiKey;
+                    localStorage.setItem('openai_api_key', apiKey);
+                    this.updateAIStatus();
+                    this.showNotification('✅ API Key configurada correctamente', 'success');
+                } else {
+                    this.showNotification('Se necesita una API Key válida', 'error');
+                }
+            }
+
+            updateAIStatus() {
+                const badge = document.getElementById('aiStatusBadge');
+                const statusText = document.getElementById('apiStatus');
+                
+                if (this.aiApiKey && this.aiApiKey !== 'TU_API_KEY_AQUI') {
+                    if (badge) badge.className = 'px-3 py-1 rounded-full text-sm bg-green-600';
+                    if (badge) badge.textContent = '✅ Configurada';
+                    if (statusText) statusText.textContent = 'IA: Configurada ✓';
+                } else {
+                    if (badge) badge.className = 'px-3 py-1 rounded-full text-sm bg-red-600';
+                    if (badge) badge.textContent = '❌ No configurada';
+                    if (statusText) statusText.textContent = 'IA: No configurada';
+                }
+            }
+
+            showNotification(message, type = 'info') {
+                const container = document.getElementById('notifications');
+                const id = 'notif-' + Date.now();
+                
+                const colors = {
+                    success: 'bg-green-900 border-green-700',
+                    error: 'bg-red-900 border-red-700',
+                    warning: 'bg-yellow-900 border-yellow-700',
+                    info: 'bg-blue-900 border-blue-700'
+                };
+                
+                const notification = document.createElement('div');
+                notification.id = id;
+                notification.className = `notification p-4 rounded-lg border ${colors[type]} max-w-sm`;
+                notification.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>${message}</div>
+                        <button onclick="document.getElementById('${id}').remove()" 
+                                class="ml-2 text-gray-400 hover:text-white">
+                            ×
+                        </button>
+                    </div>
+                `;
+                
+                container.prepend(notification);
+                setTimeout(() => notification.remove(), 5000);
+            }
+
+            // ==================== MÉTODOS DE DEMO ====================
+            quickEvaluate(nota) {
+                if (!this.currentProject) {
+                    this.showNotification('Selecciona un proyecto primero', 'warning');
+                    return;
+                }
+                
+                this.showNotification(`Evaluación rápida: ${nota}/100`, 'success');
+                
+                // Simular guardado
+                setTimeout(async () => {
+                    const feedback = await this.generarFeedbackIA(
+                        this.currentProject.estudiante || 'Estudiante',
+                        this.currentProject.nombre || 'Proyecto',
+                        nota
+                    );
+                    
+                    this.showNotification(`Feedback IA: ${feedback.substring(0, 60)}...`, 'info');
+                }, 1000);
+            }
+
+            seleccionarProyectoDemo(id) {
+                const proyectos = {
+                    'P001': {
+                        id: 'P001',
+                        nombre: 'Semáforo Inteligente',
+                        nivel: '7º Año',
+                        estudiante: 'Ana Gómez',
+                        descripcion: 'Programación de semáforo con Arduino'
+                    },
+                    'P002': {
+                        id: 'P002',
+                        nombre: 'Brazo Robótico',
+                        nivel: '8º Año',
+                        estudiante: 'Luis Ramírez',
+                        descripcion: 'Control de servomotores para brazo robótico'
+                    },
+                    'P003': {
+                        id: 'P003',
+                        nombre: 'Sistema de Riego Automatizado',
+                        nivel: '9º Año',
+                        estudiante: 'María Solís',
+                        descripcion: 'Sistema IoT con sensores de humedad'
+                    }
+                };
+                
+                this.currentProject = proyectos[id];
+                this.showNotification(`✅ Proyecto seleccionado: ${this.currentProject.nombre}`, 'success');
+                
+                // Actualizar vista si estamos en evaluar
+                if (document.querySelector('[data-tab="evaluar"].active')) {
+                    this.loadView('evaluar');
+                }
+            }
+
+            seleccionarProyecto() {
+                this.seleccionarProyectoDemo('P001');
+            }
+
+            crearNuevoProyecto() {
+                const nombre = prompt('Nombre del proyecto tecnológico:', 'Robot Seguidor de Línea');
+                const nivel = prompt('Nivel educativo:', '8º Año');
+                const estudiante = prompt('Estudiante o grupo:', 'Grupo 4A');
+                
+                if (nombre && nivel) {
+                    this.currentProject = {
+                        id: 'P' + Date.now(),
+                        nombre,
+                        nivel,
+                        estudiante,
+                        descripcion: nombre
+                    };
+                    
+                    this.showNotification(`✅ Nuevo proyecto creado: ${nombre}`, 'success');
+                    this.loadView('evaluar');
+                }
+            }
+
+            async generarReporteMEP() {
+                this.showNotification('📄 Generando reporte MEP...', 'info');
+                
+                // Simulación de reporte
+                setTimeout(() => {
+                    const win = window.open('', '_blank');
+                    win.document.write(`
+                        <h1>REPORTE MEP - FORMACIÓN TECNOLÓGICA</h1>
+                        <p>Fecha: ${new Date().toLocaleDateString('es-CR')}</p>
+                        <p>Sistema: TECH-PLAN MEP con IA</p>
+                        <p>Total proyectos evaluados: 3</p>
+                        <p>Porcentaje de aprobación: 78%</p>
+                    `);
+                    win.document.close();
+                    
+                    this.showNotification('✅ Reporte generado en nueva ventana', 'success');
+                }, 1500);
+            }
+
+            async loadInitialData() {
+                // Ocultar loading
+                document.getElementById('loading').style.display = 'none';
+                
+                // Simular carga de proyectos
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+
+            // Métodos IA adicionales (simulados)
+            generarPlanClaseIA() {
+                this.showNotification('📚 Generando plan de clase con IA...', 'info');
+                setTimeout(() => {
+                    this.showNotification('✅ Plan de clase generado. Revisa la pestaña de proyectos.', 'success');
+                }, 2000);
+            }
+
+            analizarEvidenciaIA() {
+                this.showNotification('🔍 Analizando evidencia técnica con IA...', 'info');
+                setTimeout(() => {
+                    this.showNotification('✅ Análisis completado: "Buza soldadura, mejorar organización cableado"', 'success');
+                }, 2000);
+            }
+
+            generarFeedbackIA() {
+                if (!this.currentProject) {
+                    this.showNotification('Selecciona un proyecto primero', 'warning');
+                    return;
+                }
+                
+                this.showNotification('💬 Generando feedback personalizado...', 'info');
+                setTimeout(() => {
+                    this.showNotification('✅ Feedback IA: "Excelente implementación del circuito. Sugiero documentar mejor el código. ¡Sigue innovando!"', 'success');
+                }, 2000);
+            }
+        }
+
+        // ==================== INICIAR APLICACIÓN ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new TechPlanApp();
+            
+            // Mostrar mensaje de bienvenida
+            setTimeout(() => {
+                app.showNotification('👋 Bienvenido a TECH-PLAN MEP con IA. Configura tu API Key en la pestaña de IA.', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
