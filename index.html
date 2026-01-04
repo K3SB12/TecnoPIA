@@ -175,6 +175,11 @@
             transition: all 0.3s;
             font-weight: 600;
             letter-spacing: 0.025em;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn-modern::before {
@@ -328,7 +333,7 @@
                    class="text-gray-400 hover:text-white transition">
                     <i class="fab fa-github text-lg"></i>
                 </a>
-                <button class="btn-modern gradient-primary text-white px-6 py-2 rounded-lg">
+                <button onclick="window.location.href='sistemas/completo.html'" class="btn-modern gradient-primary text-white px-6 py-2 rounded-lg">
                     Probar Ahora
                 </button>
             </div>
@@ -375,13 +380,13 @@
                 
                 <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 justify-center slide-in" style="animation-delay: 0.8s;">
-                    <button class="btn-modern gradient-primary text-white px-8 py-4 rounded-xl text-lg font-semibold flex items-center justify-center">
+                    <button onclick="window.location.href='sistemas/completo.html'" class="btn-modern gradient-primary text-white px-8 py-4 rounded-xl text-lg font-semibold flex items-center justify-center">
                         <i class="fas fa-rocket mr-3"></i>
                         Comenzar Gratis
                     </button>
-                    <button class="btn-modern glass px-8 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500 flex items-center justify-center">
+                    <button onclick="window.location.href='sistemas/ia.html'" class="btn-modern glass px-8 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500 flex items-center justify-center">
                         <i class="fas fa-play-circle mr-3"></i>
-                        Ver Demo
+                        Probar IA
                     </button>
                 </div>
                 
@@ -471,7 +476,7 @@
                         </li>
                     </ul>
                     
-                    <button class="btn-modern gradient-primary text-white w-full py-3 rounded-lg font-semibold">
+                    <button onclick="window.location.href='sistemas/completo.html'" class="btn-modern gradient-primary text-white w-full py-3 rounded-lg font-semibold">
                         Acceder al Sistema
                     </button>
                 </div>
@@ -512,7 +517,7 @@
                         </li>
                     </ul>
                     
-                    <button class="btn-modern gradient-secondary text-white w-full py-3 rounded-lg font-semibold">
+                    <button onclick="window.location.href='sistemas/ia.html'" class="btn-modern gradient-secondary text-white w-full py-3 rounded-lg font-semibold">
                         <i class="fas fa-magic mr-2"></i> Probar IA
                     </button>
                 </div>
@@ -547,7 +552,7 @@
                         </li>
                     </ul>
                     
-                    <button class="btn-modern glass border border-gray-700 w-full py-3 rounded-lg font-semibold hover:border-blue-500">
+                    <button onclick="window.location.href='sistemas/base.html'" class="btn-modern glass border border-gray-700 w-full py-3 rounded-lg font-semibold hover:border-blue-500">
                         Comenzar Básico
                     </button>
                 </div>
@@ -756,11 +761,11 @@
             </p>
             
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button class="btn-modern gradient-primary text-white px-10 py-4 rounded-xl text-lg font-semibold">
+                <button onclick="window.location.href='sistemas/completo.html'" class="btn-modern gradient-primary text-white px-10 py-4 rounded-xl text-lg font-semibold">
                     <i class="fas fa-play mr-3"></i>
                     Comenzar Gratis
                 </button>
-                <button class="btn-modern glass px-10 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500">
+                <button onclick="window.location.href='#contacto'" class="btn-modern glass px-10 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500">
                     <i class="fas fa-book-open mr-3"></i>
                     Ver Documentación
                 </button>
@@ -794,20 +799,20 @@
                 <div>
                     <h4 class="text-lg font-bold mb-4">Sistemas</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Sistema Completo</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Con Inteligencia Artificial</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Sistema Base</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Documentación</a></li>
+                        <li><a href="sistemas/completo.html" class="text-gray-400 hover:text-blue-400 transition">Sistema Completo</a></li>
+                        <li><a href="sistemas/ia.html" class="text-gray-400 hover:text-blue-400 transition">Con Inteligencia Artificial</a></li>
+                        <li><a href="sistemas/base.html" class="text-gray-400 hover:text-blue-400 transition">Sistema Base</a></li>
+                        <li><a href="https://github.com/K3SB12/TecnoPIA" target="_blank" class="text-gray-400 hover:text-blue-400 transition">Documentación</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="text-lg font-bold mb-4">Recursos</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Proyectos MEP</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Rúbricas Predefinidas</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">Guías de Evaluación</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-blue-400 transition">FAQs</a></li>
+                        <li><a href="sistemas/completo.html#proyectos" class="text-gray-400 hover:text-blue-400 transition">Proyectos MEP</a></li>
+                        <li><a href="sistemas/completo.html#rubricas" class="text-gray-400 hover:text-blue-400 transition">Rúbricas Predefinidas</a></li>
+                        <li><a href="#niveles" class="text-gray-400 hover:text-blue-400 transition">Guías de Evaluación</a></li>
+                        <li><a href="#contacto" class="text-gray-400 hover:text-blue-400 transition">FAQs</a></li>
                     </ul>
                 </div>
                 
@@ -818,10 +823,10 @@
                            class="flex items-center text-gray-400 hover:text-white transition">
                             <i class="fab fa-github mr-3"></i> GitHub
                         </a>
-                        <a href="#" class="flex items-center text-gray-400 hover:text-white transition">
+                        <a href="mailto:soporte@tecnopia.com" class="flex items-center text-gray-400 hover:text-white transition">
                             <i class="fas fa-envelope mr-3"></i> soporte@tecnopia.com
                         </a>
-                        <a href="#" class="flex items-center text-gray-400 hover:text-white transition">
+                        <a href="#mep" class="flex items-center text-gray-400 hover:text-white transition">
                             <i class="fas fa-file-contract mr-3"></i> REA MEP 30-40
                         </a>
                     </div>
@@ -902,15 +907,49 @@
             console.log('%c✅ Sistema cargado correctamente', 'color: #10b981;');
             console.log('%c📊 Repositorio: https://github.com/K3SB12/TecnoPIA', 'color: #8b5cf6;');
             console.log('%c🎯 Diseñado para Formación Tecnológica MEP', 'color: #f59e0b;');
+            
+            // Verificar si los sistemas existen
+            checkSystemFiles();
         });
+        
+        // Verificar archivos de sistemas
+        async function checkSystemFiles() {
+            const systems = ['completo', 'ia', 'base'];
+            let missingSystems = [];
+            
+            for (const system of systems) {
+                try {
+                    const response = await fetch(`sistemas/${system}.html`, { method: 'HEAD' });
+                    if (!response.ok) {
+                        missingSystems.push(system);
+                    }
+                } catch (error) {
+                    missingSystems.push(system);
+                }
+            }
+            
+            if (missingSystems.length > 0) {
+                console.warn('⚠️ Sistemas faltantes:', missingSystems);
+                console.info('💡 Para crear los sistemas faltantes:');
+                console.info('1. Ve a https://github.com/K3SB12/TecnoPIA');
+                console.info('2. Haz clic en "Add file" → "Create new file"');
+                console.info('3. Crea la carpeta "sistemas/" y los archivos .html');
+            } else {
+                console.log('✅ Todos los sistemas están disponibles');
+            }
+        }
         
         // Funciones globales para botones
         window.probarDemo = function() {
-            alert('🚀 ¡Función demo activada! En una implementación real, esto abriría el sistema completo.');
+            window.location.href = 'sistemas/completo.html';
         };
         
         window.comenzarGratis = function() {
-            alert('🎯 ¡Redirigiendo al sistema! Esta sería la implementación real del sistema funcional.');
+            window.location.href = 'sistemas/completo.html';
+        };
+        
+        window.verDocumentacion = function() {
+            window.open('https://github.com/K3SB12/TecnoPIA', '_blank');
         };
     </script>
 </body>
