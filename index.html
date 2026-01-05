@@ -323,6 +323,10 @@
             <div class="hidden md:flex space-x-8">
                 <a href="#inicio" class="nav-link text-gray-300 hover:text-white">Inicio</a>
                 <a href="#sistemas" class="nav-link text-gray-300 hover:text-white">Sistemas</a>
+                <!-- NUEVO: Enlace al Dashboard -->
+                <a href="dashboard.html" class="nav-link text-gray-300 hover:text-white">
+                    <i class="fas fa-tachometer-alt mr-1"></i> Dashboard
+                </a>
                 <a href="#caracteristicas" class="nav-link text-gray-300 hover:text-white">Características</a>
                 <a href="#niveles" class="nav-link text-gray-300 hover:text-white">Niveles</a>
                 <a href="#contacto" class="nav-link text-gray-300 hover:text-white">Contacto</a>
@@ -384,9 +388,9 @@
                         <i class="fas fa-rocket mr-3"></i>
                         Comenzar Gratis
                     </button>
-                    <button onclick="window.location.href='sistemas/ia.html'" class="btn-modern glass px-8 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500 flex items-center justify-center">
-                        <i class="fas fa-play-circle mr-3"></i>
-                        Probar IA
+                    <button onclick="window.location.href='dashboard.html'" class="btn-modern glass px-8 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500 flex items-center justify-center">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Ir al Dashboard
                     </button>
                 </div>
                 
@@ -438,11 +442,11 @@
                     </span>
                 </h2>
                 <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                    Tres sistemas profesionales diseñados para diferentes necesidades en Formación Tecnológica
+                    Cuatro sistemas profesionales diseñados para diferentes necesidades en Formación Tecnológica
                 </p>
             </div>
             
-            <div class="grid md:grid-cols-3 gap-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <!-- Sistema 1: Completo -->
                 <div class="feature-card glass rounded-2xl p-8 slide-in" style="animation-delay: 0.2s;">
                     <div class="flex justify-between items-start mb-6">
@@ -554,6 +558,48 @@
                     
                     <button onclick="window.location.href='sistemas/base.html'" class="btn-modern glass border border-gray-700 w-full py-3 rounded-lg font-semibold hover:border-blue-500">
                         Comenzar Básico
+                    </button>
+                </div>
+                
+                <!-- Sistema 4: Dashboard Integrado -->
+                <div class="feature-card glass rounded-2xl p-8 slide-in" style="animation-delay: 0.8s;">
+                    <div class="absolute -top-3 -right-3">
+                        <span class="badge badge-new px-4 py-2">
+                            <i class="fas fa-sync-alt mr-2"></i> INTEGRADO
+                        </span>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-teal-500 to-blue-500 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fas fa-tachometer-alt text-white text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold mb-3">Dashboard Integrado</h3>
+                    <p class="text-gray-400 mb-6">
+                        Planifica con el PNFT y evalúa con TecnoPIA en un solo lugar. Todo integrado.
+                    </p>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-calendar-alt text-teal-400 mr-3"></i>
+                            Planificación con PNFT MEP
+                        </li>
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-clipboard-check text-blue-400 mr-3"></i>
+                            Evaluación integrada
+                        </li>
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-link text-purple-400 mr-3"></i>
+                            Conexión con plantilla oficial
+                        </li>
+                        <li class="flex items-center text-gray-300">
+                            <i class="fas fa-chart-line text-green-400 mr-3"></i>
+                            Seguimiento completo
+                        </li>
+                    </ul>
+                    
+                    <button onclick="window.location.href='dashboard.html'" 
+                            class="btn-modern bg-gradient-to-r from-teal-500 to-blue-500 text-white w-full py-3 rounded-lg font-semibold">
+                        <i class="fas fa-external-link-alt mr-2"></i> Abrir Dashboard
                     </button>
                 </div>
             </div>
@@ -765,9 +811,9 @@
                     <i class="fas fa-play mr-3"></i>
                     Comenzar Gratis
                 </button>
-                <button onclick="window.location.href='#contacto'" class="btn-modern glass px-10 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500">
-                    <i class="fas fa-book-open mr-3"></i>
-                    Ver Documentación
+                <button onclick="window.location.href='dashboard.html'" class="btn-modern glass px-10 py-4 rounded-xl text-lg font-semibold border border-gray-700 hover:border-blue-500">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Probar Dashboard
                 </button>
             </div>
             
@@ -802,6 +848,10 @@
                         <li><a href="sistemas/completo.html" class="text-gray-400 hover:text-blue-400 transition">Sistema Completo</a></li>
                         <li><a href="sistemas/ia.html" class="text-gray-400 hover:text-blue-400 transition">Con Inteligencia Artificial</a></li>
                         <li><a href="sistemas/base.html" class="text-gray-400 hover:text-blue-400 transition">Sistema Base</a></li>
+                        <!-- NUEVO: Enlace al Dashboard -->
+                        <li><a href="dashboard.html" class="text-gray-400 hover:text-blue-400 transition">
+                            <i class="fas fa-tachometer-alt mr-1"></i> Dashboard Integrado
+                        </a></li>
                         <li><a href="https://github.com/K3SB12/TecnoPIA" target="_blank" class="text-gray-400 hover:text-blue-400 transition">Documentación</a></li>
                     </ul>
                 </div>
@@ -880,7 +930,7 @@
                 // Iniciar cuando sea visible
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
-                        if (entry.isIntersecting) {
+                        if (entry.isIntegrating) {
                             updateCounter();
                             observer.unobserve(entry.target);
                         }
@@ -928,6 +978,16 @@
                 }
             }
             
+            // También verificar dashboard
+            try {
+                const dashboardResponse = await fetch('dashboard.html', { method: 'HEAD' });
+                if (!dashboardResponse.ok) {
+                    console.log('💡 Dashboard no encontrado. Crea dashboard.html para activar la integración completa.');
+                }
+            } catch (error) {
+                console.log('💡 Dashboard no encontrado. Crea dashboard.html para activar la integración completa.');
+            }
+            
             if (missingSystems.length > 0) {
                 console.warn('⚠️ Sistemas faltantes:', missingSystems);
                 console.info('💡 Para crear los sistemas faltantes:');
@@ -953,4 +1013,4 @@
         };
     </script>
 </body>
-</html>
+</html> 
