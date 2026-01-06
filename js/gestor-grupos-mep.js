@@ -1,490 +1,441 @@
-// gestor-grupos-mep.js - Sistema completo de gestión de grupos MEP
+// gestor-grupos.js - Sistema completo de gestión de grupos MEP
 
-class GestorGruposMEP {
+class GestorGrupos {
     constructor() {
         this.grupos = this.cargarGrupos();
+        this.configuracion = this.cargarConfiguracion();
         this.calendario = this.cargarCalendario();
-        this.periodosEvaluativos = this.definirPeriodosMEP();
     }
     
-    // ========== DEFINICIÓN DE PERÍODOS MEP ==========
+    // ========== GESTIÓN DE GRUPOS ==========
     
-    definirPeriodosMEP() {
-        const añoActual = new Date().getFullYear();
+    crearGrupo(ciclo, codigo, config = {}) {
+        // Validar código único
+        const existe = this.grupos.find(g => 
+            g.ciclo === ciclo && g.codigo === codigo
+        );
         
-        return {
-            "I Trimestre": {
-                inicio: `${añoActual}-02-01`,
-                fin: `${añoActual}-04-15`,
-                semanas: 10,
-                porcentaje: 33.3
-            },
-            "II Trimestre": {
-                inicio: `${añoActual}-04-16`,
-                fin: `${añoActual}-07-15`,
-                semanas: 12,
-                porcentaje: 33.3
-            },
-            "III Trimestre": {
-                inicio: `${añoActual}-07-16`,
-                fin: `${añoActual}-11-15`,
-                semanas: 13,
-                porcentaje: 33.4
-            },
-            "Total Anual": {
-                inicio: `${añoActual}-02-01`,
-                fin: `${añoActual}-11-15`,
-                semanas: 35,
-                porcentaje: 100
-            }
-        };
-    }
-    
-    // ========== CREACIÓN DE GRUPOS ==========
-    
-    crearGrupoCompleto(datosGrupo) {
-        // Validar ciclo
-        const cicloValido = ['materno', 'ciclo1', 'ciclo2', 'ciclo3'].includes(datosGrupo.ciclo);
-        if (!cicloValido) {
-            throw new Error('Ciclo no válido. Use: materno, ciclo1, ciclo2, ciclo3');
+        if (existe) {
+            throw new Error(`Ya existe un grupo ${codigo} en el ciclo ${ciclo}`);
         }
         
-        // Generar ID único
-        const grupoId = `GRP-${datosGrupo.ciclo}-${datosGrupo.codigo}-${Date.now()}`;
-        
-        // Crear estructura completa del grupo
         const grupo = {
-            // Identificación
-            id: grupoId,
-            ciclo: datosGrupo.ciclo,
-            codigo: datosGrupo.codigo,
-            nombreCompleto: this.generarNombreGrupo(datosGrupo.ciclo, datosGrupo.codigo),
-            institucion: datosGrupo.institucion || 'Centro Educativo MEP',
-            
-            // Información académica
-            nivel: this.obtenerNivelPorCiclo(datosGrupo.ciclo),
-            añoLectivo: datosGrupo.añoLectivo || new Date().getFullYear(),
-            horario: datosGrupo.horario || {},
-            aula: datosGrupo.aula || 'Taller de Tecnología',
-            
-            // Configuración de evaluación
-            configEvaluacion: this.obtenerConfigEvaluacion(datosGrupo.ciclo),
-            porcentajes: this.obtenerPorcentajesCiclo(datosGrupo.ciclo),
-            
-            // Estudiantes
-            estudiantes: [],
-            listaEstudiantes: [],
-            maxEstudiantes: datosGrupo.maxEstudiantes || 35,
-            
-            // Calendario
-            semanas: this.generarSemanasLectivas(),
-            periodos: this.periodosEvaluativos,
-            
-            // Metadatos
+            id: `GRP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            ciclo,
+            codigo,
+            nombreCompleto: config.nombre || `${this.obtenerNombreCiclo(ciclo)} - ${codigo}`,
             fechaCreacion: new Date().toISOString(),
-            docente: datosGrupo.docente || 'Docente MEP',
             activo: true,
-            estado: 'activo',
-            
-            // Estadísticas iniciales
+            estudiantes: [],
+            horario: config.horario || 'Por definir',
+            docente: config.docente || 'Docente MEP',
+            aula: config.aula || 'Taller de Tecnología',
+            configuracion: {
+                maxEstudiantes: config.maxEstudiantes || 30,
+                permiteNuevos: config.permiteNuevos !== false,
+                porcentajes: this.obtenerPorcentajesCiclo(ciclo)
+            },
             estadisticas: {
                 totalEstudiantes: 0,
-                hombres: 0,
-                mujeres: 0,
                 promedioGeneral: 0,
                 asistenciaPromedio: 100,
                 ultimaActualizacion: null
-            }
+            },
+            periodos: this.crearPeriodosDefault()
         };
         
         this.grupos.push(grupo);
         this.guardarGrupos();
         
         console.log(`✅ Grupo creado: ${grupo.nombreCompleto}`);
-        this.generarCalendarioGrupo(grupoId);
-        
         return grupo;
     }
     
-    // ========== GESTIÓN DE ESTUDIANTES ==========
-    
-    agregarEstudianteAGrupo(grupoId, datosEstudiante) {
-        const grupo = this.obtenerGrupo(grupoId);
-        if (!grupo) throw new Error('Grupo no encontrado');
+    eliminarGrupo(grupoId) {
+        const index = this.grupos.findIndex(g => g.id === grupoId);
         
-        // Verificar límite
-        if (grupo.estudiantes.length >= grupo.maxEstudiantes) {
-            throw new Error(`Límite alcanzado: ${grupo.maxEstudiantes} estudiantes`);
+        if (index === -1) {
+            throw new Error('Grupo no encontrado');
         }
         
-        // Crear ID único para el estudiante en este grupo
-        const estudianteId = `EST-${grupoId}-${Date.now()}`;
+        // Desvincular estudiantes
+        const grupo = this.grupos[index];
+        grupo.estudiantes.forEach(estId => {
+            this.removerEstudianteDeGrupo(grupoId, estId);
+        });
         
-        const estudiante = {
-            id: estudianteId,
-            grupoId: grupoId,
-            cedula: datosEstudiante.cedula || '',
-            codigoEstudiante: datosEstudiante.codigo || `E${String(grupo.estudiantes.length + 1).padStart(3, '0')}`,
-            nombre: datosEstudiante.nombre,
-            apellido1: datosEstudiante.apellido1,
-            apellido2: datosEstudiante.apellido2 || '',
-            nombreCompleto: `${datosEstudiante.nombre} ${datosEstudiante.apellido1} ${datosEstudiante.apellido2 || ''}`.trim(),
-            genero: datosEstudiante.genero || 'no especificado',
-            fechaNacimiento: datosEstudiante.fechaNacimiento,
-            edad: this.calcularEdad(datosEstudiante.fechaNacimiento),
-            correo: datosEstudiante.correo || '',
-            telefono: datosEstudiante.telefono || '',
-            necesidadesEspeciales: datosEstudiante.necesidadesEspeciales || false,
-            observaciones: datosEstudiante.observaciones || '',
-            
-            // Estado académico
-            activo: true,
-            fechaIngreso: new Date().toISOString(),
-            estado: 'activo',
-            
-            // Evaluación
-            evaluaciones: {
-                trabajoCotidiano: [],
-                tareas: [],
-                pruebasEjecucion: [],
-                proyectos: [],
-                asistencia: []
-            },
-            
-            // Estadísticas
-            estadisticas: {
-                promedioTC: 0,
-                promedioTA: 0,
-                promedioPE: 0,
-                promedioPT: 0,
-                promedioAS: 100,
-                notaFinal: 0,
-                condicion: 'Sin evaluar',
-                asistencia: {
-                    total: 0,
-                    presente: 0,
-                    ausente: 0,
-                    justificado: 0,
-                    porcentaje: 100
-                }
-            },
-            
-            // Historial
-            historialNotas: [],
-            observacionesDocente: []
-        };
+        // Eliminar grupo
+        this.grupos.splice(index, 1);
+        this.guardarGrupos();
         
-        // Agregar al grupo
+        console.log(`🗑️ Grupo eliminado: ${grupo.codigo}`);
+        return true;
+    }
+    
+    agregarEstudianteAGrupo(grupoId, estudianteId) {
+        const grupo = this.buscarGrupo(grupoId);
+        if (!grupo) return false;
+        
+        // Verificar límite
+        if (grupo.estudiantes.length >= grupo.configuracion.maxEstudiantes) {
+            throw new Error(`Límite de ${grupo.configuracion.maxEstudiantes} estudiantes alcanzado`);
+        }
+        
+        // Verificar si ya está en el grupo
+        if (grupo.estudiantes.includes(estudianteId)) {
+            console.warn(`Estudiante ya está en el grupo ${grupo.codigo}`);
+            return false;
+        }
+        
         grupo.estudiantes.push(estudianteId);
-        grupo.listaEstudiantes.push(estudiante);
-        
-        // Actualizar estadísticas de género
-        if (estudiante.genero === 'masculino') grupo.estadisticas.hombres++;
-        if (estudiante.genero === 'femenino') grupo.estadisticas.mujeres++;
-        
         grupo.estadisticas.totalEstudiantes = grupo.estudiantes.length;
         grupo.estadisticas.ultimaActualizacion = new Date().toISOString();
         
         this.guardarGrupos();
         
-        // Inicializar registro de evaluación para el estudiante
-        this.inicializarEvaluacionEstudiante(grupoId, estudianteId);
+        // Actualizar registro de estudiantes
+        const registro = new RegistroEvaluacionTecnologia();
+        const estudiante = registro.buscarEstudiante(estudianteId);
+        if (estudiante) {
+            estudiante.grupos = estudiante.grupos || [];
+            if (!estudiante.grupos.includes(grupoId)) {
+                estudiante.grupos.push(grupoId);
+                registro.guardarEstudiantes();
+            }
+        }
         
-        console.log(`✅ Estudiante agregado: ${estudiante.nombreCompleto} al grupo ${grupo.codigo}`);
-        return estudiante;
+        console.log(`✅ Estudiante agregado al grupo ${grupo.codigo}`);
+        return true;
+    }
+    
+    removerEstudianteDeGrupo(grupoId, estudianteId) {
+        const grupo = this.buscarGrupo(grupoId);
+        if (!grupo) return false;
+        
+        const index = grupo.estudiantes.indexOf(estudianteId);
+        if (index !== -1) {
+            grupo.estudiantes.splice(index, 1);
+            grupo.estadisticas.totalEstudiantes = grupo.estudiantes.length;
+            grupo.estadisticas.ultimaActualizacion = new Date().toISOString();
+            
+            this.guardarGrupos();
+            
+            // Actualizar estudiante
+            const registro = new RegistroEvaluacionTecnologia();
+            const estudiante = registro.buscarEstudiante(estudianteId);
+            if (estudiante && estudiante.grupos) {
+                estudiante.grupos = estudiante.grupos.filter(g => g !== grupoId);
+                registro.guardarEstudiantes();
+            }
+            
+            console.log(`✅ Estudiante removido del grupo ${grupo.codigo}`);
+            return true;
+        }
+        
+        return false;
+    }
+    
+    buscarGrupo(grupoId) {
+        return this.grupos.find(g => g.id === grupoId);
+    }
+    
+    obtenerGruposPorCiclo(ciclo) {
+        return this.grupos.filter(g => 
+            g.ciclo === ciclo && g.activo === true
+        ).sort((a, b) => a.codigo.localeCompare(b.codigo));
+    }
+    
+    obtenerGruposPorDocente(docente) {
+        return this.grupos.filter(g => 
+            g.docente === docente && g.activo === true
+        );
+    }
+    
+    // ========== ESTADÍSTICAS ==========
+    
+    obtenerEstadisticasGrupo(grupoId) {
+        const grupo = this.buscarGrupo(grupoId);
+        if (!grupo) return null;
+        
+        const registro = new RegistroEvaluacionTecnologia();
+        const calculadora = new CalculadoraMEP();
+        
+        const estudiantes = grupo.estudiantes.map(id => 
+            registro.buscarEstudiante(id)
+        ).filter(e => e !== undefined && e.activo !== false);
+        
+        if (estudiantes.length === 0) {
+            return {
+                grupo: grupo.nombreCompleto,
+                totalEstudiantes: 0,
+                promedioGeneral: 0,
+                asistenciaPromedio: 100,
+                distribucionNotas: { excelente: 0, bueno: 0, aprobado: 0, reprobado: 0 }
+            };
+        }
+        
+        // Calcular promedios y asistencia
+        let sumaNotas = 0;
+        let estudiantesConNotas = 0;
+        let sumaAsistencia = 0;
+        const distribucion = { excelente: 0, bueno: 0, aprobado: 0, reprobado: 0 };
+        
+        estudiantes.forEach(estudiante => {
+            // Calcular nota del período actual
+            const notaPeriodo = this.calcularNotaPeriodoEstudiante(estudiante.id, grupo.id);
+            if (notaPeriodo) {
+                sumaNotas += notaPeriodo.notaFinal;
+                estudiantesConNotas++;
+                
+                // Clasificar por distribución
+                if (notaPeriodo.notaFinal >= 90) distribucion.excelente++;
+                else if (notaPeriodo.notaFinal >= 80) distribucion.bueno++;
+                else if (notaPeriodo.notaFinal >= 70) distribucion.aprobado++;
+                else distribucion.reprobado++;
+            }
+            
+            // Asistencia
+            sumaAsistencia += estudiante.asistencia?.porcentaje || 100;
+        });
+        
+        const promedioGeneral = estudiantesConNotas > 0 ? 
+            sumaNotas / estudiantesConNotas : 0;
+        const asistenciaPromedio = estudiantes.length > 0 ?
+            sumaAsistencia / estudiantes.length : 100;
+        
+        // Actualizar estadísticas del grupo
+        grupo.estadisticas = {
+            totalEstudiantes: estudiantes.length,
+            promedioGeneral: Math.round(promedioGeneral * 100) / 100,
+            asistenciaPromedio: Math.round(asistenciaPromedio * 100) / 100,
+            ultimaActualizacion: new Date().toISOString()
+        };
+        
+        this.guardarGrupos();
+        
+        return {
+            grupo: grupo.nombreCompleto,
+            totalEstudiantes: estudiantes.length,
+            promedioGeneral: grupo.estadisticas.promedioGeneral,
+            asistenciaPromedio: grupo.estadisticas.asistenciaPromedio,
+            distribucionNotas: distribucion,
+            estudiantesActivos: estudiantes.length
+        };
+    }
+    
+    calcularNotaPeriodoEstudiante(estudianteId, grupoId) {
+        const registro = new RegistroEvaluacionTecnologia();
+        const grupo = this.buscarGrupo(grupoId);
+        
+        if (!grupo) return null;
+        
+        const periodoActual = this.obtenerPeriodoActual();
+        
+        // Filtrar evaluaciones del estudiante en este grupo y período
+        const evaluaciones = registro.registros.filter(r => 
+            r.estudianteId === estudianteId && 
+            r.periodo === periodoActual
+        );
+        
+        if (evaluaciones.length === 0) return null;
+        
+        // Agrupar por tipo de evaluación
+        const tc = evaluaciones.filter(e => e.tipo === 'trabajo_cotidiano');
+        const ta = evaluaciones.filter(e => e.tipo === 'tarea');
+        const pe = evaluaciones.filter(e => e.tipo === 'prueba_ejecucion');
+        const pt = evaluaciones.filter(e => e.tipo === 'proyecto_tecnologico');
+        
+        // Calcular promedios
+        const promedioTC = tc.length > 0 ? 
+            tc.reduce((sum, e) => sum + e.puntuacionBruta, 0) / tc.length : 0;
+        
+        const promedioTA = ta.length > 0 ? 
+            ta.reduce((sum, e) => sum + e.puntuacionBruta, 0) / ta.length : 0;
+        
+        const promedioPE = pe.length > 0 ? 
+            pe.reduce((sum, e) => sum + e.puntuacionBruta, 0) / pe.length : 0;
+        
+        const promedioPT = pt.length > 0 ? 
+            pt.reduce((sum, e) => sum + e.puntuacionBruta, 0) / pt.length : 0;
+        
+        const estudiante = registro.buscarEstudiante(estudianteId);
+        const notaAS = estudiante?.asistencia?.porcentaje || 100;
+        
+        // Usar calculadora MEP
+        const calculadora = new CalculadoraMEP();
+        const puntuaciones = {
+            TC: promedioTC,
+            TA: promedioTA,
+            PE: promedioPE,
+            PT: promedioPT,
+            AS: notaAS
+        };
+        
+        return calculadora.calcularNotaFinal(grupo.ciclo, puntuaciones);
     }
     
     // ========== CALENDARIO Y SEMANAS ==========
     
-    generarSemanasLectivas() {
-        const semanas = [];
-        const añoActual = new Date().getFullYear();
-        
-        // Aproximadamente 35 semanas lectivas en Costa Rica
-        for (let i = 1; i <= 35; i++) {
-            const fechaInicio = new Date(añoActual, 1, 1); // Febrero
-            fechaInicio.setDate(fechaInicio.getDate() + (i - 1) * 7);
-            
-            const fechaFin = new Date(fechaInicio);
-            fechaFin.setDate(fechaFin.getDate() + 6);
-            
-            const semana = {
-                numero: i,
-                fechaInicio: fechaInicio.toISOString().split('T')[0],
-                fechaFin: fechaFin.toISOString().split('T')[0],
-                trimestre: this.determinarTrimestre(i),
-                estado: 'planificada',
-                temas: [],
-                actividades: [],
-                evaluaciones: [],
-                recursos: []
-            };
-            
-            semanas.push(semana);
-        }
-        
-        return semanas;
-    }
-    
-    generarCalendarioGrupo(grupoId) {
-        const grupo = this.obtenerGrupo(grupoId);
-        if (!grupo) return;
-        
-        const calendario = {
-            grupoId: grupoId,
-            añoLectivo: grupo.añoLectivo,
-            semanas: grupo.semanas,
-            eventosEspeciales: [
-                {
-                    nombre: "Inicio de lecciones",
-                    fecha: `${grupo.añoLectivo}-02-01`,
-                    tipo: "academico"
+    configurarCalendarioEscolar(anoLectivo, config) {
+        this.configuracion.calendario = {
+            anoLectivo,
+            trimestres: [
+                { 
+                    nombre: 'I Trimestre',
+                    inicio: config.trimestre1?.inicio || `${anoLectivo}-02-05`,
+                    fin: config.trimestre1?.fin || `${anoLectivo}-04-12`,
+                    semanas: 10
                 },
-                {
-                    nombre: "Semana Santa",
-                    fecha: this.calcularSemanaSanta(grupo.añoLectivo),
-                    tipo: "feriado",
-                    duracion: 7
+                { 
+                    nombre: 'II Trimestre',
+                    inicio: config.trimestre2?.inicio || `${anoLectivo}-05-06`,
+                    fin: config.trimestre2?.fin || `${anoLectivo}-07-12`,
+                    semanas: 10
                 },
-                {
-                    nombre: "Evaluaciones I Trimestre",
-                    fecha: `${grupo.añoLectivo}-04-10`,
-                    tipo: "evaluacion"
-                },
-                {
-                    nombre: "Vacaciones I Trimestre",
-                    fecha: `${grupo.añoLectivo}-04-15`,
-                    tipo: "vacaciones",
-                    duracion: 7
-                },
-                {
-                    nombre: "Evaluaciones II Trimestre",
-                    fecha: `${grupo.añoLectivo}-07-10`,
-                    tipo: "evaluacion"
-                },
-                {
-                    nombre: "Vacaciones II Trimestre",
-                    fecha: `${grupo.añoLectivo}-07-15`,
-                    tipo: "vacaciones",
-                    duracion: 15
-                },
-                {
-                    nombre: "Evaluaciones III Trimestre",
-                    fecha: `${grupo.añoLectivo}-11-10`,
-                    tipo: "evaluacion"
-                },
-                {
-                    nombre: "Fin de lecciones",
-                    fecha: `${grupo.añoLectivo}-11-15`,
-                    tipo: "academico"
+                { 
+                    nombre: 'III Trimestre',
+                    inicio: config.trimestre3?.inicio || `${anoLectivo}-08-05`,
+                    fin: config.trimestre3?.fin || `${anoLectivo}-10-11`,
+                    semanas: 10
                 }
             ],
-            fechasImportantes: []
+            periodosExtraordinarios: config.periodosExtraordinarios || [],
+            diasFeriados: config.diasFeriados || [],
+            semanasEvaluacion: config.semanasEvaluacion || [4, 8, 10]
         };
         
-        this.calendario.push(calendario);
-        this.guardarCalendario();
-        
-        return calendario;
+        this.guardarConfiguracion();
+        this.generarSemanasEscolares();
     }
     
-    // ========== EVALUACIÓN POR SEMANA ==========
-    
-    registrarEvaluacionSemanal(grupoId, semanaNum, tipoEvaluacion, datos) {
-        const grupo = this.obtenerGrupo(grupoId);
-        if (!grupo) throw new Error('Grupo no encontrado');
+    generarSemanasEscolares() {
+        const calendario = this.configuracion.calendario;
+        if (!calendario) return;
         
-        const semana = grupo.semanas.find(s => s.numero === semanaNum);
-        if (!semana) throw new Error('Semana no encontrada');
+        const semanas = [];
+        let semanaNum = 1;
         
-        const evaluacion = {
-            id: `EVAL-${grupoId}-${semanaNum}-${Date.now()}`,
-            tipo: tipoEvaluacion,
-            fecha: new Date().toISOString(),
-            semana: semanaNum,
-            datos: datos,
-            docente: grupo.docente,
-            estado: 'registrada'
-        };
-        
-        // Agregar a la semana
-        semana.evaluaciones.push(evaluacion);
-        
-        // Actualizar estadísticas de estudiantes
-        if (datos.estudiantes && Array.isArray(datos.estudiantes)) {
-            datos.estudiantes.forEach(estudianteEval => {
-                this.actualizarEstadisticaEstudiante(
-                    grupoId, 
-                    estudianteEval.estudianteId, 
-                    tipoEvaluacion, 
-                    estudianteEval
-                );
-            });
-        }
-        
-        this.guardarGrupos();
-        return evaluacion;
-    }
-    
-    // ========== REPORTES Y ESTADÍSTICAS ==========
-    
-    generarReporteGrupo(grupoId, periodo = 'Total Anual') {
-        const grupo = this.obtenerGrupo(grupoId);
-        if (!grupo) return null;
-        
-        const calculadora = new CalculadoraMEP();
-        let estudiantesCompletos = [];
-        
-        // Calcular notas finales para cada estudiante
-        grupo.listaEstudiantes.forEach(estudiante => {
-            const notaFinal = this.calcularNotaFinalEstudiante(grupoId, estudiante.id, periodo);
-            estudiantesCompletos.push({
-                ...estudiante,
-                evaluacion: notaFinal
-            });
+        calendario.trimestres.forEach(trimestre => {
+            const inicio = new Date(trimestre.inicio);
+            const fin = new Date(trimestre.fin);
+            
+            let fechaActual = new Date(inicio);
+            
+            while (fechaActual <= fin && semanaNum <= 40) { // Máximo 40 semanas
+                const semanaFin = new Date(fechaActual);
+                semanaFin.setDate(semanaFin.getDate() + 4); // Semana escolar de 5 días
+                
+                semanas.push({
+                    numero: semanaNum,
+                    trimestre: trimestre.nombre,
+                    inicio: fechaActual.toISOString().split('T')[0],
+                    fin: semanaFin.toISOString().split('T')[0],
+                    tipo: this.obtenerTipoSemana(semanaNum),
+                    evaluacion: calendario.semanasEvaluacion.includes(semanaNum % 10 || 10),
+                    actividades: []
+                });
+                
+                fechaActual.setDate(fechaActual.getDate() + 7); // Siguiente semana
+                semanaNum++;
+            }
         });
         
-        // Calcular estadísticas del grupo
-        const estadisticas = this.calcularEstadisticasGrupo(estudiantesCompletos);
+        this.calendario.semanas = semanas;
+        this.guardarCalendario();
         
-        const reporte = {
-            grupo: {
-                id: grupo.id,
-                nombre: grupo.nombreCompleto,
-                codigo: grupo.codigo,
-                docente: grupo.docente,
-                institucion: grupo.institucion,
-                periodo: periodo,
-                fechaGeneracion: new Date().toISOString()
-            },
-            resumen: {
-                totalEstudiantes: grupo.estadisticas.totalEstudiantes,
-                hombres: grupo.estadisticas.hombres,
-                mujeres: grupo.estadisticas.mujeres,
-                activos: estudiantesCompletos.filter(e => e.activo).length,
-                inactivos: estudiantesCompletos.filter(e => !e.activo).length
-            },
-            evaluacion: {
-                promedioGeneral: estadisticas.promedioGeneral,
-                distribucionNotas: estadisticas.distribucionNotas,
-                aprobados: estadisticas.aprobados,
-                reprobados: estadisticas.reprobados,
-                porcentajeAprobacion: estadisticas.porcentajeAprobacion
-            },
-            asistencia: {
-                promedioGrupo: estadisticas.asistenciaPromedio,
-                estudiantesConBajaAsistencia: estadisticas.bajaAsistencia
-            },
-            estudiantes: estudiantesCompletos.map(e => ({
-                codigo: e.codigoEstudiante,
-                nombre: e.nombreCompleto,
-                notaFinal: e.evaluacion.notaFinal,
-                condicion: e.evaluacion.condicion,
-                asistencia: e.estadisticas.asistencia.porcentaje,
-                observaciones: e.observaciones
-            })),
-            recomendaciones: this.generarRecomendacionesGrupo(estadisticas)
-        };
-        
-        return reporte;
+        console.log(`📅 Generadas ${semanas.length} semanas escolares`);
     }
     
-    // ========== FUNCIONES AUXILIARES ==========
+    obtenerTipoSemana(numeroSemana) {
+        if (numeroSemana === 1) return 'inicio';
+        if (numeroSemana % 10 === 0) return 'evaluacion';
+        if (numeroSemana % 5 === 0) return 'revision';
+        return 'normal';
+    }
+    
+    obtenerSemanaActual() {
+        if (!this.calendario.semanas || this.calendario.semanas.length === 0) {
+            return null;
+        }
+        
+        const hoy = new Date().toISOString().split('T')[0];
+        
+        return this.calendario.semanas.find(semana => 
+            hoy >= semana.inicio && hoy <= semana.fin
+        );
+    }
+    
+    obtenerPeriodoActual() {
+        const hoy = new Date();
+        const ano = hoy.getFullYear();
+        const mes = hoy.getMonth() + 1;
+        
+        if (mes >= 2 && mes <= 4) return `I-${ano}`;
+        if (mes >= 5 && mes <= 7) return `II-${ano}`;
+        if (mes >= 8 && mes <= 10) return `III-${ano}`;
+        return `Extra-${ano}`;
+    }
+    
+    // ========== FUNCIONES DE UTILIDAD ==========
+    
+    obtenerNombreCiclo(ciclo) {
+        const nombres = {
+            'ciclo1': 'I Ciclo (1°-3°)',
+            'ciclo2': 'II Ciclo (4°-6°)',
+            'ciclo3': 'III Ciclo (7°-9°)',
+            'materno': 'Materno/Transición'
+        };
+        return nombres[ciclo] || ciclo;
+    }
     
     obtenerPorcentajesCiclo(ciclo) {
         const porcentajes = {
-            'materno': { TC: 100, descripcion: 'Evaluación formativa' },
             'ciclo1': { TC: 65, TA: 10, PE: 15, AS: 10 },
             'ciclo2': { TC: 60, TA: 10, PE: 20, AS: 10 },
-            'ciclo3': { TC: 50, TA: 10, PT: 30, AS: 10 }
+            'ciclo3': { TC: 50, TA: 10, PT: 30, AS: 10 },
+            'materno': { OBS: 100 }
         };
-        return porcentajes[ciclo] || porcentajes.ciclo1;
+        return porcentajes[ciclo] || { TC: 60, TA: 10, PE: 20, AS: 10 };
     }
     
-    obtenerConfigEvaluacion(ciclo) {
-        const configs = {
-            'ciclo1': {
-                componentes: ['TC', 'TA', 'PE', 'AS'],
-                escala: 'Aprobado/Reprobado',
-                notaMinima: 70
+    crearPeriodosDefault() {
+        const ano = new Date().getFullYear();
+        return [
+            {
+                nombre: `I Trimestre ${ano}`,
+                codigo: `I-${ano}`,
+                inicio: `${ano}-02-05`,
+                fin: `${ano}-04-12`,
+                semanas: 10,
+                evaluaciones: [],
+                estado: 'activo'
             },
-            'ciclo2': {
-                componentes: ['TC', 'TA', 'PE', 'AS'],
-                escala: 'Aprobado/Reprobado',
-                notaMinima: 70
+            {
+                nombre: `II Trimestre ${ano}`,
+                codigo: `II-${ano}`,
+                inicio: `${ano}-05-06`,
+                fin: `${ano}-07-12`,
+                semanas: 10,
+                evaluaciones: [],
+                estado: 'pendiente'
             },
-            'ciclo3': {
-                componentes: ['TC', 'TA', 'PT', 'AS'],
-                escala: 'Excelente/Bueno/Aprobado/Reprobado',
-                notaMinima: 70,
-                proyectoObligatorio: true
-            },
-            'materno': {
-                componentes: ['Observación'],
-                escala: 'Formativa',
-                instrumentos: ['Lista de cotejo', 'Registro anecdótico']
+            {
+                nombre: `III Trimestre ${ano}`,
+                codigo: `III-${ano}`,
+                inicio: `${ano}-08-05`,
+                fin: `${ano}-10-11`,
+                semanas: 10,
+                evaluaciones: [],
+                estado: 'pendiente'
             }
-        };
-        return configs[ciclo] || configs.ciclo1;
-    }
-    
-    obtenerNivelPorCiclo(ciclo) {
-        const niveles = {
-            'materno': 'Materno/Transición',
-            'ciclo1': '1°-3° Primaria',
-            'ciclo2': '4°-6° Primaria',
-            'ciclo3': '7°-9° Secundaria'
-        };
-        return niveles[ciclo];
-    }
-    
-    generarNombreGrupo(ciclo, codigo) {
-        return `${this.obtenerNivelPorCiclo(ciclo)} - Grupo ${codigo}`;
-    }
-    
-    calcularSemanaSanta(año) {
-        // Algoritmo simplificado para calcular Semana Santa
-        const a = año % 19;
-        const b = Math.floor(año / 100);
-        const c = año % 100;
-        const d = Math.floor(b / 4);
-        const e = b % 4;
-        const f = Math.floor((b + 8) / 25);
-        const g = Math.floor((b - f + 1) / 3);
-        const h = (19 * a + b - d - g + 15) % 30;
-        const i = Math.floor(c / 4);
-        const k = c % 4;
-        const l = (32 + 2 * e + 2 * i - h - k) % 7;
-        const m = Math.floor((a + 11 * h + 22 * l) / 451);
-        const mes = Math.floor((h + l - 7 * m + 114) / 31);
-        const dia = ((h + l - 7 * m + 114) % 31) + 1;
-        
-        return `${año}-${mes.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
-    }
-    
-    determinarTrimestre(semanaNum) {
-        if (semanaNum <= 10) return 'I Trimestre';
-        if (semanaNum <= 22) return 'II Trimestre';
-        return 'III Trimestre';
-    }
-    
-    calcularEdad(fechaNacimiento) {
-        if (!fechaNacimiento) return null;
-        const nacimiento = new Date(fechaNacimiento);
-        const hoy = new Date();
-        let edad = hoy.getFullYear() - nacimiento.getFullYear();
-        const mes = hoy.getMonth() - nacimiento.getMonth();
-        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
-            edad--;
-        }
-        return edad;
+        ];
     }
     
     // ========== PERSISTENCIA ==========
     
     cargarGrupos() {
         try {
-            const datos = localStorage.getItem('tecnoPIA_grupos_completos');
+            const datos = localStorage.getItem('tecnoPIA_grupos');
             return datos ? JSON.parse(datos) : [];
         } catch (error) {
             console.error('Error al cargar grupos:', error);
@@ -494,19 +445,55 @@ class GestorGruposMEP {
     
     guardarGrupos() {
         try {
-            localStorage.setItem('tecnoPIA_grupos_completos', JSON.stringify(this.grupos));
+            localStorage.setItem('tecnoPIA_grupos', JSON.stringify(this.grupos));
         } catch (error) {
             console.error('Error al guardar grupos:', error);
+        }
+    }
+    
+    cargarConfiguracion() {
+        try {
+            const datos = localStorage.getItem('tecnoPIA_config_grupos');
+            return datos ? JSON.parse(datos) : {
+                docente: 'Docente MEP',
+                institucion: 'Centro Educativo',
+                anoLectivo: new Date().getFullYear(),
+                calendario: null
+            };
+        } catch (error) {
+            console.error('Error al cargar configuración:', error);
+            return {
+                docente: 'Docente MEP',
+                institucion: 'Centro Educativo',
+                anoLectivo: new Date().getFullYear(),
+                calendario: null
+            };
+        }
+    }
+    
+    guardarConfiguracion() {
+        try {
+            localStorage.setItem('tecnoPIA_config_grupos', JSON.stringify(this.configuracion));
+        } catch (error) {
+            console.error('Error al guardar configuración:', error);
         }
     }
     
     cargarCalendario() {
         try {
             const datos = localStorage.getItem('tecnoPIA_calendario');
-            return datos ? JSON.parse(datos) : [];
+            return datos ? JSON.parse(datos) : {
+                semanas: [],
+                eventos: [],
+                evaluaciones: []
+            };
         } catch (error) {
             console.error('Error al cargar calendario:', error);
-            return [];
+            return {
+                semanas: [],
+                eventos: [],
+                evaluaciones: []
+            };
         }
     }
     
@@ -518,55 +505,74 @@ class GestorGruposMEP {
         }
     }
     
-    obtenerGrupo(grupoId) {
-        return this.grupos.find(g => g.id === grupoId);
+    // ========== IMPORTACIÓN/EXPORTACIÓN ==========
+    
+    exportarGruposCSV() {
+        if (this.grupos.length === 0) return '';
+        
+        const headers = ['Ciclo', 'Código', 'Nombre', 'Estudiantes', 'Horario', 'Aula', 'Promedio'];
+        const filas = this.grupos.map(grupo => [
+            this.obtenerNombreCiclo(grupo.ciclo),
+            grupo.codigo,
+            grupo.nombreCompleto,
+            grupo.estudiantes.length,
+            grupo.horario,
+            grupo.aula,
+            grupo.estadisticas.promedioGeneral || '--'
+        ]);
+        
+        return [headers, ...filas].map(row => 
+            row.map(cell => `"${cell}"`).join(',')
+        ).join('\n');
     }
     
-    obtenerGruposPorDocente(docente) {
-        return this.grupos.filter(g => 
-            g.docente === docente && g.activo === true
-        );
+    importarGruposCSV(datosCSV) {
+        const lineas = datosCSV.split('\n');
+        const gruposImportados = [];
+        
+        for (let i = 1; i < lineas.length; i++) {
+            if (lineas[i].trim() === '') continue;
+            
+            const columnas = lineas[i].split(',').map(col => 
+                col.replace(/"/g, '').trim()
+            );
+            
+            if (columnas.length >= 2) {
+                try {
+                    const ciclo = this.obtenerCicloDeNombre(columnas[0]);
+                    const grupo = this.crearGrupo(ciclo, columnas[1], {
+                        nombre: columnas[2] || columnas[1],
+                        horario: columnas[4] || '',
+                        aula: columnas[5] || '',
+                        maxEstudiantes: parseInt(columnas[6]) || 30
+                    });
+                    
+                    gruposImportados.push(grupo);
+                } catch (error) {
+                    console.warn(`Error importando grupo línea ${i}:`, error.message);
+                }
+            }
+        }
+        
+        return gruposImportados;
     }
     
-    // ========== MÉTODOS PENDIENTES (se implementarán) ==========
-    
-    inicializarEvaluacionEstudiante(grupoId, estudianteId) {
-        // Inicializar estructura de evaluación
-        console.log(`Inicializando evaluación para estudiante ${estudianteId}`);
-    }
-    
-    actualizarEstadisticaEstudiante(grupoId, estudianteId, tipoEvaluacion, datos) {
-        // Actualizar estadísticas del estudiante
-        console.log(`Actualizando estadísticas para ${estudianteId}, tipo: ${tipoEvaluacion}`);
-    }
-    
-    calcularNotaFinalEstudiante(grupoId, estudianteId, periodo) {
-        // Calcular nota final del estudiante
-        return {
-            notaFinal: 0,
-            condicion: 'En proceso',
-            desglose: {}
-        };
-    }
-    
-    calcularEstadisticasGrupo(estudiantes) {
-        // Calcular estadísticas del grupo
-        return {
-            promedioGeneral: 0,
-            distribucionNotas: {},
-            aprobados: 0,
-            reprobados: 0,
-            porcentajeAprobacion: 0,
-            asistenciaPromedio: 0,
-            bajaAsistencia: 0
-        };
-    }
-    
-    generarRecomendacionesGrupo(estadisticas) {
-        // Generar recomendaciones basadas en estadísticas
-        return ['Continuar con el buen trabajo'];
+    obtenerCicloDeNombre(nombre) {
+        if (nombre.includes('I Ciclo')) return 'ciclo1';
+        if (nombre.includes('II Ciclo')) return 'ciclo2';
+        if (nombre.includes('III Ciclo')) return 'ciclo3';
+        if (nombre.includes('Materno')) return 'materno';
+        return 'ciclo1';
     }
 }
 
 // Exportar para uso global
-window.GestorGruposMEP = GestorGruposMEP;
+window.GestorGrupos = GestorGrupos;
+
+// Inicialización automática
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Gestor de Grupos MEP cargado');
+    console.log('📊 Sistema completo para gestión docente');
+    console.log('👥 Soporta múltiples grupos por nivel (1-1, 1-2, 1-3, etc.)');
+    console.log('📅 Calendario escolar por semanas y trimestres');
+});
