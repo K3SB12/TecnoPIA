@@ -3,623 +3,420 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TecnoPIA Dashboard | Planificación y Evaluación Integrada</title>
-    
-    <!-- Tailwind CSS (igual que tu index.html) -->
+    <title>TecnoPIA - Dashboard del Docente</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Nuestros estilos -->
-    <link rel="stylesheet" href="css/dashboard.css">
-    
+    <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Estilos base de TecnoPIA */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-color: #3b82f6;
+            --secondary-color: #1e40af;
+            --accent-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
         }
         
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            color: #f8fafc;
-            min-height: 100vh;
+        .stat-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary-color);
         }
         
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
         
-        .glass-dark {
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .grupo-card {
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
         }
         
-        .gradient-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        .grupo-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1);
         }
         
-        .gradient-secondary {
-            background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
-        }
-        
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .badge-new {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
+            transition: all 0.3s ease;
         }
         
-        .badge-ia {
-            background: linear-gradient(135deg, #10b981, #3b82f6);
-            color: white;
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        }
+        
+        .sidebar-link {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-left: 3px solid var(--primary-color);
         }
     </style>
 </head>
-<body class="antialiased">
-    <!-- Navbar -->
-    <nav class="glass-dark fixed w-full z-50 py-4 px-6">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="gradient-primary w-10 h-10 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-tachometer-alt text-white text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                        TecnoPIA Dashboard
-                    </h1>
-                    <p class="text-xs text-gray-400">Planificación + Evaluación Integrada</p>
+<body class="bg-gray-50">
+    <!-- Sidebar -->
+    <div class="flex h-screen">
+        <div class="sidebar w-64 text-white p-6 hidden md:block">
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-laptop-code text-2xl text-blue-400"></i>
+                    <h1 class="text-xl font-bold">Tecno<span class="text-blue-400">PIA</span></h1>
                 </div>
             </div>
             
-            <div class="hidden md:flex space-x-8">
-                <a href="../index.html" class="nav-link text-gray-300 hover:text-white">
-                    <i class="fas fa-home mr-2"></i>Inicio
-                </a>
-                <a href="#planificar" class="nav-link text-gray-300 hover:text-white">
-                    <i class="fas fa-calendar-alt mr-2"></i>Planificar
-                </a>
-                <a href="#evaluar" class="nav-link text-gray-300 hover:text-white">
-                    <i class="fas fa-clipboard-check mr-2"></i>Evaluar
-                </a>
-                <a href="#recursos" class="nav-link text-gray-300 hover:text-white">
-                    <i class="fas fa-tools mr-2"></i>Recursos
-                </a>
-                 <!-- NUEVO: Enlace al sistema de evaluación MEP -->
-                <a href="sistemas/evaluacion-mep.html" class="nav-link text-gray-300 hover:text-white">
-                    <i class="fas fa-calculator mr-2"></i>Evaluación MEP
-                </a>
+            <!-- Información del docente -->
+            <div class="mb-8 p-4 bg-blue-900/30 rounded-lg">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <h3 id="docente-nombre" class="font-semibold">Cargando...</h3>
+                        <p class="text-sm text-gray-300" id="docente-email">...</p>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-300">
+                    <p><i class="fas fa-school mr-2"></i> <span id="docente-escuela">...</span></p>
+                </div>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-400 hidden md:block">
-                    <i class="fas fa-user mr-1"></i>Docente
-                </span>
-                <button onclick="window.location.href='../index.html'" 
-                        class="btn-modern gradient-primary text-white px-4 py-2 rounded-lg text-sm">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Salir
+            <!-- Menú de navegación -->
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="sidebar-link flex items-center space-x-3 p-3 active">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a href="grupos.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-users"></i>
+                    <span>Mis Grupos</span>
+                </a>
+                
+                <a href="evaluacion.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Evaluación</span>
+                </a>
+                
+                <a href="asistencia.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Asistencia</span>
+                </a>
+                
+                <a href="tareas.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-tasks"></i>
+                    <span>Tareas</span>
+                </a>
+                
+                <a href="pnft.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Indicadores PNFT</span>
+                </a>
+                
+                <a href="reportes.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Reportes MEP</span>
+                </a>
+                
+                <a href="configuracion.html" class="sidebar-link flex items-center space-x-3 p-3">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </nav>
+            
+            <!-- Footer del sidebar -->
+            <div class="mt-auto pt-6 border-t border-gray-700">
+                <button onclick="Auth.logout()" class="w-full flex items-center justify-center space-x-2 p-3 bg-red-900/30 hover:bg-red-900/50 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Cerrar Sesión</span>
                 </button>
             </div>
         </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="pt-24 pb-12 px-4 md:px-6 max-w-7xl mx-auto">
-        <!-- Header del Dashboard -->
-        <header class="mb-10 text-center">
-            <div class="flex flex-wrap gap-3 justify-center mb-6">
-                <span class="badge badge-new">
-                    <i class="fas fa-sync-alt mr-1"></i> Integrado
-                </span>
-                <span class="badge badge-ia">
-                    <i class="fas fa-database mr-1"></i> PNFT MEP
-                </span>
-                <span class="badge gradient-primary">
-                    <i class="fas fa-bolt mr-1"></i> 100% Funcional
-                </span>
-            </div>
-            
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">
-                <span class="block">Dashboard de</span>
-                <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                    Formación Tecnológica
-                </span>
-            </h1>
-            <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-                Planifica tus clases con el PNFT y evalúa con los sistemas TecnoPIA, todo en un solo lugar.
-            </p>
-        </header>
-
-        <!-- Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            <!-- Panel Izquierdo: Navegación Rápida -->
-            <div class="lg:col-span-1">
-                <div class="glass rounded-2xl p-6 mb-6">
-                    <h3 class="text-lg font-semibold mb-4 text-blue-300">
-                        <i class="fas fa-bolt mr-2"></i>Acciones Rápidas
-                    </h3>
-                    
-                    <div class="space-y-3">
-                        <button onclick="iniciarNuevaPlanificacion()" 
-                                class="w-full glass-dark hover:bg-blue-900/30 p-4 rounded-xl text-left transition-all duration-300 border border-transparent hover:border-blue-500/30">
-                            <div class="flex items-center">
-                                <div class="gradient-primary w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-plus text-white"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold">Nueva Planificación</h4>
-                                    <p class="text-sm text-gray-400">Crear desde cero</p>
-                                </div>
-                            </div>
-                        </button>
-                        
-                        <button onclick="cargarPlanificacionGuardada()" 
-                                class="w-full glass-dark hover:bg-purple-900/30 p-4 rounded-xl text-left transition-all duration-300 border border-transparent hover:border-purple-500/30">
-                            <div class="flex items-center">
-                                <div class="gradient-secondary w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-folder-open text-white"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold">Cargar Planificación</h4>
-                                    <p class="text-sm text-gray-400">Continuar trabajo</p>
-                                </div>
-                            </div>
-                        </button>
-                        
-                        <button onclick="abrirEvaluacionRapida()" 
-                                class="w-full glass-dark hover:bg-green-900/30 p-4 rounded-xl text-left transition-all duration-300 border border-transparent hover:border-green-500/30">
-                            <div class="flex items-center">
-                                <div class="bg-gradient-to-r from-green-500 to-teal-500 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                                    <i class="fas fa-play text-white"></i>
-                                </div>
-                                <div>
-                                    <h4 class="font-semibold">Evaluación Express</h4>
-                                    <p class="text-sm text-gray-400">Evaluar sin planificar</p>
-                                </div>
-                            </div>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Selector de Nivel -->
-                <div class="glass rounded-2xl p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-purple-300">
-                        <i class="fas fa-layer-group mr-2"></i>Seleccionar Nivel
-                    </h3>
-                    
-                    <div class="grid grid-cols-2 gap-3" id="selector-nivel">
-                        <button class="nivel-btn p-3 glass-dark rounded-lg text-center hover:bg-blue-900/30 transition" data-nivel="materno">
-                            <i class="fas fa-baby text-2xl mb-2 text-pink-400"></i>
-                            <p class="font-medium">Materno/Transición</p>
-                        </button>
-                        
-                        <button class="nivel-btn p-3 glass-dark rounded-lg text-center hover:bg-blue-900/30 transition" data-nivel="ciclo1">
-                            <i class="fas fa-pencil-alt text-2xl mb-2 text-green-400"></i>
-                            <p class="font-medium">1°-3° (Ciclo I)</p>
-                        </button>
-                        
-                        <button class="nivel-btn p-3 glass-dark rounded-lg text-center hover:bg-blue-900/30 transition" data-nivel="ciclo2">
-                            <i class="fas fa-cogs text-2xl mb-2 text-yellow-400"></i>
-                            <p class="font-medium">4°-6° (Ciclo II)</p>
-                        </button>
-                        
-                        <button class="nivel-btn p-3 glass-dark rounded-lg text-center hover:bg-blue-900/30 transition" data-nivel="ciclo3">
-                            <i class="fas fa-robot text-2xl mb-2 text-blue-400"></i>
-                            <p class="font-medium">7°-9° (Ciclo III)</p>
-                        </button>
-                    </div>
-                    
-                    <div class="mt-4 p-3 bg-blue-900/20 rounded-lg border border-blue-500/30 hidden" id="nivel-seleccionado">
-                        <p class="text-sm">
-                            <i class="fas fa-check-circle text-green-400 mr-2"></i>
-                            <span id="nivel-texto">Nivel seleccionado</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Panel Central: Flujo de Trabajo -->
-            <div class="lg:col-span-2">
-                <!-- Pestañas de Funcionalidad -->
-                <div class="glass rounded-2xl overflow-hidden mb-8">
-                    <div class="flex border-b border-gray-700">
-                        <button id="tab-planificar" class="tab-btn active flex-1 py-4 font-semibold text-center bg-blue-900/30">
-                            <i class="fas fa-calendar-alt mr-2"></i>Planificar Clase
-                        </button>
-                        <button id="tab-evaluar" class="tab-btn flex-1 py-4 font-semibold text-center hover:bg-gray-800/50">
-                            <i class="fas fa-clipboard-check mr-2"></i>Evaluar Estudiantes
-                        </button>
-                        <button id="tab-recursos" class="tab-btn flex-1 py-4 font-semibold text-center hover:bg-gray-800/50">
-                            <i class="fas fa-tools mr-2"></i>Recursos & Documentos
-                        </button>
-                    </div>
-                    
-                    <!-- Contenido de Pestañas -->
-                    <div class="p-6">
-                        <!-- Pestaña 1: Planificar -->
-                        <div id="content-planificar" class="tab-content active">
-                            <div class="mb-6">
-                                <h3 class="text-2xl font-bold mb-2">Planificación con PNFT MEP</h3>
-                                <p class="text-gray-400 mb-6">Selecciona saberes conceptuales del Programa Nacional y genera tu planificación didáctica.</p>
-                                
-                                <!-- Selector de Áreas -->
-                                <div class="mb-6">
-                                    <h4 class="text-lg font-semibold mb-3 text-blue-300">
-                                        <i class="fas fa-th-large mr-2"></i>Áreas de Conocimiento
-                                    </h4>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="selector-areas">
-                                        <!-- Se llenará con JS -->
-                                    </div>
-                                </div>
-                                
-                                <!-- Lista de Saberes -->
-                                <div class="mb-6">
-                                    <h4 class="text-lg font-semibold mb-3 text-purple-300">
-                                        <i class="fas fa-graduation-cap mr-2"></i>Saberes Conceptuales Disponibles
-                                    </h4>
-                                    <div class="glass-dark rounded-xl p-4 max-h-80 overflow-y-auto" id="lista-saberes">
-                                        <p class="text-gray-500 text-center py-8">Selecciona un nivel y área para ver los saberes</p>
-                                    </div>
-                                </div>
-                                
-                                <!-- Botón de Integración con Plantilla -->
-                                <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl p-5 border border-blue-500/30">
-                                    <div class="flex flex-col md:flex-row items-center justify-between">
-                                        <div class="mb-4 md:mb-0">
-                                            <h4 class="text-lg font-semibold mb-1">
-                                                <i class="fas fa-external-link-alt mr-2"></i>
-                                                Plantilla de Planeamiento Completa
-                                            </h4>
-                                            <p class="text-sm text-gray-400">Abre la plantilla oficial con los saberes seleccionados</p>
-                                        </div>
-                                        <button onclick="abrirPlantillaPlaneamiento()" 
-                                                class="btn-modern gradient-primary text-white px-6 py-3 rounded-lg font-semibold">
-                                            <i class="fas fa-external-link-alt mr-2"></i>
-                                            Abrir Plantilla
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Pestaña 2: Evaluar -->
-                        <div id="content-evaluar" class="tab-content hidden">
-                            <div class="mb-6">
-                                <h3 class="text-2xl font-bold mb-2">Evaluación con TecnoPIA</h3>
-                                <p class="text-gray-400 mb-6">Selecciona un sistema de evaluación para aplicar a tu clase planificada.</p>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div class="glass-dark rounded-xl p-5 hover:border-blue-500/50 border border-transparent transition-all duration-300">
-                                        <div class="gradient-primary w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                                            <i class="fas fa-cogs text-white text-xl"></i>
-                                        </div>
-                                        <h4 class="text-lg font-semibold mb-2">Sistema Completo</h4>
-                                        <p class="text-sm text-gray-400 mb-4">Evaluación detallada para todos los niveles</p>
-                                        <button onclick="window.location.href='sistemas/completo.html'" 
-                                                class="w-full bg-blue-900/50 hover:bg-blue-800/70 py-2 rounded-lg text-sm font-medium transition">
-                                            <i class="fas fa-play mr-2"></i>Abrir Sistema
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="glass-dark rounded-xl p-5 hover:border-green-500/50 border border-transparent transition-all duration-300">
-                                        <div class="bg-gradient-to-r from-green-500 to-teal-500 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                                            <i class="fas fa-brain text-white text-xl"></i>
-                                        </div>
-                                        <h4 class="text-lg font-semibold mb-2">Sistema con IA</h4>
-                                        <p class="text-sm text-gray-400 mb-4">Evaluación asistida por inteligencia artificial</p>
-                                        <button onclick="window.location.href='sistemas/ia.html'" 
-                                                class="w-full bg-green-900/50 hover:bg-green-800/70 py-2 rounded-lg text-sm font-medium transition">
-                                            <i class="fas fa-play mr-2"></i>Abrir Sistema
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="glass-dark rounded-xl p-5 hover:border-yellow-500/50 border border-transparent transition-all duration-300">
-                                        <div class="bg-gradient-to-r from-yellow-500 to-orange-500 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                                            <i class="fas fa-bolt text-white text-xl"></i>
-                                        </div>
-                                        <h4 class="text-lg font-semibold mb-2">Sistema Base</h4>
-                                        <p class="text-sm text-gray-400 mb-4">Evaluación rápida para el taller</p>
-                                        <button onclick="window.location.href='sistemas/base.html'" 
-                                                class="w-full bg-yellow-900/50 hover:bg-yellow-800/70 py-2 rounded-lg text-sm font-medium transition">
-                                            <i class="fas fa-play mr-2"></i>Abrir Sistema
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="mt-8 p-4 bg-blue-900/20 rounded-lg border border-blue-500/30">
-                                    <h4 class="font-semibold mb-2 text-blue-300">
-                                        <i class="fas fa-lightbulb mr-2"></i>Recomendación
-                                    </h4>
-                                    <p class="text-sm">
-                                        Usa primero la pestaña <span class="font-semibold">"Planificar"</span> para seleccionar los saberes del PNFT, 
-                                        luego regresa aquí para evaluar a tus estudiantes con los sistemas especializados.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Pestaña 3: Recursos -->
-                        <div id="content-recursos" class="tab-content hidden">
-                            <div class="mb-6">
-                                <h3 class="text-2xl font-bold mb-2">Recursos y Documentos</h3>
-                                <p class="text-gray-400 mb-6">Genera documentos profesionales para tu práctica docente.</p>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="glass-dark rounded-xl p-5">
-                                        <h4 class="text-lg font-semibold mb-3 text-green-300">
-                                            <i class="fas fa-file-alt mr-2"></i>Generador de Rúbricas
-                                        </h4>
-                                        <p class="text-sm text-gray-400 mb-4">Crea rúbricas de evaluación específicas para tecnología</p>
-                                        <button onclick="generarRubrica()" 
-                                                class="w-full bg-green-900/50 hover:bg-green-800/70 py-3 rounded-lg font-medium transition">
-                                            <i class="fas fa-magic mr-2"></i>Generar Rúbrica Automática
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="glass-dark rounded-xl p-5">
-                                        <h4 class="text-lg font-semibold mb-3 text-purple-300">
-                                            <i class="fas fa-list-check mr-2"></i>Listas de Cotejo
-                                        </h4>
-                                        <p class="text-sm text-gray-400 mb-4">Checklists observables para el taller tecnológico</p>
-                                        <button onclick="generarListaCotejo()" 
-                                                class="w-full bg-purple-900/50 hover:bg-purple-800/70 py-3 rounded-lg font-medium transition">
-                                            <i class="fas fa-clipboard-list mr-2"></i>Crear Lista de Cotejo
-                                        </button>
-                                    </div>
-                                    
-                                    <div class="glass-dark rounded-xl p-5">
-                                        <h4 class="text-lg font-semibold mb-3 text-blue-300">
-                                            <i class="fas fa-video mr-2"></i>Recursos Multimedia
-                                        </h4>
-                                        <p class="text-sm text-gray-400 mb-4">Videos y tutoriales por área tecnológica</p>
-                                        <div class="space-y-2">
-                                            <button onclick="buscarVideos('programacion')" 
-                                                    class="w-full bg-blue-900/50 hover:bg-blue-800/70 py-2 rounded text-sm transition">
-                                                <i class="fab fa-youtube mr-2"></i>Videos de Programación
-                                            </button>
-                                            <button onclick="buscarVideos('robotica')" 
-                                                    class="w-full bg-blue-900/50 hover:bg-blue-800/70 py-2 rounded text-sm transition">
-                                                <i class="fab fa-youtube mr-2"></i>Videos de Robótica
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="glass-dark rounded-xl p-5">
-                                        <h4 class="text-lg font-semibold mb-3 text-yellow-300">
-                                            <i class="fas fa-download mr-2"></i>Plantillas Descargables
-                                        </h4>
-                                        <p class="text-sm text-gray-400 mb-4">Formatos oficiales MEP listos para usar</p>
-                                        <div class="space-y-2">
-                                            <button onclick="descargarPlantilla('planeamiento')" 
-                                                    class="w-full bg-yellow-900/50 hover:bg-yellow-800/70 py-2 rounded text-sm transition">
-                                                <i class="fas fa-file-word mr-2"></i>Plantilla de Planeamiento
-                                            </button>
-                                            <button onclick="descargarPlantilla('evaluacion')" 
-                                                    class="w-full bg-yellow-900/50 hover:bg-yellow-800/70 py-2 rounded text-sm transition">
-                                                <i class="fas fa-file-excel mr-2"></i>Formatos de Evaluación
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Panel de Saberes Seleccionados -->
-                <div class="glass rounded-2xl p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-green-300">
-                            <i class="fas fa-check-circle mr-2"></i>Saberes Seleccionados
-                        </h3>
-                        <span class="badge bg-green-900/50 text-green-300" id="contador-saberes">0 seleccionados</span>
-                    </div>
-                    
-                    <div class="glass-dark rounded-xl p-4 min-h-24" id="panel-saberes-seleccionados">
-                        <p class="text-gray-500 text-center py-6">
-                            <i class="fas fa-inbox text-2xl mb-2 block"></i>
-                            Los saberes que selecciones aparecerán aquí
-                        </p>
-                    </div>
-                    
-                    <div class="flex justify-between mt-4">
-                        <button onclick="limpiarSeleccion()" 
-                                class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition">
-                            <i class="fas fa-trash-alt mr-2"></i>Limpiar Selección
-                        </button>
-                        <button onclick="guardarPlanificacion()" 
-                                class="px-6 py-2 gradient-primary hover:opacity-90 rounded-lg font-semibold transition">
-                            <i class="fas fa-save mr-2"></i>Guardar Planificación
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
         
-        <!-- Panel Inferior: Enlaces y Recursos -->
-        <div class="glass rounded-2xl p-6 mt-8">
-            <h3 class="text-lg font-semibold mb-4 text-center text-blue-300">
-                <i class="fas fa-link mr-2"></i>Recursos Adicionales
-            </h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <a href="https://k3sb12.github.io/Recurso-Plantilla-Planeamiento-/" 
-                   target="_blank" 
-                   class="glass-dark hover:bg-blue-900/30 p-4 rounded-xl transition-all duration-300 border border-transparent hover:border-blue-500/30 group">
-                    <div class="flex items-center mb-3">
-                        <div class="gradient-primary w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-file-alt text-white"></i>
-                        </div>
-                        <h4 class="font-semibold group-hover:text-blue-300">Plantilla Oficial PNFT</h4>
-                    </div>
-                    <p class="text-sm text-gray-400">Plantilla completa de planeamiento didáctico del Programa Nacional</p>
-                </a>
-                
-                <a href="sistemas/completo.html" 
-                   class="glass-dark hover:bg-green-900/30 p-4 rounded-xl transition-all duration-300 border border-transparent hover:border-green-500/30 group">
-                    <div class="flex items-center mb-3">
-                        <div class="bg-gradient-to-r from-green-500 to-teal-500 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-cogs text-white"></i>
-                        </div>
-                        <h4 class="font-semibold group-hover:text-green-300">Sistema Completo</h4>
-                    </div>
-                    <p class="text-sm text-gray-400">Evaluación para todos los niveles educativos</p>
-                </a>
-                
-                <a href="sistemas/ia.html" 
-                   class="glass-dark hover:bg-purple-900/30 p-4 rounded-xl transition-all duration-300 border border-transparent hover:border-purple-500/30 group">
-                    <div class="flex items-center mb-3">
-                        <div class="bg-gradient-to-r from-purple-500 to-pink-500 w-10 h-10 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-brain text-white"></i>
-                        </div>
-                        <h4 class="font-semibold group-hover:text-purple-300">Sistema con IA</h4>
-                    </div>
-                    <p class="text-sm text-gray-400">Evaluación asistida por inteligencia artificial</p>
-                </a>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="glass-dark py-6 px-6 mt-12">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
+        <!-- Contenido principal -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Header móvil -->
+            <div class="bg-white shadow-md p-4 md:hidden">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
-                        <div class="gradient-primary w-8 h-8 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-robot text-white text-sm"></i>
+                        <i class="fas fa-laptop-code text-xl text-blue-600"></i>
+                        <h1 class="text-lg font-bold">Tecno<span class="text-blue-600">PIA</span></h1>
+                    </div>
+                    <button id="menu-toggle" class="text-gray-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contenido del dashboard -->
+            <div class="p-4 md:p-6">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Dashboard del Docente</h2>
+                    <p class="text-gray-600" id="dashboard-subtitle">Bienvenido al sistema de evaluación tecnológica</p>
+                </div>
+                
+                <!-- Estadísticas principales -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Grupos Activos</p>
+                                <h3 class="text-3xl font-bold text-gray-800" id="total-grupos">0</h3>
+                            </div>
+                            <div class="p-3 bg-blue-100 rounded-full">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
                         </div>
-                        <div>
-                            <h2 class="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                TecnoPIA
-                            </h2>
-                            <p class="text-xs text-gray-400">Sistema Profesional para Formación Tecnológica MEP</p>
+                        <p class="text-sm text-gray-500 mt-2">
+                            <span id="total-estudiantes">0</span> estudiantes en total
+                        </p>
+                    </div>
+                    
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Evaluaciones Pendientes</p>
+                                <h3 class="text-3xl font-bold text-gray-800" id="evaluaciones-pendientes">0</h3>
+                            </div>
+                            <div class="p-3 bg-yellow-100 rounded-full">
+                                <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Por calificar esta semana
+                        </p>
+                    </div>
+                    
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Asistencia Hoy</p>
+                                <h3 class="text-3xl font-bold text-gray-800" id="asistencia-hoy">0%</h3>
+                            </div>
+                            <div class="p-3 bg-green-100 rounded-full">
+                                <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            <span id="fecha-hoy">...</span>
+                        </p>
+                    </div>
+                    
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Reportes Listos</p>
+                                <h3 class="text-3xl font-bold text-gray-800" id="reportes-listos">0</h3>
+                            </div>
+                            <div class="p-3 bg-purple-100 rounded-full">
+                                <i class="fas fa-file-pdf text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-2">
+                            Boletines del mes actual
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Sección de grupos activos -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Mis Grupos Activos</h3>
+                        <button onclick="window.location.href='grupos.html?action=create'" class="btn-primary px-4 py-2 rounded-lg flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Nuevo Grupo</span>
+                        </button>
+                    </div>
+                    
+                    <div id="grupos-activos-container" class="space-y-4">
+                        <!-- Los grupos se cargarán aquí -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-users text-4xl mb-4"></i>
+                            <p>No hay grupos activos</p>
+                            <p class="text-sm">Crea tu primer grupo para comenzar</p>
                         </div>
                     </div>
                 </div>
                 
-                <div class="text-center md:text-right">
-                    <p class="text-sm text-gray-400">
-                        © 2024 TecnoPIA. Alineado al REA MEP Art. 30-40.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1">
-                        <a href="https://github.com/K3SB12/TecnoPIA" target="_blank" class="hover:text-blue-400">
-                            <i class="fab fa-github mr-1"></i>GitHub Repository
-                        </a>
-                    </p>
+                <!-- Próximas evaluaciones -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Próximas Evaluaciones</h3>
+                        <div id="proximas-evaluaciones-container">
+                            <div class="text-center py-4 text-gray-500">
+                                <p>No hay evaluaciones programadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Acciones Rápidas</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="window.location.href='evaluacion.html?tipo=tc'" class="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition">
+                                <i class="fas fa-clipboard-list text-2xl text-blue-600 mb-2"></i>
+                                <p class="font-semibold">Evaluar TC</p>
+                                <p class="text-sm text-gray-600">Trabajo cotidiano</p>
+                            </button>
+                            
+                            <button onclick="window.location.href='asistencia.html'" class="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition">
+                                <i class="fas fa-calendar-alt text-2xl text-green-600 mb-2"></i>
+                                <p class="font-semibold">Asistencia</p>
+                                <p class="text-sm text-gray-600">Registrar hoy</p>
+                            </button>
+                            
+                            <button onclick="window.location.href='tareas.html'" class="p-4 bg-yellow-50 rounded-lg text-center hover:bg-yellow-100 transition">
+                                <i class="fas fa-tasks text-2xl text-yellow-600 mb-2"></i>
+                                <p class="font-semibold">Tareas</p>
+                                <p class="text-sm text-gray-600">Asignar nuevas</p>
+                            </button>
+                            
+                            <button onclick="window.location.href='reportes.html'" class="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition">
+                                <i class="fas fa-file-export text-2xl text-purple-600 mb-2"></i>
+                                <p class="font-semibold">Reportes</p>
+                                <p class="text-sm text-gray-600">Generar PDF</p>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </footer>
-
+    </div>
+    
     <!-- Scripts -->
-    <script src="js/dashboard-core.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard-functions.js"></script>
     <script>
-        // Inicializar el dashboard cuando se carga la página
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dashboard TecnoPIA cargado');
+        // Inicializar dashboard
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Verificar autenticación
+            if (!Auth.isLoggedIn) {
+                window.location.href = 'login.html';
+                return;
+            }
             
-            // Inicializar funcionalidades básicas
-            inicializarTabs();
-            inicializarSelectorNivel();
-            cargarAreasConocimiento();
+            // Cargar datos del docente
+            const docente = Auth.getCurrentUser();
+            if (docente) {
+                document.getElementById('docente-nombre').textContent = docente.nombre;
+                document.getElementById('docente-email').textContent = docente.email;
+                document.getElementById('docente-escuela').textContent = docente.escuela || 'Sin escuela asignada';
+                document.getElementById('dashboard-subtitle').textContent = `Bienvenido, ${docente.nombre}`;
+            }
             
-            // Cargar datos del PNFT
-            cargarDatosPNFT();
+            // Cargar estadísticas
+            await cargarEstadisticas();
+            await cargarGruposActivos();
+            
+            // Configurar fecha actual
+            const hoy = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('fecha-hoy').textContent = hoy.toLocaleDateString('es-ES', options);
+            
+            // Menú móvil
+            document.getElementById('menu-toggle').addEventListener('click', function() {
+                document.querySelector('.sidebar').classList.toggle('hidden');
+            });
         });
         
-        function inicializarTabs() {
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
-            
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tabId = this.id.replace('tab-', 'content-');
-                    
-                    // Remover activo de todos
-                    tabBtns.forEach(b => b.classList.remove('active', 'bg-blue-900/30'));
-                    tabContents.forEach(c => c.classList.remove('active'));
-                    
-                    // Agregar activo al seleccionado
-                    this.classList.add('active', 'bg-blue-900/30');
-                    document.getElementById(tabId).classList.add('active');
-                });
-            });
+        async function cargarEstadisticas() {
+            try {
+                const docente = Auth.getCurrentUser();
+                const grupos = await TecnoDB.obtenerGruposPorDocente(docente.id);
+                
+                // Total de grupos
+                document.getElementById('total-grupos').textContent = grupos.length;
+                
+                // Total de estudiantes
+                let totalEstudiantes = 0;
+                for (const grupo of grupos) {
+                    const estudiantes = await TecnoDB.obtenerEstudiantesPorGrupo(grupo.id);
+                    totalEstudiantes += estudiantes.length;
+                }
+                document.getElementById('total-estudiantes').textContent = totalEstudiantes;
+                
+                // Evaluaciones pendientes (simulado por ahora)
+                document.getElementById('evaluaciones-pendientes').textContent = Math.floor(Math.random() * 10);
+                
+                // Asistencia hoy (simulado)
+                document.getElementById('asistencia-hoy').textContent = '85%';
+                
+                // Reportes listos
+                document.getElementById('reportes-listos').textContent = grupos.length;
+                
+            } catch (error) {
+                console.error('Error cargando estadísticas:', error);
+            }
         }
         
-        function inicializarSelectorNivel() {
-            const nivelBtns = document.querySelectorAll('.nivel-btn');
-            const nivelSeleccionado = document.getElementById('nivel-seleccionado');
-            const nivelTexto = document.getElementById('nivel-texto');
-            
-            nivelBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const nivel = this.getAttribute('data-nivel');
+        async function cargarGruposActivos() {
+            try {
+                const docente = Auth.getCurrentUser();
+                const grupos = await TecnoDB.obtenerGruposPorDocente(docente.id);
+                
+                const container = document.getElementById('grupos-activos-container');
+                container.innerHTML = '';
+                
+                if (grupos.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-users text-4xl mb-4"></i>
+                            <p>No hay grupos activos</p>
+                            <p class="text-sm">Crea tu primer grupo para comenzar</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                for (const grupo of grupos) {
+                    const estudiantes = await TecnoDB.obtenerEstudiantesPorGrupo(grupo.id);
                     
-                    // Remover selección de todos
-                    nivelBtns.forEach(b => b.classList.remove('bg-blue-900/30', 'border-blue-500'));
+                    const grupoHTML = `
+                        <div class="grupo-card p-4 rounded-lg">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-bold text-lg">${grupo.nombre}</h4>
+                                    <div class="flex items-center space-x-4 text-sm text-gray-600 mt-2">
+                                        <span><i class="fas fa-graduation-cap mr-1"></i> ${grupo.grado}</span>
+                                        <span><i class="fas fa-users mr-1"></i> ${estudiantes.length} estudiantes</span>
+                                        <span><i class="fas fa-calendar mr-1"></i> Ciclo ${grupo.ciclo}</span>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button onclick="evaluarGrupo(${grupo.id})" class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
+                                        <i class="fas fa-clipboard-check mr-1"></i> Evaluar
+                                    </button>
+                                    <button onclick="verGrupo(${grupo.id})" class="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm hover:bg-gray-200">
+                                        <i class="fas fa-eye mr-1"></i> Ver
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     
-                    // Seleccionar este
-                    this.classList.add('bg-blue-900/30', 'border-blue-500', 'border');
-                    
-                    // Mostrar nivel seleccionado
-                    nivelTexto.textContent = this.querySelector('p').textContent;
-                    nivelSeleccionado.classList.remove('hidden');
-                    
-                    // Cargar saberes para este nivel
-                    cargarSaberesPorNivel(nivel);
-                });
-            });
+                    container.innerHTML += grupoHTML;
+                }
+                
+            } catch (error) {
+                console.error('Error cargando grupos:', error);
+            }
         }
         
-        function cargarAreasConocimiento() {
-            const areas = [
-                { id: 'apropiacion', nombre: 'Apropiación Tecnológica', icono: 'fa-laptop', color: 'blue' },
-                { id: 'programacion', nombre: 'Programación y Algoritmos', icono: 'fa-code', color: 'green' },
-                { id: 'robotica', nombre: 'Computación Física y Robótica', icono: 'fa-robot', color: 'yellow' },
-                { id: 'datos', nombre: 'Ciencia de Datos e IA', icono: 'fa-chart-bar', color: 'purple' }
-            ];
-            
-            const container = document.getElementById('selector-areas');
-            container.innerHTML = '';
-            
-            areas.forEach(area => {
-                const areaHTML = `
-                    <button class="area-btn p-4 glass-dark rounded-xl text-center hover:bg-${area.color}-900/30 transition"
-                            data-area="${area.id}">
-                        <i class="fas ${area.icono} text-2xl mb-2 text-${area.color}-400"></i>
-                        <p class="font-medium text-sm">${area.nombre}</p>
-                    </button>
-                `;
-                container.innerHTML += areaHTML;
-            });
-            
-            // Agregar event listeners a los botones de área
-            document.querySelectorAll('.area-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const areaId = this.getAttribute('data-area');
-                    cargarSaberesPorArea(areaId);
-                });
-            });
+        function evaluarGrupo(grupoId) {
+            window.location.href = `evaluacion.html?grupo=${grupoId}`;
+        }
+        
+        function verGrupo(grupoId) {
+            window.location.href = `grupos.html?id=${grupoId}`;
         }
     </script>
 </body>
