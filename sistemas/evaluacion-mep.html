@@ -1,603 +1,1711 @@
-// ========== TRABAJO COTIDIANO (TAB 3) - COMPLETO ==========
-
-let registroCotidiano = new RegistroTrabajoCotidiano();
-
-function cargarGruposParaSelectores() {
-    const select = document.getElementById('grupo-cotidiano');
-    if (!select || !gestorGrupos.grupos) return;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoPIA | Panel de Evaluación MEP</title>
     
-    let html = '<option value="">Seleccione un grupo</option>';
-    gestorGrupos.grupos.forEach(grupo => {
-        if (grupo.activo !== false) {
-            html += `<option value="${grupo.id}">${grupo.codigo} - ${grupo.nombreCompleto}</option>`;
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f8fafc; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-dark { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .gradient-primary { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); }
+        .gradient-secondary { background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); }
+        .gradient-accent { background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); }
+        
+        .tab-content { display: none; animation: fadeIn 0.5s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .tab-btn {
+            padding: 0.75rem 1.5rem; border: none; background: transparent; color: #94a3b8;
+            font-weight: 600; cursor: pointer; transition: all 0.3s; border-bottom: 3px solid transparent;
         }
-    });
-    
-    select.innerHTML = html;
-}
-
-function cargarIndicadoresParaCotidiano() {
-    const container = document.getElementById('selector-indicadores-cotidiano');
-    if (!container || !gestorIndicadores.indicadores) return;
-    
-    const ciclo = configuracionActual?.ciclo;
-    const indicadores = registroCotidiano.cargarIndicadoresDisponibles(ciclo);
-    
-    if (indicadores.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-sm py-4 px-2">No hay indicadores configurados para trabajo cotidiano</p>';
-        return;
-    }
-    
-    let html = '';
-    indicadores.forEach(indicador => {
-        html += `
-            <label class="inline-flex items-center p-2 glass-dark rounded-lg hover:bg-blue-900/20 cursor-pointer">
-                <input type="checkbox" value="${indicador.id}" 
-                       class="mr-2 rounded border-gray-600 bg-gray-800 indicador-checkbox"
-                       onchange="actualizarIndicadoresSeleccionados()">
-                <div class="text-sm">
-                    <div class="font-medium">${indicador.codigo}</div>
-                    <div class="text-xs text-gray-500 truncate w-48">${indicador.descripcion.substring(0, 60)}...</div>
+        .tab-btn:hover { color: #e2e8f0; }
+        .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        
+        .input-evaluacion {
+            width: 100%; padding: 0.5rem 0.75rem; background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 0.375rem; color: white;
+        }
+        .input-evaluacion:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        .table-container { overflow-x: auto; }
+        .table-eval th { background: rgba(30, 41, 59, 0.8); color: #94a3b8; font-weight: 600; font-size: 0.75rem; }
+        .table-eval td, .table-eval th { padding: 0.75rem 1rem; border-color: rgba(255, 255, 255, 0.05); }
+        .table-eval tr:hover { background: rgba(59, 130, 246, 0.05); }
+        
+        .btn-eval { 
+            position: relative; overflow: hidden; transition: all 0.3s; font-weight: 600; 
+            letter-spacing: 0.025em; cursor: pointer; border: none; display: inline-flex; 
+            align-items: center; justify-content: center;
+        }
+        .btn-eval:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+    <!-- Navbar -->
+    <nav class="glass-dark fixed w-full z-50 py-4 px-6">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="gradient-primary w-10 h-10 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-clipboard-check text-white text-lg"></i>
                 </div>
-            </label>
-        `;
-    });
-    
-    container.innerHTML = html;
-    actualizarEstadisticasIndicadores();
-}
-
-function actualizarIndicadoresSeleccionados() {
-    const checkboxes = document.querySelectorAll('.indicador-checkbox:checked');
-    registroCotidiano.indicadoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
-    
-    document.getElementById('total-indicadores-seleccionados').textContent = 
-        registroCotidiano.indicadoresSeleccionados.length;
-    
-    // Si hay grupo seleccionado y hay indicadores, cargar tabla
-    const grupoId = document.getElementById('grupo-cotidiano').value;
-    if (grupoId && registroCotidiano.indicadoresSeleccionados.length > 0) {
-        generarTablaEvaluacionCotidiana(grupoId);
-    }
-}
-
-function cargarEstudiantesParaEvaluar() {
-    const grupoId = document.getElementById('grupo-cotidiano').value;
-    const fecha = document.getElementById('fecha-cotidiano').value;
-    
-    if (!grupoId) {
-        alert('Por favor seleccione un grupo primero');
-        return;
-    }
-    
-    // Cargar estudiantes del grupo
-    const estudiantes = registroCotidiano.cargarEstudiantesDeGrupo(grupoId);
-    
-    // Actualizar estadísticas
-    document.getElementById('total-estudiantes-grupo').textContent = estudiantes.length;
-    document.getElementById('porcentaje-actual-tc').textContent = 
-        registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo) + '%';
-    
-    // Cargar historial de evaluaciones
-    cargarHistorialEvaluaciones(grupoId);
-    
-    // Si hay indicadores seleccionados, generar tabla
-    if (registroCotidiano.indicadoresSeleccionados.length > 0) {
-        generarTablaEvaluacionCotidiana(grupoId);
-    } else {
-        // Mostrar mensaje para seleccionar indicadores
-        const cuerpo = document.getElementById('cuerpo-evaluacion-cotidiana');
-        cuerpo.innerHTML = `
-            <tr>
-                <td colspan="10" class="text-center py-12 text-gray-500">
-                    <i class="fas fa-bullseye text-3xl mb-4 block"></i>
-                    <h4 class="text-lg font-medium mb-2">Seleccione indicadores para evaluar</h4>
-                    <p class="text-sm text-gray-400 max-w-md mx-auto mb-4">
-                        ${estudiantes.length} estudiantes cargados. Ahora seleccione los indicadores PNFT que evaluará en esta sesión.
-                    </p>
-                    <p class="text-xs text-gray-500">
-                        Los indicadores aparecen en el panel superior. Seleccione máximo 10 por sesión.
-                    </p>
-                </td>
-            </tr>
-        `;
-    }
-}
-
-function generarTablaEvaluacionCotidiana(grupoId) {
-    const estudiantes = registroCotidiano.estudiantesGrupo;
-    const indicadoresIds = registroCotidiano.indicadoresSeleccionados;
-    
-    if (estudiantes.length === 0 || indicadoresIds.length === 0) {
-        return;
-    }
-    
-    // Obtener datos de indicadores
-    const gestorIndicadores = window.gestorIndicadores;
-    const indicadores = indicadoresIds.map(id => 
-        gestorIndicadores.indicadores.find(ind => ind.id === id)
-    ).filter(ind => ind !== undefined);
-    
-    // Crear encabezados de tabla
-    const thead = document.querySelector('#tabla-evaluacion-cotidiana thead tr');
-    thead.innerHTML = '<th class="text-left w-48">Estudiante</th>';
-    
-    indicadores.forEach(indicador => {
-        thead.innerHTML += `
-            <th class="text-left" title="${indicador.descripcion}">
-                <div class="font-medium text-xs">${indicador.codigo}</div>
-                <div class="text-xs text-gray-500">(1-${indicador.escala})</div>
-            </th>
-        `;
-    });
-    
-    thead.innerHTML += `
-        <th class="text-left">Promedio</th>
-        <th class="text-left">% Aplicado</th>
-        <th class="text-left">Nota TC</th>
-        <th class="text-left">Observaciones</th>
-    `;
-    
-    // Crear cuerpo de tabla
-    const tbody = document.getElementById('cuerpo-evaluacion-cotidiana');
-    let html = '';
-    
-    estudiantes.forEach(estudiante => {
-        const promedioActual = estudiante.promedioTC || 0;
-        const porcentajeTC = registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo);
-        const notaTCActual = (promedioActual * porcentajeTC) / 100;
-        
-        html += `
-            <tr class="estudiante-fila" data-estudiante-id="${estudiante.id}">
-                <td class="py-3">
-                    <div class="font-medium">${estudiante.nombreCompleto}</div>
-                    <div class="text-xs text-gray-500">${estudiante.codigo}</div>
-                </td>
-        `;
-        
-        // Celdas para cada indicador
-        indicadores.forEach(indicador => {
-            const escala = indicador.escala || 4;
-            html += `
-                <td>
-                    <select class="input-evaluacion w-full text-center calificacion-indicador" 
-                            data-indicador-id="${indicador.id}"
-                            data-estudiante-id="${estudiante.id}">
-                        <option value="">-</option>
-            `;
-            
-            // Opciones según escala
-            for (let i = 1; i <= escala; i++) {
-                html += `<option value="${i}">${i}</option>`;
-            }
-            
-            html += `
-                    </select>
-                </td>
-            `;
-        });
-        
-        // Celdas de resultados
-        html += `
-                <td class="text-center">
-                    <span class="font-bold text-lg promedio-estudiante" data-est-id="${estudiante.id}">
-                        ${promedioActual.toFixed(1)}
-                    </span>
-                </td>
-                <td class="text-center text-blue-400 font-medium">
-                    ${porcentajeTC}%
-                </td>
-                <td class="text-center">
-                    <span class="font-bold text-lg nota-tc-estudiante" data-est-id="${estudiante.id}">
-                        ${notaTCActual.toFixed(1)}
-                    </span>
-                </td>
-                <td>
-                    <input type="text" 
-                           class="input-evaluacion w-full observacion-estudiante" 
-                           data-estudiante-id="${estudiante.id}"
-                           placeholder="Observaciones...">
-                </td>
-            </tr>
-        `;
-    });
-    
-    tbody.innerHTML = html;
-    
-    // Agregar eventos a los selects
-    document.querySelectorAll('.calificacion-indicador').forEach(select => {
-        select.addEventListener('change', function() {
-            actualizarPromedioEstudiante(this.dataset.estudianteId);
-        });
-    });
-}
-
-function actualizarPromedioEstudiante(estudianteId) {
-    const selects = document.querySelectorAll(`.calificacion-indicador[data-estudiante-id="${estudianteId}"]`);
-    const valores = [];
-    
-    selects.forEach(select => {
-        const valor = parseFloat(select.value);
-        if (!isNaN(valor)) {
-            valores.push(valor);
-        }
-    });
-    
-    let promedio = 0;
-    if (valores.length > 0) {
-        const suma = valores.reduce((total, val) => total + val, 0);
-        promedio = suma / valores.length;
-    }
-    
-    // Actualizar en la tabla
-    const promedioElement = document.querySelector(`.promedio-estudiante[data-est-id="${estudianteId}"]`);
-    const notaTCElement = document.querySelector(`.nota-tc-estudiante[data-est-id="${estudianteId}"]`);
-    
-    if (promedioElement && notaTCElement) {
-        const porcentajeTC = registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo);
-        const notaTC = (promedio * porcentajeTC) / 100;
-        
-        promedioElement.textContent = promedio.toFixed(1);
-        notaTCElement.textContent = notaTC.toFixed(1);
-        
-        // Color según desempeño
-        const color = notaTC >= 80 ? 'text-green-400' : 
-                     notaTC >= 70 ? 'text-yellow-400' : 'text-red-400';
-        notaTCElement.className = `font-bold text-lg nota-tc-estudiante ${color}`;
-    }
-}
-
-function guardarEvaluacionCotidiana() {
-    try {
-        // Validar que haya configuración
-        if (!configuracionActual) {
-            alert('Por favor configure el período y ciclo primero');
-            document.getElementById('tab-configuracion').click();
-            return;
-        }
-        
-        const grupoId = document.getElementById('grupo-cotidiano').value;
-        if (!grupoId) {
-            alert('Seleccione un grupo para evaluar');
-            return;
-        }
-        
-        if (registroCotidiano.indicadoresSeleccionados.length === 0) {
-            alert('Seleccione al menos un indicador para evaluar');
-            return;
-        }
-        
-        // Crear evaluación
-        const evaluacion = registroCotidiano.crearEvaluacion({
-            grupoId: grupoId,
-            ciclo: configuracionActual.ciclo,
-            fecha: document.getElementById('fecha-cotidiano').value,
-            unidad: document.getElementById('unidad-cotidiano').value,
-            tema: document.getElementById('tema-cotidiano').value,
-            indicadores: registroCotidiano.indicadoresSeleccionados,
-            observacionesGenerales: document.getElementById('observaciones-generales-cotidiano').value
-        });
-        
-        // Recolectar evaluaciones de cada estudiante
-        const filas = document.querySelectorAll('.estudiante-fila');
-        
-        filas.forEach(fila => {
-            const estudianteId = fila.dataset.estudianteId;
-            const calificaciones = {};
-            
-            // Recolectar calificaciones por indicador
-            registroCotidiano.indicadoresSeleccionados.forEach(indId => {
-                const select = fila.querySelector(`.calificacion-indicador[data-indicador-id="${indId}"]`);
-                if (select && select.value) {
-                    calificaciones[indId] = {
-                        puntuacion: parseFloat(select.value),
-                        fecha: new Date().toISOString()
-                    };
-                }
-            });
-            
-            // Obtener observaciones
-            const observacionInput = fila.querySelector('.observacion-estudiante');
-            const observaciones = observacionInput ? observacionInput.value : '';
-            
-            // Agregar evaluación del estudiante
-            if (Object.keys(calificaciones).length > 0) {
-                registroCotidiano.agregarEvaluacionEstudiante({
-                    estudianteId: estudianteId,
-                    calificaciones: calificaciones,
-                    observaciones: observaciones
-                });
-            }
-        });
-        
-        // Guardar evaluación completa
-        const evaluacionGuardada = registroCotidiano.guardarEvaluacion();
-        
-        // Actualizar contador
-        const evaluadosHoy = evaluacionGuardada.evaluacionesEstudiantes.length;
-        document.getElementById('total-evaluados-hoy').textContent = evaluadosHoy;
-        
-        // Mostrar éxito
-        alert(`✅ Evaluación guardada exitosamente\n${evaluadosHoy} estudiantes evaluados\nNota promedio: ${evaluacionGuardada.estadisticas.promedioGeneral.toFixed(1)}%`);
-        
-        // Recargar historial
-        cargarHistorialEvaluaciones(grupoId);
-        
-    } catch (error) {
-        console.error('Error al guardar evaluación:', error);
-        alert(`Error: ${error.message}`);
-    }
-}
-
-function cargarHistorialEvaluaciones(grupoId) {
-    const container = document.getElementById('historial-evaluaciones-cotidiano');
-    const historial = registroCotidiano.cargarHistorialGrupo(grupoId);
-    
-    if (historial.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay evaluaciones previas registradas</p>';
-        return;
-    }
-    
-    let html = '';
-    historial.forEach(eval => {
-        html += `
-            <div class="p-3 glass rounded-lg">
-                <div class="flex justify-between items-center mb-2">
-                    <div class="font-medium">${eval.unidad || 'Sin unidad'} - ${eval.tema || 'Sin tema'}</div>
-                    <div class="text-xs text-gray-500">${eval.fechaEvaluacion}</div>
-                </div>
-                <div class="flex justify-between text-sm">
-                    <div>
-                        <span class="text-gray-400">Estudiantes:</span>
-                        <span class="font-medium ml-2">${eval.estadisticas?.totalEstudiantes || 0}</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400">Promedio:</span>
-                        <span class="font-medium ml-2 ${(eval.estadisticas?.promedioGeneral || 0) >= 70 ? 'text-green-400' : 'text-yellow-400'}">
-                            ${(eval.estadisticas?.promedioGeneral || 0).toFixed(1)}%
-                        </span>
-                    </div>
-                    <div>
-                        <span class="text-gray-400">Aprobación:</span>
-                        <span class="font-medium ml-2">${eval.estadisticas?.porcentajeAprobacion || 0}%</span>
-                    </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                        Panel de Evaluación
+                    </h1>
+                    <p class="text-xs text-gray-400">Sistema operativo para docentes MEP</p>
                 </div>
             </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-}
+            
+            <div class="hidden md:flex space-x-8">
+                <a href="../index.html" class="nav-link text-gray-300 hover:text-white">
+                    <i class="fas fa-home mr-2"></i>Inicio
+                </a>
+                <a href="../dashboard.html" class="nav-link text-gray-300 hover:text-white">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="gestion-grupos.html" class="nav-link text-gray-300 hover:text-white">
+                    <i class="fas fa-users mr-2"></i>Gestión Grupos
+                </a>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-400 hidden md:block">
+                    <i class="fas fa-user-graduate mr-1"></i>Docente MEP
+                </span>
+                <button onclick="window.location.href='../index.html'" 
+                        class="btn-eval gradient-primary text-white px-4 py-2 rounded-lg text-sm">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Salir
+                </button>
+            </div>
+        </div>
+    </nav>
 
-function limpiarEvaluacionCotidiana() {
-    if (confirm('¿Está seguro de limpiar toda la evaluación actual? Se perderán los datos no guardados.')) {
-        // Limpiar selección de indicadores
-        document.querySelectorAll('.indicador-checkbox').forEach(cb => {
-            cb.checked = false;
-        });
-        
-        // Limpiar tabla
-        const tbody = document.getElementById('cuerpo-evaluacion-cotidiana');
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="10" class="text-center py-12 text-gray-500">
-                    <i class="fas fa-users text-3xl mb-4 block"></i>
-                    <h4 class="text-lg font-medium mb-2">Seleccione un grupo para comenzar</h4>
-                    <p class="text-sm text-gray-400">Los datos han sido limpiados</p>
-                </td>
-            </tr>
-        `;
-        
-        // Limpiar otros campos
-        document.getElementById('unidad-cotidiano').value = '';
-        document.getElementById('tema-cotidiano').value = '';
-        document.getElementById('observaciones-generales-cotidiano').value = '';
-        
-        // Resetear variables
-        registroCotidiano.indicadoresSeleccionados = [];
-        registroCotidiano.evaluacionActual = null;
-        
-        // Actualizar estadísticas
-        document.getElementById('total-indicadores-seleccionados').textContent = '0';
-        document.getElementById('total-evaluados-hoy').textContent = '0';
-        
-        alert('✅ Evaluación limpiada');
-    }
-}
+    <!-- Contenido Principal -->
+    <main class="pt-24 pb-12 px-4 md:px-6 max-w-7xl mx-auto">
+        <!-- Header y Tabs -->
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">
+                <span class="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    Sistema de Evaluación Formación Tecnológica
+                </span>
+            </h1>
+            <p class="text-gray-300">Configuración, indicadores PNFT y registro diario</p>
+            
+            <!-- Tabs de Navegación -->
+            <div class="flex flex-wrap border-b border-gray-700 mt-6">
+                <button id="tab-configuracion" class="tab-btn active">
+                    <i class="fas fa-cog mr-2"></i>Configuración
+                </button>
+                <button id="tab-indicadores" class="tab-btn">
+                    <i class="fas fa-bullseye mr-2"></i>Indicadores PNFT
+                </button>
+                <button id="tab-cotidiano" class="tab-btn">
+                    <i class="fas fa-clipboard-list mr-2"></i>Trabajo Cotidiano
+                </button>
+                <button id="tab-asistencia" class="tab-btn">
+                    <i class="fas fa-calendar-check mr-2"></i>Asistencia
+                </button>
+                <button id="tab-tareas" class="tab-btn">
+                    <i class="fas fa-tasks mr-2"></i>Tareas
+                </button>
+                <button id="tab-reportes" class="tab-btn">
+                    <i class="fas fa-file-pdf mr-2"></i>Reportes
+                </button>
+            </div>
+        </header>
 
-function generarListaCotejo() {
-    if (!registroCotidiano.evaluacionActual) {
-        alert('Primero debe crear y guardar una evaluación');
-        return;
-    }
-    
-    try {
-        const lista = registroCotidiano.generarListaCotejo();
-        
-        // Crear ventana de vista previa
-        const ventana = window.open('', '_blank');
-        ventana.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Lista de Cotejo - ${lista.fechaEvaluacion}</title>
-                <style>
-                    body { font-family: Arial, sans-serif; margin: 20px; }
-                    h1 { color: #333; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                    th { background-color: #f4f4f4; }
-                </style>
-            </head>
-            <body>
-                <h1>Lista de Cotejo - Trabajo Cotidiano</h1>
-                <p><strong>Fecha:</strong> ${lista.fechaEvaluacion}</p>
-                <p><strong>Unidad:</strong> ${lista.unidad}</p>
-                <p><strong>Tema:</strong> ${lista.tema}</p>
-                
-                <h3>Indicadores Evaluados:</h3>
-                <ul>
-                    ${lista.indicadores.map(ind => 
-                        `<li><strong>${ind.codigo}:</strong> ${ind.descripcion}</li>`
-                    ).join('')}
-                </ul>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Estudiante</th>
-                            ${lista.indicadores.map(ind => `<th>${ind.codigo}</th>`).join('')}
-                            <th>Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${lista.estudiantes.map(est => `
-                            <tr>
-                                <td>${est.nombre}</td>
-                                ${lista.indicadores.map(ind => {
-                                    const cal = est.calificaciones?.[ind.id]?.puntuacion || '';
-                                    return `<td>${cal}</td>`;
-                                }).join('')}
-                                <td>${est.observaciones}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                
-                <p style="margin-top: 30px; font-size: 12px; color: #666;">
-                    Generado por TecnoPIA - ${new Date().toLocaleDateString()}
-                </p>
-            </body>
-            </html>
-        `);
-        ventana.document.close();
-        
-    } catch (error) {
-        console.error('Error generando lista de cotejo:', error);
-        alert('Error al generar la lista de cotejo');
-    }
-}
-
-function exportarEvaluacionCotidiana() {
-    if (!registroCotidiano.evaluacionActual) {
-        alert('No hay evaluación para exportar');
-        return;
-    }
-    
-    try {
-        const csv = registroCotidiano.exportarEvaluacionCSV();
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        
-        const fecha = registroCotidiano.evaluacionActual.fechaEvaluacion;
-        a.href = url;
-        a.download = `evaluacion_cotidiano_${fecha}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        
-        alert('📥 Evaluación exportada como CSV');
-        
-    } catch (error) {
-        console.error('Error exportando evaluación:', error);
-        alert('Error al exportar la evaluación');
-    }
-}
-
-function vistaPreviaReporte() {
-    if (!registroCotidiano.evaluacionActual) {
-        alert('Primero debe crear y guardar una evaluación');
-        return;
-    }
-    
-    try {
-        const vistaPrevia = registroCotidiano.generarVistaPreviaReporte();
-        
-        // Mostrar modal con vista previa
-        const modalHTML = `
-            <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-                <div class="glass rounded-2xl p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
-                    <h3 class="text-xl font-bold mb-4 text-blue-300">
-                        <i class="fas fa-chart-bar mr-2"></i>Vista Previa de Reporte
-                    </h3>
-                    
-                    <div class="mb-6">
-                        <h4 class="font-semibold mb-2">${vistaPrevia.titulo}</h4>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div class="p-3 glass-dark rounded">
-                                <div class="text-sm text-gray-400">Fecha</div>
-                                <div class="font-medium">${vistaPrevia.fecha}</div>
+        <!-- Contenido de Tabs -->
+        <div class="mt-6">
+            <!-- TAB 1: CONFIGURACIÓN (Hoja "Principal" del EXCEVAL) -->
+            <div id="content-configuracion" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Configuración del Periodo -->
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-4 text-blue-300">
+                            <i class="fas fa-calendar-alt mr-2"></i>Configuración del Período
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Institución Educativa</label>
+                                <input type="text" id="institucion" class="input-evaluacion" placeholder="Nombre de la institución">
                             </div>
-                            <div class="p-3 glass-dark rounded">
-                                <div class="text-sm text-gray-400">Unidad</div>
-                                <div class="font-medium">${vistaPrevia.unidad}</div>
-                            </div>
-                            <div class="p-3 glass-dark rounded">
-                                <div class="text-sm text-gray-400">% TC</div>
-                                <div class="font-medium text-blue-400">${vistaPrevia.porcentajeTC}%</div>
-                            </div>
-                            <div class="p-3 glass-dark rounded">
-                                <div class="text-sm text-gray-400">Promedio</div>
-                                <div class="font-medium ${vistaPrevia.estadisticas.promedioGeneral >= 70 ? 'text-green-400' : 'text-yellow-400'}">
-                                    ${vistaPrevia.estadisticas.promedioGeneral.toFixed(1)}%
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Período Lectivo</label>
+                                    <select id="periodo" class="input-evaluacion">
+                                        <option value="2024">2024</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                    </select>
                                 </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Trimestre</label>
+                                    <select id="trimestre" class="input-evaluacion">
+                                        <option value="I">I Trimestre</option>
+                                        <option value="II">II Trimestre</option>
+                                        <option value="III">III Trimestre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Docente a Cargo</label>
+                                <input type="text" id="docente" class="input-evaluacion" placeholder="Nombre del docente">
                             </div>
                         </div>
                     </div>
                     
-                    <div class="overflow-x-auto">
-                        <table class="w-full table-eval">
+                    <!-- Configuración de Ciclo y Porcentajes -->
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-4 text-purple-300">
+                            <i class="fas fa-percentage mr-2"></i>Configuración de Ciclo y Porcentajes
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-400 mb-1">Seleccionar Ciclo</label>
+                                <select id="ciclo" class="input-evaluacion" onchange="actualizarPorcentajes()">
+                                    <option value="">Seleccione un ciclo</option>
+                                    <option value="ciclo1">I Ciclo (1°-3° Primaria)</option>
+                                    <option value="ciclo2">II Ciclo (4°-6° Primaria)</option>
+                                    <option value="ciclo3">III Ciclo (7°-9° Secundaria)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Porcentajes Dinámicos -->
+                            <div id="panel-porcentajes" class="space-y-3 hidden">
+                                <h4 class="font-semibold text-gray-300">Distribución Oficial MEP</h4>
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="p-3 glass-dark rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm">Trabajo Cotidiano</span>
+                                            <span class="font-bold text-blue-400" id="porcentaje-tc">65%</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Evaluación diaria por indicadores</div>
+                                    </div>
+                                    
+                                    <div class="p-3 glass-dark rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm">Tareas</span>
+                                            <span class="font-bold text-green-400" id="porcentaje-ta">10%</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Trabajos fuera de clase</div>
+                                    </div>
+                                    
+                                    <div class="p-3 glass-dark rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm" id="label-componente3">Prueba Ejecución</span>
+                                            <span class="font-bold text-purple-400" id="porcentaje-pe">15%</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1" id="desc-componente3">Demostración práctica</div>
+                                    </div>
+                                    
+                                    <div class="p-3 glass-dark rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm">Asistencia</span>
+                                            <span class="font-bold text-yellow-400" id="porcentaje-as">10%</span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-1">Puntualidad y asistencia</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="guardarConfiguracion()" 
+                                    class="btn-eval gradient-primary text-white w-full py-3 rounded-lg mt-4">
+                                <i class="fas fa-save mr-2"></i>Guardar Configuración
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Resumen de Configuración Guardada -->
+                <div id="resumen-configuracion" class="glass rounded-2xl p-6 mt-8 hidden">
+                    <h4 class="font-semibold mb-4 text-green-300">
+                        <i class="fas fa-check-circle mr-2"></i>Configuración Activa
+                    </h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="datos-configuracion">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB 2: INDICADORES PNFT (Hoja "Indicadores" del EXCEVAL) -->
+            <div id="content-indicadores" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2 class="text-2xl font-bold mb-4 md:mb-0 text-green-300">
+                        <i class="fas fa-bullseye mr-3"></i>Gestión de Indicadores PNFT
+                    </h2>
+                    <div class="flex gap-3">
+                        <button onclick="mostrarModalIndicador()" 
+                                class="btn-eval gradient-primary text-white px-5 py-2 rounded-lg">
+                            <i class="fas fa-plus mr-2"></i>Nuevo Indicador
+                        </button>
+                        <button onclick="exportarIndicadores()" 
+                                class="btn-eval glass-dark border border-gray-700 px-4 py-2 rounded-lg hover:border-blue-500">
+                            <i class="fas fa-download mr-2"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="glass-dark rounded-xl p-5 mb-6">
+                    <h4 class="font-semibold mb-3 text-blue-300">Filtrar Indicadores</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Ciclo</label>
+                            <select id="filtro-ciclo" class="input-evaluacion">
+                                <option value="">Todos los ciclos</option>
+                                <option value="ciclo1">I Ciclo</option>
+                                <option value="ciclo2">II Ciclo</option>
+                                <option value="ciclo3">III Ciclo</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Área Tecnológica</label>
+                            <select id="filtro-area" class="input-evaluacion">
+                                <option value="">Todas las áreas</option>
+                                <option value="robotica">Robótica</option>
+                                <option value="programacion">Programación</option>
+                                <option value="electronica">Electrónica</option>
+                                <option value="diseno">Diseño</option>
+                                <option value="seguridad">Seguridad Tecnológica</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Componente</label>
+                            <select id="filtro-componente" class="input-evaluacion">
+                                <option value="">Todos</option>
+                                <option value="cotidiano">Cotidiano</option>
+                                <option value="tarea">Tarea</option>
+                                <option value="ambos">Ambos</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Buscar</label>
+                            <input type="text" id="buscar-indicador" class="input-evaluacion" placeholder="Palabra clave...">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Indicadores -->
+                <div class="table-container">
+                    <table class="w-full table-eval">
+                        <thead>
+                            <tr>
+                                <th class="text-left">ID</th>
+                                <th class="text-left">Indicador de Logro</th>
+                                <th class="text-left">Ciclo</th>
+                                <th class="text-left">Área</th>
+                                <th class="text-left">Escala</th>
+                                <th class="text-left">Componente</th>
+                                <th class="text-left">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-indicadores">
+                            <!-- Se llena dinámicamente -->
+                            <tr id="sin-indicadores">
+                                <td colspan="7" class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-bullseye text-3xl mb-3 block"></i>
+                                    <p>No hay indicadores registrados</p>
+                                    <p class="text-sm">Cree su primer indicador del PNFT</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Estadísticas -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="glass-dark p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-blue-400" id="total-indicadores">0</div>
+                        <div class="text-sm text-gray-400">Total Indicadores</div>
+                    </div>
+                    <div class="glass-dark p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-400" id="indicadores-cotidiano">0</div>
+                        <div class="text-sm text-gray-400">Para Cotidiano</div>
+                    </div>
+                    <div class="glass-dark p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-purple-400" id="indicadores-tarea">0</div>
+                        <div class="text-sm text-gray-400">Para Tareas</div>
+                    </div>
+                    <div class="glass-dark p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-yellow-400" id="indicadores-ambos">0</div>
+                        <div class="text-sm text-gray-400">Para Ambos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB 3: TRABAJO COTIDIANO (Hoja "Cotidiano" del EXCEVAL) -->
+            <div id="content-cotidiano" class="tab-content">
+                <div class="mb-6">
+                    <h2 class="text-2xl font-bold mb-2 text-yellow-300">
+                        <i class="fas fa-clipboard-list mr-3"></i>Registro de Trabajo Cotidiano
+                    </h2>
+                    <p class="text-gray-400">Evalúe los indicadores de logro en el trabajo diario de los estudiantes (50-65% de la nota final)</p>
+                </div>
+                
+                <!-- Panel de Control de Evaluación -->
+                <div class="glass-dark rounded-xl p-5 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Grupo a Evaluar</label>
+                            <select id="grupo-cotidiano" class="input-evaluacion" onchange="cargarEstudiantesParaEvaluar()">
+                                <option value="">Seleccione un grupo</option>
+                                <!-- Se llena dinámicamente desde GestorGrupos -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Fecha de Evaluación</label>
+                            <input type="date" id="fecha-cotidiano" class="input-evaluacion" value="<?php echo date('Y-m-d'); ?>">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Período/Unidad</label>
+                            <input type="text" id="unidad-cotidiano" class="input-evaluacion" placeholder="Ej: Unidad 1 - Robótica">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Tema Evaluado</label>
+                            <input type="text" id="tema-cotidiano" class="input-evaluacion" placeholder="Ej: Montaje de circuito básico">
+                        </div>
+                    </div>
+                    
+                    <!-- Selector de Indicadores -->
+                    <div class="mt-4">
+                        <label class="block text-sm text-gray-400 mb-2">
+                            <i class="fas fa-bullseye mr-1"></i>Seleccione Indicadores a Evaluar (Máx. 10 por sesión)
+                        </label>
+                        <div id="selector-indicadores-cotidiano" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 glass rounded">
+                            <!-- Los indicadores se cargan aquí como checkboxes -->
+                            <p class="text-gray-500 text-sm py-4 px-2">Cargando indicadores...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estadísticas Rápidas -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Porcentaje TC:</span>
+                            <span class="font-bold text-blue-400" id="porcentaje-actual-tc">65%</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Del I Ciclo</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Estudiantes:</span>
+                            <span class="font-bold text-green-400" id="total-estudiantes-grupo">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">En grupo seleccionado</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Indicadores:</span>
+                            <span class="font-bold text-purple-400" id="total-indicadores-seleccionados">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Seleccionados</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Evaluados hoy:</span>
+                            <span class="font-bold text-yellow-400" id="total-evaluados-hoy">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">En esta fecha</div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Evaluación Cotidiana (EXCEVAL Style) -->
+                <div class="table-container mb-4">
+                    <table class="w-full table-eval" id="tabla-evaluacion-cotidiana">
+                        <thead>
+                            <tr>
+                                <th class="text-left w-48">Estudiante</th>
+                                <!-- Columnas para indicadores se agregan dinámicamente aquí -->
+                                <th class="text-left">Promedio</th>
+                                <th class="text-left">% Aplicado</th>
+                                <th class="text-left">Nota TC</th>
+                                <th class="text-left">Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-evaluacion-cotidiana">
+                            <tr>
+                                <td colspan="10" class="text-center py-12 text-gray-500">
+                                    <i class="fas fa-users text-4xl mb-4 block"></i>
+                                    <h4 class="text-lg font-medium mb-2">Seleccione un grupo para comenzar</h4>
+                                    <p class="text-sm text-gray-400 max-w-md mx-auto">
+                                        Elija un grupo en el panel superior y seleccione los indicadores PNFT que evaluará hoy.
+                                        El sistema calculará automáticamente el porcentaje de trabajo cotidiano.
+                                    </p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Notas y Observaciones Generales -->
+                <div class="glass-dark rounded-xl p-5 mb-6">
+                    <h4 class="font-semibold mb-3 text-blue-300">
+                        <i class="fas fa-sticky-note mr-2"></i>Observaciones Generales de la Sesión
+                    </h4>
+                    <textarea id="observaciones-generales-cotidiano" 
+                              class="input-evaluacion w-full h-32" 
+                              placeholder="Escriba aquí observaciones generales de la clase, dificultades comunes, logros destacados, etc."></textarea>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="flex flex-wrap gap-3 justify-between">
+                    <div class="flex gap-3">
+                        <button onclick="guardarEvaluacionCotidiana()" 
+                                class="btn-eval gradient-primary text-white px-6 py-3 rounded-lg">
+                            <i class="fas fa-save mr-2"></i>Guardar Evaluación
+                        </button>
+                        <button onclick="limpiarEvaluacionCotidiana()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-yellow-500">
+                            <i class="fas fa-eraser mr-2"></i>Limpiar
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="generarListaCotejo()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-green-500">
+                            <i class="fas fa-list-check mr-2"></i>Lista de Cotejo
+                        </button>
+                        <button onclick="exportarEvaluacionCotidiana()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-purple-500">
+                            <i class="fas fa-file-export mr-2"></i>Exportar
+                        </button>
+                        <button onclick="vistaPreviaReporte()" 
+                                class="btn-eval bg-gradient-to-r from-green-500 to-teal-500 text-white px-5 py-3 rounded-lg">
+                            <i class="fas fa-chart-bar mr-2"></i>Vista Previa
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Evaluaciones Recientes del Grupo -->
+                <div class="glass-dark rounded-xl p-5 mt-8">
+                    <h4 class="font-semibold mb-4 text-purple-300">
+                        <i class="fas fa-history mr-2"></i>Evaluaciones Recientes de este Grupo
+                    </h4>
+                    <div id="historial-evaluaciones-cotidiano" class="space-y-3">
+                        <p class="text-gray-500 text-center py-4">No hay evaluaciones previas registradas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB 4: ASISTENCIA -->
+            <div id="content-asistencia" class="tab-content">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-calendar-check text-4xl mb-4 block"></i>
+                    <h3 class="text-xl mb-2">Registro de Asistencia</h3>
+                    <p>Próxima implementación - Similar a la hoja "Asistencia" del EXCEVAL</p>
+                </div>
+            </div>
+            
+            <!-- TAB 5: TAREAS -->
+            <div id="content-tareas" class="tab-content">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-tasks text-4xl mb-4 block"></i>
+                    <h3 class="text-xl mb-2">Registro de Tareas</h3>
+                    <p>Próxima implementación - Similar a la hoja "Tareas" del EXCEVAL</p>
+                </div>
+            </div>
+            
+            <!-- TAB 6: REPORTES -->
+            <div id="content-reportes" class="tab-content">
+                <div class="text-center py-12 text-gray-500">
+                    <i class="fas fa-file-pdf text-4xl mb-4 block"></i>
+                    <h3 class="text-xl mb-2">Generar Reportes</h3>
+                    <p>Próxima implementación - Similar a "Generar reporte" del EXCEVAL</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal para Nuevo Indicador -->
+    <div id="modal-indicador" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="glass rounded-2xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4 text-green-300">
+                <i class="fas fa-plus-circle mr-2"></i>Nuevo Indicador de Logro PNFT
+            </h3>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Código del Indicador</label>
+                        <input type="text" id="indicador-codigo" class="input-evaluacion" placeholder="PNFT-TEC-001">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Ciclo</label>
+                        <select id="indicador-ciclo" class="input-evaluacion">
+                            <option value="ciclo1">I Ciclo (1°-3°)</option>
+                            <option value="ciclo2">II Ciclo (4°-6°)</option>
+                            <option value="ciclo3">III Ciclo (7°-9°)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Descripción del Indicador</label>
+                    <textarea id="indicador-descripcion" class="input-evaluacion h-32" 
+                              placeholder="Describe el indicador de logro según el PNFT..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Área Tecnológica</label>
+                        <select id="indicador-area" class="input-evaluacion">
+                            <option value="robotica">Robótica</option>
+                            <option value="programacion">Programación</option>
+                            <option value="electronica">Electrónica</option>
+                            <option value="diseno">Diseño Gráfico/Industrial</option>
+                            <option value="seguridad">Seguridad Tecnológica</option>
+                            <option value="general">Tecnología General</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Escala de Evaluación</label>
+                        <select id="indicador-escala" class="input-evaluacion">
+                            <option value="4">4 niveles (1-4)</option>
+                            <option value="3">3 niveles (1-3)</option>
+                            <option value="5">5 niveles (1-5)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm text-gray-400 mb-1">Componente(s)</label>
+                        <select id="indicador-componente" class="input-evaluacion" multiple>
+                            <option value="cotidiano">Trabajo Cotidiano</option>
+                            <option value="tarea">Tarea</option>
+                            <option value="prueba">Prueba de Ejecución</option>
+                            <option value="proyecto">Proyecto Tecnológico</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Criterios de Evaluación (como en EXCEVAL) -->
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Criterios de Evaluación</label>
+                    <div id="criterios-container">
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" class="input-evaluacion flex-1" placeholder="Criterio 1">
+                            <input type="text" class="input-evaluacion w-24" placeholder="Peso (1-10)">
+                        </div>
+                    </div>
+                    <button type="button" onclick="agregarCriterio()" 
+                            class="text-sm text-blue-400 hover:text-blue-300 mt-2">
+                        <i class="fas fa-plus mr-1"></i>Agregar otro criterio
+                    </button>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button onclick="cerrarModal('modal-indicador')" 
+                            class="px-4 py-2 glass border border-gray-700 rounded-lg hover:border-gray-500">
+                        Cancelar
+                    </button>
+                    <button onclick="guardarIndicador()" 
+                            class="btn-eval gradient-primary text-white px-5 py-2 rounded-lg">
+                        <i class="fas fa-save mr-2"></i>Guardar Indicador
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-dark py-8 px-6 mt-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-sm text-gray-400">
+                TecnoPIA - Sistema de Evaluación para Formación Tecnológica MEP
+            </p>
+            <p class="text-xs text-gray-500 mt-1">
+                Basado en el Reglamento de Evaluación de los Aprendizajes (REA MEP)
+            </p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/calculadora-mep.js"></script>
+    <script src="../js/registro-evaluacion.js"></script>
+    <script src="../js/gestor-grupos.js"></script>
+    <!-- NUEVO: Añade este script -->
+    <script src="../js/registro-cotidiano.js"></script>
+    
+    <script>
+        // ========== SISTEMA PRINCIPAL DE EVALUACIÓN ==========
+        
+        // Variables globales
+        let configuracionActual = null;
+        let gestorIndicadores = new GestorIndicadoresPNFT();
+        let gestorGrupos = new GestorGrupos();
+        let registroCotidiano = new RegistroTrabajoCotidiano();
+        
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Panel de Evaluación MEP cargado');
+            
+            // Inicializar tabs
+            inicializarTabs();
+            
+            // Cargar configuración guardada
+            cargarConfiguracionGuardada();
+            
+            // Cargar indicadores
+            cargarIndicadores();
+            
+            // Cargar grupos para selector
+            cargarGruposParaSelectores();
+            
+            // Cargar indicadores para cotidiano
+            cargarIndicadoresParaCotidiano();
+        });
+        
+        // ========== GESTIÓN DE TABS ==========
+        function inicializarTabs() {
+            const tabs = {
+                'tab-configuracion': 'content-configuracion',
+                'tab-indicadores': 'content-indicadores',
+                'tab-cotidiano': 'content-cotidiano',
+                'tab-asistencia': 'content-asistencia',
+                'tab-tareas': 'content-tareas',
+                'tab-reportes': 'content-reportes'
+            };
+            
+            for (const [tabId, contentId] of Object.entries(tabs)) {
+                document.getElementById(tabId).addEventListener('click', function() {
+                    // Remover clase active de todos
+                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Activar tab seleccionado
+                    this.classList.add('active');
+                    document.getElementById(contentId).classList.add('active');
+                    
+                    // Cargar contenido específico
+                    switch(contentId) {
+                        case 'content-indicadores':
+                            cargarIndicadores();
+                            break;
+                        case 'content-cotidiano':
+                            cargarIndicadoresParaCotidiano();
+                            break;
+                    }
+                });
+            }
+        }
+        
+        // ========== CONFIGURACIÓN (TAB 1) ==========
+        function actualizarPorcentajes() {
+            const ciclo = document.getElementById('ciclo').value;
+            const panel = document.getElementById('panel-porcentajes');
+            
+            if (!ciclo) {
+                panel.classList.add('hidden');
+                return;
+            }
+            
+            panel.classList.remove('hidden');
+            
+            // Configurar porcentajes según ciclo (basado en Calculadora MEP)
+            const porcentajes = {
+                'ciclo1': { tc: 65, ta: 10, pe: 15, as: 10, label: 'Prueba Ejecución', desc: 'Demostración práctica' },
+                'ciclo2': { tc: 60, ta: 10, pe: 20, as: 10, label: 'Prueba Ejecución', desc: 'Demostración práctica' },
+                'ciclo3': { tc: 50, ta: 10, pe: 30, as: 10, label: 'Proyecto Tecnológico', desc: 'Desarrollo de solución tecnológica' }
+            };
+            
+            const p = porcentajes[ciclo] || porcentajes.ciclo1;
+            
+            document.getElementById('porcentaje-tc').textContent = p.tc + '%';
+            document.getElementById('porcentaje-ta').textContent = p.ta + '%';
+            document.getElementById('porcentaje-pe').textContent = p.pe + '%';
+            document.getElementById('porcentaje-as').textContent = p.as + '%';
+            
+            document.getElementById('label-componente3').textContent = p.label;
+            document.getElementById('desc-componente3').textContent = p.desc;
+        }
+        
+        function guardarConfiguracion() {
+            const institucion = document.getElementById('institucion').value.trim();
+            const periodo = document.getElementById('periodo').value;
+            const trimestre = document.getElementById('trimestre').value;
+            const docente = document.getElementById('docente').value.trim();
+            const ciclo = document.getElementById('ciclo').value;
+            
+            if (!institucion || !docente || !ciclo) {
+                alert('Por favor complete todos los campos obligatorios');
+                return;
+            }
+            
+            configuracionActual = {
+                institucion,
+                periodo,
+                trimestre,
+                docente,
+                ciclo,
+                fechaGuardado: new Date().toISOString(),
+                porcentajes: obtenerPorcentajesCiclo(ciclo)
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem('tecnoPIA_configuracion_evaluacion', JSON.stringify(configuracionActual));
+            
+            // Mostrar resumen
+            mostrarResumenConfiguracion();
+            
+            alert('✅ Configuración guardada correctamente');
+        }
+        
+        function cargarConfiguracionGuardada() {
+            try {
+                const guardada = localStorage.getItem('tecnoPIA_configuracion_evaluacion');
+                if (guardada) {
+                    configuracionActual = JSON.parse(guardada);
+                    mostrarResumenConfiguracion();
+                    
+                    // Rellenar formulario
+                    document.getElementById('institucion').value = configuracionActual.institucion || '';
+                    document.getElementById('periodo').value = configuracionActual.periodo || '2024';
+                    document.getElementById('trimestre').value = configuracionActual.trimestre || 'I';
+                    document.getElementById('docente').value = configuracionActual.docente || '';
+                    document.getElementById('ciclo').value = configuracionActual.ciclo || '';
+                    
+                    if (configuracionActual.ciclo) {
+                        actualizarPorcentajes();
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar configuración:', error);
+            }
+        }
+        
+        function mostrarResumenConfiguracion() {
+            if (!configuracionActual) return;
+            
+            const container = document.getElementById('resumen-configuracion');
+            const datos = document.getElementById('datos-configuracion');
+            
+            datos.innerHTML = `
+                <div class="p-3 glass-dark rounded-lg">
+                    <div class="text-xs text-gray-400">Institución</div>
+                    <div class="font-medium">${configuracionActual.institucion}</div>
+                </div>
+                <div class="p-3 glass-dark rounded-lg">
+                    <div class="text-xs text-gray-400">Período</div>
+                    <div class="font-medium">${configuracionActual.periodo} - ${configuracionActual.trimestre} Trim</div>
+                </div>
+                <div class="p-3 glass-dark rounded-lg">
+                    <div class="text-xs text-gray-400">Docente</div>
+                    <div class="font-medium">${configuracionActual.docente}</div>
+                </div>
+                <div class="p-3 glass-dark rounded-lg">
+                    <div class="text-xs text-gray-400">Ciclo</div>
+                    <div class="font-medium">${obtenerNombreCiclo(configuracionActual.ciclo)}</div>
+                </div>
+            `;
+            
+            container.classList.remove('hidden');
+        }
+        
+        // ========== INDICADORES PNFT (TAB 2) ==========
+        class GestorIndicadoresPNFT {
+            constructor() {
+                this.indicadores = this.cargarIndicadores();
+            }
+            
+            cargarIndicadores() {
+                try {
+                    const datos = localStorage.getItem('tecnoPIA_indicadores');
+                    return datos ? JSON.parse(datos) : [];
+                } catch (error) {
+                    console.error('Error al cargar indicadores:', error);
+                    return [];
+                }
+            }
+            
+            guardarIndicadores() {
+                try {
+                    localStorage.setItem('tecnoPIA_indicadores', JSON.stringify(this.indicadores));
+                } catch (error) {
+                    console.error('Error al guardar indicadores:', error);
+                }
+            }
+            
+            agregarIndicador(indicador) {
+                const nuevoIndicador = {
+                    id: `IND-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                    fechaCreacion: new Date().toISOString(),
+                    activo: true,
+                    ...indicador
+                };
+                
+                this.indicadores.push(nuevoIndicador);
+                this.guardarIndicadores();
+                return nuevoIndicador;
+            }
+            
+            obtenerIndicadoresPorCiclo(ciclo) {
+                if (!ciclo) return this.indicadores;
+                return this.indicadores.filter(i => i.ciclo === ciclo && i.activo !== false);
+            }
+            
+            obtenerIndicadoresParaComponente(componente) {
+                return this.indicadores.filter(i => 
+                    i.activo !== false && 
+                    i.componentes && 
+                    i.componentes.includes(componente)
+                );
+            }
+        }
+        
+        function mostrarModalIndicador() {
+            document.getElementById('modal-indicador').classList.remove('hidden');
+        }
+        
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+        
+        function agregarCriterio() {
+            const container = document.getElementById('criterios-container');
+            const numCriterios = container.children.length + 1;
+            
+            const div = document.createElement('div');
+            div.className = 'flex gap-2 mb-2';
+            div.innerHTML = `
+                <input type="text" class="input-evaluacion flex-1" placeholder="Criterio ${numCriterios}">
+                <input type="number" class="input-evaluacion w-24" placeholder="Peso (1-10)" min="1" max="10" value="1">
+            `;
+            container.appendChild(div);
+        }
+        
+        function guardarIndicador() {
+            const codigo = document.getElementById('indicador-codigo').value.trim();
+            const descripcion = document.getElementById('indicador-descripcion').value.trim();
+            const ciclo = document.getElementById('indicador-ciclo').value;
+            const area = document.getElementById('indicador-area').value;
+            const escala = document.getElementById('indicador-escala').value;
+            const componenteSelect = document.getElementById('indicador-componente');
+            const componentes = Array.from(componenteSelect.selectedOptions).map(opt => opt.value);
+            
+            if (!codigo || !descripcion) {
+                alert('Por favor complete código y descripción del indicador');
+                return;
+            }
+            
+            // Recoger criterios
+            const criterios = [];
+            const criteriosInputs = document.querySelectorAll('#criterios-container input[type="text"]');
+            const pesosInputs = document.querySelectorAll('#criterios-container input[type="number"]');
+            
+            for (let i = 0; i < criteriosInputs.length; i++) {
+                if (criteriosInputs[i].value.trim()) {
+                    criterios.push({
+                        descripcion: criteriosInputs[i].value.trim(),
+                        peso: parseInt(pesosInputs[i].value) || 1
+                    });
+                }
+            }
+            
+            const nuevoIndicador = gestorIndicadores.agregarIndicador({
+                codigo,
+                descripcion,
+                ciclo,
+                area,
+                escala: parseInt(escala),
+                componentes,
+                criterios: criterios.length > 0 ? criterios : [
+                    { descripcion: 'Cumplimiento del objetivo', peso: 1 }
+                ]
+            });
+            
+            cerrarModal('modal-indicador');
+            cargarIndicadores();
+            
+            // Limpiar formulario
+            document.getElementById('indicador-codigo').value = '';
+            document.getElementById('indicador-descripcion').value = '';
+            document.getElementById('criterios-container').innerHTML = `
+                <div class="flex gap-2 mb-2">
+                    <input type="text" class="input-evaluacion flex-1" placeholder="Criterio 1">
+                    <input type="text" class="input-evaluacion w-24" placeholder="Peso (1-10)">
+                </div>
+            `;
+            
+            alert(`✅ Indicador "${codigo}" creado exitosamente`);
+        }
+        
+        function cargarIndicadores() {
+            const tabla = document.getElementById('tabla-indicadores');
+            const sinIndicadores = document.getElementById('sin-indicadores');
+            
+            if (!gestorIndicadores.indicadores || gestorIndicadores.indicadores.length === 0) {
+                sinIndicadores.classList.remove('hidden');
+                tabla.innerHTML = '';
+                tabla.appendChild(sinIndicadores);
+                actualizarEstadisticasIndicadores();
+                return;
+            }
+            
+            sinIndicadores.classList.add('hidden');
+            
+            let html = '';
+            gestorIndicadores.indicadores.forEach(indicador => {
+                if (indicador.activo === false) return;
+                
+                const componentes = indicador.componentes ? 
+                    indicador.componentes.map(c => {
+                        const nombres = { cotidiano: 'Cotidiano', tarea: 'Tarea', prueba: 'Prueba', proyecto: 'Proyecto' };
+                        return nombres[c] || c;
+                    }).join(', ') : 'No definido';
+                
+                html += `
+                    <tr>
+                        <td class="font-mono text-sm">${indicador.codigo}</td>
+                        <td>
+                            <div class="font-medium">${indicador.descripcion.substring(0, 80)}${indicador.descripcion.length > 80 ? '...' : ''}</div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                ${indicador.criterios?.length || 0} criterios
+                            </div>
+                        </td>
+                        <td>
+                            <span class="px-2 py-1 rounded text-xs ${getCicloBadgeClass(indicador.ciclo)}">
+                                ${obtenerNombreCiclo(indicador.ciclo)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-sm">${getNombreArea(indicador.area)}</span>
+                        </td>
+                        <td>
+                            <span class="font-mono">1-${indicador.escala}</span>
+                        </td>
+                        <td>
+                            <span class="text-sm">${componentes}</span>
+                        </td>
+                        <td>
+                            <button onclick="editarIndicador('${indicador.id}')" class="text-blue-400 hover:text-blue-300 mr-2">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarIndicador('${indicador.id}')" class="text-red-400 hover:text-red-300">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tabla.innerHTML = html;
+            actualizarEstadisticasIndicadores();
+        }
+        
+        function actualizarEstadisticasIndicadores() {
+            if (!gestorIndicadores.indicadores) return;
+            
+            const total = gestorIndicadores.indicadores.filter(i => i.activo !== false).length;
+            const cotidiano = gestorIndicadores.indicadores.filter(i => 
+                i.activo !== false && i.componentes && i.componentes.includes('cotidiano')
+            ).length;
+            const tarea = gestorIndicadores.indicadores.filter(i => 
+                i.activo !== false && i.componentes && i.componentes.includes('tarea')
+            ).length;
+            const ambos = gestorIndicadores.indicadores.filter(i => 
+                i.activo !== false && i.componentes && 
+                i.componentes.includes('cotidiano') && i.componentes.includes('tarea')
+            ).length;
+            
+            document.getElementById('total-indicadores').textContent = total;
+            document.getElementById('indicadores-cotidiano').textContent = cotidiano;
+            document.getElementById('indicadores-tarea').textContent = tarea;
+            document.getElementById('indicadores-ambos').textContent = ambos;
+        }
+        
+        // ========== TRABAJO COTIDIANO (TAB 3) ==========
+        
+        function cargarGruposParaSelectores() {
+            const select = document.getElementById('grupo-cotidiano');
+            if (!select || !gestorGrupos.grupos) return;
+            
+            let html = '<option value="">Seleccione un grupo</option>';
+            gestorGrupos.grupos.forEach(grupo => {
+                if (grupo.activo !== false) {
+                    html += `<option value="${grupo.id}">${grupo.codigo} - ${grupo.nombreCompleto}</option>`;
+                }
+            });
+            
+            select.innerHTML = html;
+        }
+        
+        function cargarIndicadoresParaCotidiano() {
+            const container = document.getElementById('selector-indicadores-cotidiano');
+            if (!container || !gestorIndicadores.indicadores) return;
+            
+            const ciclo = configuracionActual?.ciclo;
+            const indicadores = registroCotidiano.cargarIndicadoresDisponibles(ciclo);
+            
+            if (indicadores.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm py-4 px-2">No hay indicadores configurados para trabajo cotidiano</p>';
+                return;
+            }
+            
+            let html = '';
+            indicadores.forEach(indicador => {
+                html += `
+                    <label class="inline-flex items-center p-2 glass-dark rounded-lg hover:bg-blue-900/20 cursor-pointer">
+                        <input type="checkbox" value="${indicador.id}" 
+                               class="mr-2 rounded border-gray-600 bg-gray-800 indicador-checkbox"
+                               onchange="actualizarIndicadoresSeleccionados()">
+                        <div class="text-sm">
+                            <div class="font-medium">${indicador.codigo}</div>
+                            <div class="text-xs text-gray-500 truncate w-48">${indicador.descripcion.substring(0, 60)}...</div>
+                        </div>
+                    </label>
+                `;
+            });
+            
+            container.innerHTML = html;
+            actualizarEstadisticasIndicadores();
+        }
+        
+        function actualizarIndicadoresSeleccionados() {
+            const checkboxes = document.querySelectorAll('.indicador-checkbox:checked');
+            registroCotidiano.indicadoresSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+            
+            document.getElementById('total-indicadores-seleccionados').textContent = 
+                registroCotidiano.indicadoresSeleccionados.length;
+            
+            // Si hay grupo seleccionado y hay indicadores, cargar tabla
+            const grupoId = document.getElementById('grupo-cotidiano').value;
+            if (grupoId && registroCotidiano.indicadoresSeleccionados.length > 0) {
+                generarTablaEvaluacionCotidiana(grupoId);
+            }
+        }
+        
+        function cargarEstudiantesParaEvaluar() {
+            const grupoId = document.getElementById('grupo-cotidiano').value;
+            const fecha = document.getElementById('fecha-cotidiano').value;
+            
+            if (!grupoId) {
+                alert('Por favor seleccione un grupo primero');
+                return;
+            }
+            
+            // Cargar estudiantes del grupo
+            const estudiantes = registroCotidiano.cargarEstudiantesDeGrupo(grupoId);
+            
+            // Actualizar estadísticas
+            document.getElementById('total-estudiantes-grupo').textContent = estudiantes.length;
+            document.getElementById('porcentaje-actual-tc').textContent = 
+                registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo) + '%';
+            
+            // Cargar historial de evaluaciones
+            cargarHistorialEvaluaciones(grupoId);
+            
+            // Si hay indicadores seleccionados, generar tabla
+            if (registroCotidiano.indicadoresSeleccionados.length > 0) {
+                generarTablaEvaluacionCotidiana(grupoId);
+            } else {
+                // Mostrar mensaje para seleccionar indicadores
+                const cuerpo = document.getElementById('cuerpo-evaluacion-cotidiana');
+                cuerpo.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center py-12 text-gray-500">
+                            <i class="fas fa-bullseye text-3xl mb-4 block"></i>
+                            <h4 class="text-lg font-medium mb-2">Seleccione indicadores para evaluar</h4>
+                            <p class="text-sm text-gray-400 max-w-md mx-auto mb-4">
+                                ${estudiantes.length} estudiantes cargados. Ahora seleccione los indicadores PNFT que evaluará en esta sesión.
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                Los indicadores aparecen en el panel superior. Seleccione máximo 10 por sesión.
+                            </p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function generarTablaEvaluacionCotidiana(grupoId) {
+            const estudiantes = registroCotidiano.estudiantesGrupo;
+            const indicadoresIds = registroCotidiano.indicadoresSeleccionados;
+            
+            if (estudiantes.length === 0 || indicadoresIds.length === 0) {
+                return;
+            }
+            
+            // Obtener datos de indicadores
+            const gestorIndicadores = window.gestorIndicadores;
+            const indicadores = indicadoresIds.map(id => 
+                gestorIndicadores.indicadores.find(ind => ind.id === id)
+            ).filter(ind => ind !== undefined);
+            
+            // Crear encabezados de tabla
+            const thead = document.querySelector('#tabla-evaluacion-cotidiana thead tr');
+            thead.innerHTML = '<th class="text-left w-48">Estudiante</th>';
+            
+            indicadores.forEach(indicador => {
+                thead.innerHTML += `
+                    <th class="text-left" title="${indicador.descripcion}">
+                        <div class="font-medium text-xs">${indicador.codigo}</div>
+                        <div class="text-xs text-gray-500">(1-${indicador.escala})</div>
+                    </th>
+                `;
+            });
+            
+            thead.innerHTML += `
+                <th class="text-left">Promedio</th>
+                <th class="text-left">% Aplicado</th>
+                <th class="text-left">Nota TC</th>
+                <th class="text-left">Observaciones</th>
+            `;
+            
+            // Crear cuerpo de tabla
+            const tbody = document.getElementById('cuerpo-evaluacion-cotidiana');
+            let html = '';
+            
+            estudiantes.forEach(estudiante => {
+                const promedioActual = estudiante.promedioTC || 0;
+                const porcentajeTC = registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo);
+                const notaTCActual = (promedioActual * porcentajeTC) / 100;
+                
+                html += `
+                    <tr class="estudiante-fila" data-estudiante-id="${estudiante.id}">
+                        <td class="py-3">
+                            <div class="font-medium">${estudiante.nombreCompleto}</div>
+                            <div class="text-xs text-gray-500">${estudiante.codigo}</div>
+                        </td>
+                `;
+                
+                // Celdas para cada indicador
+                indicadores.forEach(indicador => {
+                    const escala = indicador.escala || 4;
+                    html += `
+                        <td>
+                            <select class="input-evaluacion w-full text-center calificacion-indicador" 
+                                    data-indicador-id="${indicador.id}"
+                                    data-estudiante-id="${estudiante.id}">
+                                <option value="">-</option>
+                    `;
+                    
+                    // Opciones según escala
+                    for (let i = 1; i <= escala; i++) {
+                        html += `<option value="${i}">${i}</option>`;
+                    }
+                    
+                    html += `
+                            </select>
+                        </td>
+                    `;
+                });
+                
+                // Celdas de resultados
+                html += `
+                        <td class="text-center">
+                            <span class="font-bold text-lg promedio-estudiante" data-est-id="${estudiante.id}">
+                                ${promedioActual.toFixed(1)}
+                            </span>
+                        </td>
+                        <td class="text-center text-blue-400 font-medium">
+                            ${porcentajeTC}%
+                        </td>
+                        <td class="text-center">
+                            <span class="font-bold text-lg nota-tc-estudiante" data-est-id="${estudiante.id}">
+                                ${notaTCActual.toFixed(1)}
+                            </span>
+                        </td>
+                        <td>
+                            <input type="text" 
+                                   class="input-evaluacion w-full observacion-estudiante" 
+                                   data-estudiante-id="${estudiante.id}"
+                                   placeholder="Observaciones...">
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            
+            // Agregar eventos a los selects
+            document.querySelectorAll('.calificacion-indicador').forEach(select => {
+                select.addEventListener('change', function() {
+                    actualizarPromedioEstudiante(this.dataset.estudianteId);
+                });
+            });
+        }
+        
+        function actualizarPromedioEstudiante(estudianteId) {
+            const selects = document.querySelectorAll(`.calificacion-indicador[data-estudiante-id="${estudianteId}"]`);
+            const valores = [];
+            
+            selects.forEach(select => {
+                const valor = parseFloat(select.value);
+                if (!isNaN(valor)) {
+                    valores.push(valor);
+                }
+            });
+            
+            let promedio = 0;
+            if (valores.length > 0) {
+                const suma = valores.reduce((total, val) => total + val, 0);
+                promedio = suma / valores.length;
+            }
+            
+            // Actualizar en la tabla
+            const promedioElement = document.querySelector(`.promedio-estudiante[data-est-id="${estudianteId}"]`);
+            const notaTCElement = document.querySelector(`.nota-tc-estudiante[data-est-id="${estudianteId}"]`);
+            
+            if (promedioElement && notaTCElement) {
+                const porcentajeTC = registroCotidiano.obtenerPorcentajeTC(configuracionActual?.ciclo);
+                const notaTC = (promedio * porcentajeTC) / 100;
+                
+                promedioElement.textContent = promedio.toFixed(1);
+                notaTCElement.textContent = notaTC.toFixed(1);
+                
+                // Color según desempeño
+                const color = notaTC >= 80 ? 'text-green-400' : 
+                             notaTC >= 70 ? 'text-yellow-400' : 'text-red-400';
+                notaTCElement.className = `font-bold text-lg nota-tc-estudiante ${color}`;
+            }
+        }
+        
+        function guardarEvaluacionCotidiana() {
+            try {
+                // Validar que haya configuración
+                if (!configuracionActual) {
+                    alert('Por favor configure el período y ciclo primero');
+                    document.getElementById('tab-configuracion').click();
+                    return;
+                }
+                
+                const grupoId = document.getElementById('grupo-cotidiano').value;
+                if (!grupoId) {
+                    alert('Seleccione un grupo para evaluar');
+                    return;
+                }
+                
+                if (registroCotidiano.indicadoresSeleccionados.length === 0) {
+                    alert('Seleccione al menos un indicador para evaluar');
+                    return;
+                }
+                
+                // Crear evaluación
+                const evaluacion = registroCotidiano.crearEvaluacion({
+                    grupoId: grupoId,
+                    ciclo: configuracionActual.ciclo,
+                    fecha: document.getElementById('fecha-cotidiano').value,
+                    unidad: document.getElementById('unidad-cotidiano').value,
+                    tema: document.getElementById('tema-cotidiano').value,
+                    indicadores: registroCotidiano.indicadoresSeleccionados,
+                    observacionesGenerales: document.getElementById('observaciones-generales-cotidiano').value
+                });
+                
+                // Recolectar evaluaciones de cada estudiante
+                const filas = document.querySelectorAll('.estudiante-fila');
+                
+                filas.forEach(fila => {
+                    const estudianteId = fila.dataset.estudianteId;
+                    const calificaciones = {};
+                    
+                    // Recolectar calificaciones por indicador
+                    registroCotidiano.indicadoresSeleccionados.forEach(indId => {
+                        const select = fila.querySelector(`.calificacion-indicador[data-indicador-id="${indId}"]`);
+                        if (select && select.value) {
+                            calificaciones[indId] = {
+                                puntuacion: parseFloat(select.value),
+                                fecha: new Date().toISOString()
+                            };
+                        }
+                    });
+                    
+                    // Obtener observaciones
+                    const observacionInput = fila.querySelector('.observacion-estudiante');
+                    const observaciones = observacionInput ? observacionInput.value : '';
+                    
+                    // Agregar evaluación del estudiante
+                    if (Object.keys(calificaciones).length > 0) {
+                        registroCotidiano.agregarEvaluacionEstudiante({
+                            estudianteId: estudianteId,
+                            calificaciones: calificaciones,
+                            observaciones: observaciones
+                        });
+                    }
+                });
+                
+                // Guardar evaluación completa
+                const evaluacionGuardada = registroCotidiano.guardarEvaluacion();
+                
+                // Actualizar contador
+                const evaluadosHoy = evaluacionGuardada.evaluacionesEstudiantes.length;
+                document.getElementById('total-evaluados-hoy').textContent = evaluadosHoy;
+                
+                // Mostrar éxito
+                alert(`✅ Evaluación guardada exitosamente\n${evaluadosHoy} estudiantes evaluados\nNota promedio: ${evaluacionGuardada.estadisticas.promedioGeneral.toFixed(1)}%`);
+                
+                // Recargar historial
+                cargarHistorialEvaluaciones(grupoId);
+                
+            } catch (error) {
+                console.error('Error al guardar evaluación:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+        
+        function cargarHistorialEvaluaciones(grupoId) {
+            const container = document.getElementById('historial-evaluaciones-cotidiano');
+            const historial = registroCotidiano.cargarHistorialGrupo(grupoId);
+            
+            if (historial.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">No hay evaluaciones previas registradas</p>';
+                return;
+            }
+            
+            let html = '';
+            historial.forEach(eval => {
+                html += `
+                    <div class="p-3 glass rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="font-medium">${eval.unidad || 'Sin unidad'} - ${eval.tema || 'Sin tema'}</div>
+                            <div class="text-xs text-gray-500">${eval.fechaEvaluacion}</div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <div>
+                                <span class="text-gray-400">Estudiantes:</span>
+                                <span class="font-medium ml-2">${eval.estadisticas?.totalEstudiantes || 0}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Promedio:</span>
+                                <span class="font-medium ml-2 ${(eval.estadisticas?.promedioGeneral || 0) >= 70 ? 'text-green-400' : 'text-yellow-400'}">
+                                    ${(eval.estadisticas?.promedioGeneral || 0).toFixed(1)}%
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-gray-400">Aprobación:</span>
+                                <span class="font-medium ml-2">${eval.estadisticas?.porcentajeAprobacion || 0}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function limpiarEvaluacionCotidiana() {
+            if (confirm('¿Está seguro de limpiar toda la evaluación actual? Se perderán los datos no guardados.')) {
+                // Limpiar selección de indicadores
+                document.querySelectorAll('.indicador-checkbox').forEach(cb => {
+                    cb.checked = false;
+                });
+                
+                // Limpiar tabla
+                const tbody = document.getElementById('cuerpo-evaluacion-cotidiana');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="text-center py-12 text-gray-500">
+                            <i class="fas fa-users text-3xl mb-4 block"></i>
+                            <h4 class="text-lg font-medium mb-2">Seleccione un grupo para comenzar</h4>
+                            <p class="text-sm text-gray-400">Los datos han sido limpiados</p>
+                        </td>
+                    </tr>
+                `;
+                
+                // Limpiar otros campos
+                document.getElementById('unidad-cotidiano').value = '';
+                document.getElementById('tema-cotidiano').value = '';
+                document.getElementById('observaciones-generales-cotidiano').value = '';
+                
+                // Resetear variables
+                registroCotidiano.indicadoresSeleccionados = [];
+                registroCotidiano.evaluacionActual = null;
+                
+                // Actualizar estadísticas
+                document.getElementById('total-indicadores-seleccionados').textContent = '0';
+                document.getElementById('total-evaluados-hoy').textContent = '0';
+                
+                alert('✅ Evaluación limpiada');
+            }
+        }
+        
+        function generarListaCotejo() {
+            if (!registroCotidiano.evaluacionActual) {
+                alert('Primero debe crear y guardar una evaluación');
+                return;
+            }
+            
+            try {
+                const lista = registroCotidiano.generarListaCotejo();
+                
+                // Crear ventana de vista previa
+                const ventana = window.open('', '_blank');
+                ventana.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Lista de Cotejo - ${lista.fechaEvaluacion}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            h1 { color: #333; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f4f4f4; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Lista de Cotejo - Trabajo Cotidiano</h1>
+                        <p><strong>Fecha:</strong> ${lista.fechaEvaluacion}</p>
+                        <p><strong>Unidad:</strong> ${lista.unidad}</p>
+                        <p><strong>Tema:</strong> ${lista.tema}</p>
+                        
+                        <h3>Indicadores Evaluados:</h3>
+                        <ul>
+                            ${lista.indicadores.map(ind => 
+                                `<li><strong>${ind.codigo}:</strong> ${ind.descripcion}</li>`
+                            ).join('')}
+                        </ul>
+                        
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Estudiante</th>
-                                    <th>Promedio</th>
-                                    <th>Nota TC</th>
+                                    ${lista.indicadores.map(ind => `<th>${ind.codigo}</th>`).join('')}
                                     <th>Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${vistaPrevia.estudiantes.map(est => `
+                                ${lista.estudiantes.map(est => `
                                     <tr>
-                                        <td class="py-2">
-                                            <div class="font-medium">${est.nombre}</div>
-                                            <div class="text-xs text-gray-500">${est.codigo}</div>
-                                        </td>
-                                        <td class="text-center ${est.promedio >= 3 ? 'text-green-400' : 'text-yellow-400'}">
-                                            ${est.promedio.toFixed(1)}
-                                        </td>
-                                        <td class="text-center ${est.notaTC >= 70 ? 'text-green-400' : 'text-yellow-400'}">
-                                            ${est.notaTC.toFixed(1)}%
-                                        </td>
-                                        <td class="text-sm">${est.observaciones || ''}</td>
+                                        <td>${est.nombre}</td>
+                                        ${lista.indicadores.map(ind => {
+                                            const cal = est.calificaciones?.[ind.id]?.puntuacion || '';
+                                            return `<td>${cal}</td>`;
+                                        }).join('')}
+                                        <td>${est.observaciones}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
                         </table>
+                        
+                        <p style="margin-top: 30px; font-size: 12px; color: #666;">
+                            Generado por TecnoPIA - ${new Date().toLocaleDateString()}
+                        </p>
+                    </body>
+                    </html>
+                `);
+                ventana.document.close();
+                
+            } catch (error) {
+                console.error('Error generando lista de cotejo:', error);
+                alert('Error al generar la lista de cotejo');
+            }
+        }
+        
+        function exportarEvaluacionCotidiana() {
+            if (!registroCotidiano.evaluacionActual) {
+                alert('No hay evaluación para exportar');
+                return;
+            }
+            
+            try {
+                const csv = registroCotidiano.exportarEvaluacionCSV();
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                const fecha = registroCotidiano.evaluacionActual.fechaEvaluacion;
+                a.href = url;
+                a.download = `evaluacion_cotidiano_${fecha}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                alert('📥 Evaluación exportada como CSV');
+                
+            } catch (error) {
+                console.error('Error exportando evaluación:', error);
+                alert('Error al exportar la evaluación');
+            }
+        }
+        
+        function vistaPreviaReporte() {
+            if (!registroCotidiano.evaluacionActual) {
+                alert('Primero debe crear y guardar una evaluación');
+                return;
+            }
+            
+            try {
+                const vistaPrevia = registroCotidiano.generarVistaPreviaReporte();
+                
+                // Mostrar modal con vista previa
+                const modalHTML = `
+                    <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+                        <div class="glass rounded-2xl p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
+                            <h3 class="text-xl font-bold mb-4 text-blue-300">
+                                <i class="fas fa-chart-bar mr-2"></i>Vista Previa de Reporte
+                            </h3>
+                            
+                            <div class="mb-6">
+                                <h4 class="font-semibold mb-2">${vistaPrevia.titulo}</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div class="p-3 glass-dark rounded">
+                                        <div class="text-sm text-gray-400">Fecha</div>
+                                        <div class="font-medium">${vistaPrevia.fecha}</div>
+                                    </div>
+                                    <div class="p-3 glass-dark rounded">
+                                        <div class="text-sm text-gray-400">Unidad</div>
+                                        <div class="font-medium">${vistaPrevia.unidad}</div>
+                                    </div>
+                                    <div class="p-3 glass-dark rounded">
+                                        <div class="text-sm text-gray-400">% TC</div>
+                                        <div class="font-medium text-blue-400">${vistaPrevia.porcentajeTC}%</div>
+                                    </div>
+                                    <div class="p-3 glass-dark rounded">
+                                        <div class="text-sm text-gray-400">Promedio</div>
+                                        <div class="font-medium ${vistaPrevia.estadisticas.promedioGeneral >= 70 ? 'text-green-400' : 'text-yellow-400'}">
+                                            ${vistaPrevia.estadisticas.promedioGeneral.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full table-eval">
+                                    <thead>
+                                        <tr>
+                                            <th>Estudiante</th>
+                                            <th>Promedio</th>
+                                            <th>Nota TC</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${vistaPrevia.estudiantes.map(est => `
+                                            <tr>
+                                                <td class="py-2">
+                                                    <div class="font-medium">${est.nombre}</div>
+                                                    <div class="text-xs text-gray-500">${est.codigo}</div>
+                                                </td>
+                                                <td class="text-center ${est.promedio >= 3 ? 'text-green-400' : 'text-yellow-400'}">
+                                                    ${est.promedio.toFixed(1)}
+                                                </td>
+                                                <td class="text-center ${est.notaTC >= 70 ? 'text-green-400' : 'text-yellow-400'}">
+                                                    ${est.notaTC.toFixed(1)}%
+                                                </td>
+                                                <td class="text-sm">${est.observaciones || ''}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="flex justify-end mt-6">
+                                <button onclick="cerrarVistaPrevia()" 
+                                        class="px-4 py-2 glass border border-gray-700 rounded-lg hover:border-gray-500">
+                                    Cerrar
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="flex justify-end mt-6">
-                        <button onclick="cerrarVistaPrevia()" 
-                                class="px-4 py-2 glass border border-gray-700 rounded-lg hover:border-gray-500">
-                            Cerrar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+                `;
+                
+                const modalDiv = document.createElement('div');
+                modalDiv.innerHTML = modalHTML;
+                modalDiv.id = 'modal-vista-previa';
+                document.body.appendChild(modalDiv);
+                
+                window.cerrarVistaPrevia = function() {
+                    document.getElementById('modal-vista-previa').remove();
+                };
+                
+            } catch (error) {
+                console.error('Error generando vista previa:', error);
+                alert('Error al generar vista previa');
+            }
+        }
         
-        const modalDiv = document.createElement('div');
-        modalDiv.innerHTML = modalHTML;
-        modalDiv.id = 'modal-vista-previa';
-        document.body.appendChild(modalDiv);
+        // ========== FUNCIONES DE UTILIDAD ==========
+        function obtenerPorcentajesCiclo(ciclo) {
+            const porcentajes = {
+                'ciclo1': { TC: 65, TA: 10, PE: 15, AS: 10 },
+                'ciclo2': { TC: 60, TA: 10, PE: 20, AS: 10 },
+                'ciclo3': { TC: 50, TA: 10, PT: 30, AS: 10 }
+            };
+            return porcentajes[ciclo] || porcentajes.ciclo1;
+        }
         
-        window.cerrarVistaPrevia = function() {
-            document.getElementById('modal-vista-previa').remove();
-        };
+        function obtenerNombreCiclo(ciclo) {
+            const nombres = {
+                'ciclo1': 'I Ciclo (1°-3°)',
+                'ciclo2': 'II Ciclo (4°-6°)',
+                'ciclo3': 'III Ciclo (7°-9°)'
+            };
+            return nombres[ciclo] || ciclo;
+        }
         
-    } catch (error) {
-        console.error('Error generando vista previa:', error);
-        alert('Error al generar vista previa');
-    }
-}
+        function getCicloBadgeClass(ciclo) {
+            const clases = {
+                'ciclo1': 'bg-blue-900/30 text-blue-300',
+                'ciclo2': 'bg-green-900/30 text-green-300',
+                'ciclo3': 'bg-purple-900/30 text-purple-300'
+            };
+            return clases[ciclo] || 'bg-gray-800 text-gray-400';
+        }
+        
+        function getNombreArea(area) {
+            const nombres = {
+                'robotica': 'Robótica',
+                'programacion': 'Programación',
+                'electronica': 'Electrónica',
+                'diseno': 'Diseño',
+                'seguridad': 'Seguridad',
+                'general': 'General'
+            };
+            return nombres[area] || area;
+        }
+        
+        function exportarIndicadores() {
+            if (!gestorIndicadores.indicadores || gestorIndicadores.indicadores.length === 0) {
+                alert('No hay indicadores para exportar');
+                return;
+            }
+            
+            // Crear CSV simple
+            const headers = ['Código', 'Descripción', 'Ciclo', 'Área', 'Escala', 'Componentes'];
+            const filas = gestorIndicadores.indicadores.filter(i => i.activo !== false).map(ind => [
+                ind.codigo,
+                `"${ind.descripcion}"`,
+                obtenerNombreCiclo(ind.ciclo),
+                getNombreArea(ind.area),
+                `1-${ind.escala}`,
+                ind.componentes ? ind.componentes.join(',') : ''
+            ]);
+            
+            const csv = [headers.join(','), ...filas.map(f => f.join(','))].join('\n');
+            
+            // Descargar
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `indicadores_pnft_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('📥 Indicadores exportados como CSV');
+        }
+    </script>
+</body>
+</html>
