@@ -3,480 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TecnoPIA - Dashboard del Docente</title>
+    <title>TecnoPIA - Dashboard Docente</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .sidebar {
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        .sidebar-link {
-            transition: all 0.3s ease;
-            border-radius: 0.5rem;
+
+        /* Glassmorphism effect */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        .sidebar-link:hover, .sidebar-link.active {
-            background-color: rgba(59, 130, 246, 0.2);
-            border-left: 3px solid #3b82f6;
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .stat-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid;
+
+        .gradient-green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
         }
-        .stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+
+        .gradient-blue {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .tab-btn.active {
-            background-color: #3b82f6;
-            color: white;
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);
+        }
+
+        .gradient-orange {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+        }
+
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar w-64 text-white p-6 hidden md:block">
-            <div class="flex items-center justify-between mb-10">
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Header -->
+    <header class="glass-card sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-laptop-code text-2xl text-blue-400"></i>
-                    <h1 class="text-xl font-bold">Tecno<span class="text-blue-400">PIA</span></h1>
+                    <a href="index.html" class="text-2xl font-bold hover:text-blue-200 transition">
+                        <i class="fas fa-robot mr-2"></i>TecnoPIA
+                    </a>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">Dashboard Docente</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-right hidden md:block">
+                        <p id="teacherName" class="font-semibold">Cargando...</p>
+                        <p id="schoolName" class="text-sm text-white/80">Institución Educativa</p>
+                    </div>
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-full gradient-blue flex items-center justify-center font-bold cursor-pointer hover-scale" id="userAvatar">
+                            AM
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="bg-red-500/20 hover:bg-red-500/30 px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="hidden md:inline">Cerrar Sesión</span>
+                    </button>
                 </div>
             </div>
-            
-            <!-- Información del docente -->
-            <div class="mb-8 p-4 bg-blue-900/30 rounded-lg">
-                <div class="flex items-center space-x-3 mb-3">
-                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <div class="mb-8 slide-in">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">Bienvenido, <span id="welcomeName">Docente</span></h1>
+            <p class="text-white/80">Panel de control para gestión educativa tecnológica</p>
+            <div class="flex flex-wrap gap-2 mt-4">
+                <span class="bg-green-500/20 px-3 py-1 rounded-full text-sm">PNFT MEP</span>
+                <span class="bg-blue-500/20 px-3 py-1 rounded-full text-sm">4 Áreas Conocimiento</span>
+                <span class="bg-purple-500/20 px-3 py-1 rounded-full text-sm">Evaluación Automática</span>
+                <span class="bg-orange-500/20 px-3 py-1 rounded-full text-sm">Reglamento MEP</span>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Grupos Activos -->
+            <div class="glass-card rounded-xl p-6 hover-scale">
+                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h3 id="docente-nombre" class="font-semibold">Docente</h3>
-                        <p class="text-sm text-gray-300" id="docente-email">Cargando...</p>
+                        <p class="text-white/70">Grupos Activos</p>
+                        <h3 class="text-3xl font-bold" id="statsGroups">3</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full gradient-green flex items-center justify-center">
+                        <i class="fas fa-users text-xl"></i>
                     </div>
                 </div>
-                <div class="text-sm text-gray-300">
-                    <p><i class="fas fa-school mr-2"></i> <span id="docente-escuela">Institución</span></p>
-                </div>
+                <p class="text-sm text-white/80">Gestión de secciones</p>
             </div>
-            
-            <!-- Menú de navegación -->
-            <nav class="space-y-2">
-                <a href="dashboard.html" class="sidebar-link flex items-center space-x-3 p-3 active">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                
-                <a href="sistemas/grupos.html" class="sidebar-link flex items-center space-x-3 p-3">
-                    <i class="fas fa-users"></i>
-                    <span>Mis Grupos</span>
-                </a>
-                
-                <a href="sistemas/evaluacion.html" class="sidebar-link flex items-center space-x-3 p-3">
-                    <i class="fas fa-clipboard-check"></i>
-                    <span>Evaluación</span>
-                </a>
-                
-                <a href="sistemas/reportes.html" class="sidebar-link flex items-center space-x-3 p-3">
-                    <i class="fas fa-file-pdf"></i>
-                    <span>Reportes</span>
-                </a>
-                
-                <a href="index.html" class="sidebar-link flex items-center space-x-3 p-3">
-                    <i class="fas fa-info-circle"></i>
-                    <span>Información</span>
-                </a>
-            </nav>
-            
-            <!-- Footer del sidebar -->
-            <div class="mt-auto pt-6 border-t border-gray-700">
-                <button onclick="cerrarSesion()" class="w-full flex items-center justify-center space-x-2 p-3 bg-red-900/30 hover:bg-red-900/50 rounded-lg transition">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Cerrar Sesión</span>
-                </button>
+
+            <!-- Estudiantes -->
+            <div class="glass-card rounded-xl p-6 hover-scale">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-white/70">Estudiantes</p>
+                        <h3 class="text-3xl font-bold" id="statsStudents">75</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full gradient-blue flex items-center justify-center">
+                        <i class="fas fa-user-graduate text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-sm text-white/80">Total de estudiantes</p>
+            </div>
+
+            <!-- Evaluaciones -->
+            <div class="glass-card rounded-xl p-6 hover-scale">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-white/70">Evaluaciones</p>
+                        <h3 class="text-3xl font-bold" id="statsEvaluations">12/50</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full gradient-purple flex items-center justify-center">
+                        <i class="fas fa-clipboard-check text-xl"></i>
+                    </div>
+                </div>
+                <div class="w-full bg-white/20 rounded-full h-2">
+                    <div class="bg-green-500 h-2 rounded-full" style="width: 24%"></div>
+                </div>
+                <p class="text-sm text-white/80 mt-2">24% completadas</p>
+            </div>
+
+            <!-- Asistencia -->
+            <div class="glass-card rounded-xl p-6 hover-scale">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-white/70">Asistencia Hoy</p>
+                        <h3 class="text-3xl font-bold" id="statsAttendance">92%</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-full gradient-orange flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-xl"></i>
+                    </div>
+                </div>
+                <p class="text-sm text-white/80">Promedio diario</p>
             </div>
         </div>
-        
-        <!-- Contenido principal -->
-        <div class="flex-1">
-            <!-- Header móvil -->
-            <div class="bg-white shadow p-4 md:hidden">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <i class="fas fa-laptop-code text-xl text-blue-600"></i>
-                        <h1 class="text-lg font-bold">Tecno<span class="text-blue-600">PIA</span></h1>
+
+        <!-- Two Columns Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Groups and Quick Actions -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Active Groups -->
+                <div class="glass-card rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold">Grupos Activos</h2>
+                        <button onclick="newGroup()" class="gradient-green hover:opacity-90 px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Nuevo Grupo</span>
+                        </button>
                     </div>
-                    <button id="menu-toggle" class="text-gray-600">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
+                    
+                    <div class="space-y-4" id="groupsList">
+                        <!-- Groups will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-xl font-bold mb-6">Acciones Rápidas</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button onclick="quickAction('evaluate')" class="bg-blue-500/20 hover:bg-blue-500/30 p-4 rounded-xl transition flex flex-col items-center justify-center hover-scale">
+                            <i class="fas fa-clipboard-list text-2xl mb-2"></i>
+                            <span>Evaluar TC</span>
+                        </button>
+                        <button onclick="quickAction('attendance')" class="bg-green-500/20 hover:bg-green-500/30 p-4 rounded-xl transition flex flex-col items-center justify-center hover-scale">
+                            <i class="fas fa-calendar-alt text-2xl mb-2"></i>
+                            <span>Asistencia</span>
+                        </button>
+                        <button onclick="quickAction('reports')" class="bg-purple-500/20 hover:bg-purple-500/30 p-4 rounded-xl transition flex flex-col items-center justify-center hover-scale">
+                            <i class="fas fa-chart-bar text-2xl mb-2"></i>
+                            <span>Reportes</span>
+                        </button>
+                        <button onclick="quickAction('planning')" class="bg-orange-500/20 hover:bg-orange-500/30 p-4 rounded-xl transition flex flex-col items-center justify-center hover-scale">
+                            <i class="fas fa-file-alt text-2xl mb-2"></i>
+                            <span>Planificar</span>
+                        </button>
+                    </div>
                 </div>
             </div>
-            
-            <!-- Dashboard principal -->
-            <div class="p-4 md:p-6">
-                <!-- Header -->
-                <div class="mb-8">
-                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Dashboard del Docente</h2>
-                    <p class="text-gray-600" id="dashboard-subtitle">Bienvenido al sistema de evaluación tecnológica</p>
-                </div>
-                
-                <!-- Tabs -->
-                <div class="flex flex-wrap gap-2 mb-8">
-                    <button class="tab-btn active px-4 py-2 bg-blue-600 text-white rounded-lg" onclick="cambiarTab('resumen')">
-                        Resumen
-                    </button>
-                    <button class="tab-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300" onclick="cambiarTab('grupos')">
-                        Mis Grupos
-                    </button>
-                    <button class="tab-btn px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300" onclick="cambiarTab('evaluaciones')">
-                        Evaluaciones Recientes
-                    </button>
-                </div>
-                
-                <!-- Tab: Resumen -->
-                <div id="tab-resumen" class="tab-content active">
-                    <!-- Estadísticas -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div class="stat-card bg-white p-6 rounded-xl shadow border-l-4 border-blue-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm">Grupos Activos</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="total-grupos">0</h3>
-                                </div>
-                                <div class="p-3 bg-blue-100 rounded-full">
-                                    <i class="fas fa-users text-blue-600 text-xl"></i>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-2">
-                                <span id="total-estudiantes">0</span> estudiantes en total
-                            </p>
-                        </div>
-                        
-                        <div class="stat-card bg-white p-6 rounded-xl shadow border-l-4 border-yellow-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm">Evaluaciones Pendientes</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="evaluaciones-pendientes">0</h3>
-                                </div>
-                                <div class="p-3 bg-yellow-100 rounded-full">
-                                    <i class="fas fa-clipboard-check text-yellow-600 text-xl"></i>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-2">
-                                Por calificar esta semana
-                            </p>
-                        </div>
-                        
-                        <div class="stat-card bg-white p-6 rounded-xl shadow border-l-4 border-green-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm">Asistencia Hoy</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="asistencia-hoy">0%</h3>
-                                </div>
-                                <div class="p-3 bg-green-100 rounded-full">
-                                    <i class="fas fa-calendar-check text-green-600 text-xl"></i>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-2">
-                                <span id="fecha-actual">...</span>
-                            </p>
-                        </div>
-                        
-                        <div class="stat-card bg-white p-6 rounded-xl shadow border-l-4 border-purple-500">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-gray-500 text-sm">Reportes Listos</p>
-                                    <h3 class="text-3xl font-bold text-gray-800" id="reportes-listos">0</h3>
-                                </div>
-                                <div class="p-3 bg-purple-100 rounded-full">
-                                    <i class="fas fa-file-pdf text-purple-600 text-xl"></i>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500 mt-2">
-                                Boletines del mes actual
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <!-- Acciones rápidas -->
-                    <div class="bg-white rounded-xl shadow p-6 mb-8">
-                        <h3 class="text-xl font-bold mb-4 text-gray-800">Acciones Rápidas</h3>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <a href="sistemas/grupos.html?action=new" class="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition cursor-pointer">
-                                <i class="fas fa-plus-circle text-2xl text-blue-600 mb-2"></i>
-                                <p class="font-semibold">Nuevo Grupo</p>
-                                <p class="text-sm text-gray-600">Crear grupo de estudiantes</p>
-                            </a>
-                            
-                            <a href="sistemas/evaluacion.html" class="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition cursor-pointer">
-                                <i class="fas fa-clipboard-list text-2xl text-green-600 mb-2"></i>
-                                <p class="font-semibold">Evaluar TC</p>
-                                <p class="text-sm text-gray-600">Trabajo cotidiano</p>
-                            </a>
-                            
-                            <a href="#" onclick="registrarAsistencia()" class="p-4 bg-yellow-50 rounded-lg text-center hover:bg-yellow-100 transition cursor-pointer">
-                                <i class="fas fa-calendar-alt text-2xl text-yellow-600 mb-2"></i>
-                                <p class="font-semibold">Asistencia</p>
-                                <p class="text-sm text-gray-600">Registrar hoy</p>
-                            </a>
-                            
-                            <a href="sistemas/reportes.html" class="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition cursor-pointer">
-                                <i class="fas fa-file-export text-2xl text-purple-600 mb-2"></i>
-                                <p class="font-semibold">Reportes</p>
-                                <p class="text-sm text-gray-600">Generar PDF</p>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- Grupos activos -->
-                    <div class="bg-white rounded-xl shadow p-6">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-gray-800">Mis Grupos Activos</h3>
-                            <a href="sistemas/grupos.html" class="text-blue-600 hover:text-blue-800 font-medium">
-                                Ver todos →
-                            </a>
-                        </div>
-                        
-                        <div id="grupos-activos-container">
-                            <div class="text-center py-8 text-gray-500">
-                                <i class="fas fa-users text-4xl mb-4"></i>
-                                <p>No hay grupos activos</p>
-                                <p class="text-sm mt-2">Crea tu primer grupo para comenzar</p>
-                                <a href="sistemas/grupos.html?action=new" class="mt-4 inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Crear Primer Grupo
-                                </a>
-                            </div>
-                        </div>
+
+            <!-- Right Column: Pending and Calendar -->
+            <div class="space-y-8">
+                <!-- Pending Evaluations -->
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-xl font-bold mb-6">Evaluaciones Pendientes</h2>
+                    <div class="space-y-3" id="pendingEvaluations">
+                        <!-- Pending evaluations will be loaded here -->
                     </div>
                 </div>
-                
-                <!-- Tab: Mis Grupos -->
-                <div id="tab-grupos" class="tab-content">
-                    <div class="bg-white rounded-xl shadow p-6">
-                        <h3 class="text-xl font-bold mb-6 text-gray-800">Todos mis grupos</h3>
-                        <div id="todos-grupos-container">
-                            <!-- Se cargará dinámicamente -->
-                        </div>
+
+                <!-- Calendar -->
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-xl font-bold mb-6">Próximas Actividades</h2>
+                    <div class="space-y-3" id="upcomingActivities">
+                        <!-- Activities will be loaded here -->
                     </div>
                 </div>
-                
-                <!-- Tab: Evaluaciones Recientes -->
-                <div id="tab-evaluaciones" class="tab-content">
-                    <div class="bg-white rounded-xl shadow p-6">
-                        <h3 class="text-xl font-bold mb-6 text-gray-800">Evaluaciones Recientes</h3>
-                        <div id="evaluaciones-recientes-container">
-                            <div class="text-center py-8 text-gray-500">
-                                <i class="fas fa-clipboard-list text-4xl mb-4"></i>
-                                <p>No hay evaluaciones recientes</p>
-                                <p class="text-sm">Realiza tu primera evaluación</p>
-                            </div>
-                        </div>
+
+                <!-- Quick Links -->
+                <div class="glass-card rounded-xl p-6">
+                    <h2 class="text-xl font-bold mb-6">Enlaces Rápidos</h2>
+                    <div class="space-y-2">
+                        <a href="sistemas/completo.html" class="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg transition">
+                            <span>Sistema Completo PNFT</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="sistemas/base.html" class="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg transition">
+                            <span>Versión Simplificada</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="sistemas/ia.html" class="flex items-center justify-between p-3 bg-white/5 hover:bg-white/10 rounded-lg transition">
+                            <span>Versión con IA</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Scripts -->
+    </main>
+
+    <!-- Footer -->
+    <footer class="container mx-auto px-4 py-8 mt-12 border-t border-white/10">
+        <div class="text-center text-white/60">
+            <p class="mb-2">TecnoPIA - Sistema de Evaluación para Formación Tecnológica MEP</p>
+            <p>© 2024 Ministerio de Educación Pública de Costa Rica</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
     <script>
-        // Datos de ejemplo (después se conectarán a localStorage)
-        const datosDemo = {
-            docente: {
-                nombre: "Ana María Rodríguez",
-                email: "anamaria@institucion.ed.cr",
-                escuela: "Liceo de San José"
-            },
-            grupos: [
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTeacherData();
+            loadDashboardStats();
+            loadGroups();
+            loadPendingEvaluations();
+            loadUpcomingActivities();
+        });
+
+        // Load teacher data from localStorage or demo
+        function loadTeacherData() {
+            const teacherData = JSON.parse(localStorage.getItem('teacherData')) || {
+                name: 'Ana María Rodríguez',
+                school: 'Liceo de San José',
+                email: 'docente@institucion.ed.cr'
+            };
+
+            document.getElementById('teacherName').textContent = teacherData.name;
+            document.getElementById('schoolName').textContent = teacherData.school;
+            document.getElementById('welcomeName').textContent = teacherData.name.split(' ')[0];
+            
+            // Set avatar initials
+            const names = teacherData.name.split(' ');
+            const initials = (names[0][0] + (names[1] ? names[1][0] : names[0][1])).toUpperCase();
+            document.getElementById('userAvatar').textContent = initials;
+        }
+
+        // Load dashboard statistics
+        function loadDashboardStats() {
+            const stats = JSON.parse(localStorage.getItem('dashboardStats')) || {
+                groups: 3,
+                students: 75,
+                evaluations: '12/50',
+                attendance: '92%'
+            };
+
+            document.getElementById('statsGroups').textContent = stats.groups;
+            document.getElementById('statsStudents').textContent = stats.students;
+            document.getElementById('statsEvaluations').textContent = stats.evaluations;
+            document.getElementById('statsAttendance').textContent = stats.attendance;
+        }
+
+        // Load groups
+        function loadGroups() {
+            const groups = JSON.parse(localStorage.getItem('groups')) || [
                 {
                     id: 1,
-                    nombre: "5°A Tecnología",
-                    grado: "5°",
-                    ciclo: "ciclo2",
-                    estudiantes: 28,
-                    evaluacionesPendientes: 3
+                    name: '5°A Tecnología',
+                    grade: '5°',
+                    cycle: 'ciclo2',
+                    students: 28,
+                    pending: 3,
+                    attendance: 92
                 },
                 {
                     id: 2,
-                    nombre: "7°B Informática",
-                    grado: "7°",
-                    ciclo: "ciclo3",
-                    estudiantes: 25,
-                    evaluacionesPendientes: 5
+                    name: '6°B Robótica',
+                    grade: '6°',
+                    cycle: 'ciclo2',
+                    students: 25,
+                    pending: 2,
+                    attendance: 95
+                },
+                {
+                    id: 3,
+                    name: '7°C Programación',
+                    grade: '7°',
+                    cycle: 'ciclo3',
+                    students: 22,
+                    pending: 5,
+                    attendance: 88
                 }
-            ],
-            estadisticas: {
-                totalEstudiantes: 53,
-                evaluacionesCompletadas: 12,
-                asistenciaPromedio: 92
-            }
-        };
-        
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cargar datos del docente
-            const docente = datosDemo.docente;
-            document.getElementById('docente-nombre').textContent = docente.nombre;
-            document.getElementById('docente-email').textContent = docente.email;
-            document.getElementById('docente-escuela').textContent = docente.escuela;
-            document.getElementById('dashboard-subtitle').textContent = `Bienvenido/a, ${docente.nombre}`;
-            
-            // Configurar fecha actual
-            const hoy = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('fecha-actual').textContent = hoy.toLocaleDateString('es-ES', options);
-            
-            // Cargar estadísticas
-            cargarEstadisticas();
-            cargarGruposActivos();
-            
-            // Menú móvil
-            document.getElementById('menu-toggle')?.addEventListener('click', function() {
-                document.querySelector('.sidebar').classList.toggle('hidden');
-            });
-        });
-        
-        // Funciones de tabs
-        function cambiarTab(tabId) {
-            // Ocultar todos los tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Desactivar todos los botones
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            });
-            
-            // Mostrar tab seleccionado
-            document.getElementById('tab-' + tabId).classList.add('active');
-            
-            // Activar botón seleccionado
-            event.target.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
-            event.target.classList.add('bg-blue-600', 'text-white', 'active');
-            
-            // Cargar datos específicos del tab
-            if (tabId === 'grupos') {
-                cargarTodosGrupos();
-            } else if (tabId === 'evaluaciones') {
-                cargarEvaluacionesRecientes();
-            }
-        }
-        
-        function cargarEstadisticas() {
-            document.getElementById('total-grupos').textContent = datosDemo.grupos.length;
-            document.getElementById('total-estudiantes').textContent = datosDemo.estadisticas.totalEstudiantes;
-            document.getElementById('evaluaciones-pendientes').textContent = datosDemo.grupos.reduce((sum, g) => sum + g.evaluacionesPendientes, 0);
-            document.getElementById('asistencia-hoy').textContent = datosDemo.estadisticas.asistenciaPromedio + '%';
-            document.getElementById('reportes-listos').textContent = datosDemo.grupos.length;
-        }
-        
-        function cargarGruposActivos() {
-            const container = document.getElementById('grupos-activos-container');
-            
-            if (datosDemo.grupos.length === 0) {
-                return; // Ya tiene el mensaje por defecto
-            }
-            
-            let html = '<div class="grid grid-cols-1 md:grid-cols-2 gap-4">';
-            
-            datosDemo.grupos.forEach(grupo => {
-                html += `
-                    <div class="border rounded-lg p-4 hover:border-blue-300 hover:shadow transition">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <h4 class="font-bold text-lg">${grupo.nombre}</h4>
-                                <p class="text-gray-600">${grupo.grado} • ${grupo.estudiantes} estudiantes</p>
-                            </div>
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
-                                ${grupo.ciclo === 'ciclo1' ? 'bg-blue-100 text-blue-800' : 
-                                  grupo.ciclo === 'ciclo2' ? 'bg-green-100 text-green-800' : 
-                                  'bg-purple-100 text-purple-800'}">
-                                Ciclo ${grupo.ciclo.replace('ciclo', '')}
-                            </span>
-                        </div>
-                        
-                        <div class="flex justify-between items-center text-sm text-gray-600 mb-3">
-                            <span><i class="fas fa-clipboard-check mr-1"></i> ${grupo.evaluacionesPendientes} pendientes</span>
-                            <span><i class="fas fa-user-check mr-1"></i> 92% asistencia</span>
-                        </div>
-                        
-                        <div class="flex space-x-2">
-                            <a href="sistemas/evaluacion.html?grupo=${grupo.id}" 
-                               class="flex-1 text-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
-                                <i class="fas fa-play mr-1"></i> Evaluar
-                            </a>
-                            <a href="sistemas/grupos.html?id=${grupo.id}" 
-                               class="flex-1 text-center px-3 py-2 border border-gray-300 rounded hover:bg-gray-50 text-sm">
-                                <i class="fas fa-eye mr-1"></i> Ver
-                            </a>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
-        }
-        
-        function cargarTodosGrupos() {
-            const container = document.getElementById('todos-grupos-container');
-            container.innerHTML = '<p class="text-gray-500">Cargando grupos...</p>';
-            
-            // Simular carga
-            setTimeout(() => {
-                container.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fas fa-database text-4xl mb-4"></i>
-                        <p>Base de datos de grupos</p>
-                        <p class="text-sm">Esta funcionalidad se implementará completamente en la versión 1.0</p>
-                    </div>
-                `;
-            }, 500);
-        }
-        
-        function cargarEvaluacionesRecientes() {
-            const container = document.getElementById('evaluaciones-recientes-container');
-            
-            // Datos de ejemplo
-            const evaluaciones = [
-                { fecha: '15 Mar 2024', grupo: '5°A Tecnología', tipo: 'Trabajo Cotidiano', completada: true },
-                { fecha: '14 Mar 2024', grupo: '7°B Informática', tipo: 'Prueba Ejecución', completada: true },
-                { fecha: '10 Mar 2024', grupo: '5°A Tecnología', tipo: 'Tareas', completada: false }
             ];
-            
-            let html = '<div class="space-y-4">';
-            
-            evaluaciones.forEach(eval => {
-                html += `
-                    <div class="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+
+            const groupsList = document.getElementById('groupsList');
+            groupsList.innerHTML = groups.map(group => `
+                <div class="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition cursor-pointer" onclick="viewGroup(${group.id})">
+                    <div class="flex justify-between items-center">
                         <div>
-                            <h4 class="font-medium">${eval.tipo}</h4>
-                            <p class="text-sm text-gray-600">${eval.grupo} • ${eval.fecha}</p>
+                            <h3 class="font-bold">${group.name}</h3>
+                            <p class="text-sm text-white/70">${group.grade} - ${group.cycle}</p>
                         </div>
-                        <span class="px-3 py-1 text-xs font-semibold rounded-full 
-                            ${eval.completada ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                            ${eval.completada ? 'Completada' : 'Pendiente'}
-                        </span>
+                        <div class="text-right">
+                            <p class="font-bold">${group.students} estudiantes</p>
+                            <p class="text-sm text-white/70">${group.pending} pendientes</p>
+                        </div>
                     </div>
-                `;
-            });
-            
-            html += '</div>';
-            container.innerHTML = html;
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-sm bg-green-500/20 px-2 py-1 rounded">Asistencia: ${group.attendance}%</span>
+                        <div class="space-x-2">
+                            <button class="text-sm bg-blue-500/20 hover:bg-blue-500/30 px-3 py-1 rounded transition" onclick="event.stopPropagation(); evaluateGroup(${group.id})">
+                                <i class="fas fa-clipboard-check mr-1"></i>Evaluar
+                            </button>
+                            <button class="text-sm bg-purple-500/20 hover:bg-purple-500/30 px-3 py-1 rounded transition" onclick="event.stopPropagation(); viewGroup(${group.id})">
+                                <i class="fas fa-eye mr-1"></i>Ver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
         }
-        
-        function registrarAsistencia() {
-            alert('Funcionalidad de asistencia - Próximamente disponible en la versión 1.1');
+
+        // Load pending evaluations
+        function loadPendingEvaluations() {
+            const evaluations = JSON.parse(localStorage.getItem('pendingEvaluations')) || [
+                { id: 1, type: 'Trabajo Cotidiano', group: '5°A', date: '15 Mar 2024', completed: false },
+                { id: 2, type: 'Prueba Ejecución', group: '6°B', date: '18 Mar 2024', completed: false },
+                { id: 3, type: 'Proyecto Tecnológico', group: '7°C', date: '22 Mar 2024', completed: false }
+            ];
+
+            const pendingList = document.getElementById('pendingEvaluations');
+            pendingList.innerHTML = evaluations.map(evalItem => `
+                <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <div>
+                        <p class="font-semibold">${evalItem.type}</p>
+                        <p class="text-sm text-white/70">${evalItem.group} • ${evalItem.date}</p>
+                    </div>
+                    <button class="bg-red-500/20 hover:bg-red-500/30 px-3 py-1 rounded text-sm transition" onclick="completeEvaluation(${evalItem.id})">
+                        Completar
+                    </button>
+                </div>
+            `).join('');
         }
-        
-        function cerrarSesion() {
-            if (confirm('¿Estás seguro de cerrar sesión?')) {
-                // Aquí se limpiaría la sesión
+
+        // Load upcoming activities
+        function loadUpcomingActivities() {
+            const activities = JSON.parse(localStorage.getItem('upcomingActivities')) || [
+                { title: 'Reunión de Departamento', date: '14 Mar', type: 'meeting' },
+                { title: 'Entrega de Planificaciones', date: '20 Mar', type: 'deadline' },
+                { title: 'Capacitación PNFT', date: '25 Mar', type: 'training' }
+            ];
+
+            const activitiesList = document.getElementById('upcomingActivities');
+            activitiesList.innerHTML = activities.map(activity => `
+                <div class="flex items-center p-3 bg-white/5 rounded-lg">
+                    <div class="w-10 h-10 rounded-full ${activity.type === 'meeting' ? 'bg-blue-500/20' : activity.type === 'deadline' ? 'bg-red-500/20' : 'bg-green-500/20'} flex items-center justify-center mr-3">
+                        <i class="fas ${activity.type === 'meeting' ? 'fa-users' : activity.type === 'deadline' ? 'fa-flag' : 'fa-graduation-cap'}"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold">${activity.title}</p>
+                        <p class="text-sm text-white/70">${activity.date}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Navigation functions
+        function newGroup() {
+            alert('Redirigiendo a creación de grupo...');
+            // In production: window.location.href = 'sistemas/gestion-grupos.html';
+        }
+
+        function viewGroup(groupId) {
+            alert(`Viendo detalles del grupo ${groupId}`);
+            // In production: window.location.href = `sistemas/grupo-detalle.html?id=${groupId}`;
+        }
+
+        function evaluateGroup(groupId) {
+            alert(`Iniciando evaluación para grupo ${groupId}`);
+            // In production: window.location.href = `sistemas/evaluacion-mep.html?groupId=${groupId}`;
+        }
+
+        function completeEvaluation(evalId) {
+            alert(`Marcando evaluación ${evalId} como completada`);
+            // Update in localStorage and reload
+        }
+
+        function quickAction(action) {
+            const actions = {
+                evaluate: 'Redirigiendo a evaluación...',
+                attendance: 'Redirigiendo a asistencia...',
+                reports: 'Generando reportes...',
+                planning: 'Abriendo planificación...'
+            };
+            alert(actions[action]);
+            // In production: redirect to respective pages
+        }
+
+        function logout() {
+            if (confirm('¿Está seguro de cerrar sesión?')) {
+                // Clear session data if needed
                 window.location.href = 'index.html';
             }
+        }
+
+        // Export data function
+        function exportData() {
+            const data = {
+                teacher: JSON.parse(localStorage.getItem('teacherData')),
+                stats: JSON.parse(localStorage.getItem('dashboardStats')),
+                groups: JSON.parse(localStorage.getItem('groups'))
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tecnopia-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('Datos exportados exitosamente');
+        }
+
+        // Import data function
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        // Validate structure
+                        if (data.teacher && data.stats && data.groups) {
+                            localStorage.setItem('teacherData', JSON.stringify(data.teacher));
+                            localStorage.setItem('dashboardStats', JSON.stringify(data.stats));
+                            localStorage.setItem('groups', JSON.stringify(data.groups));
+                            alert('Datos importados exitosamente');
+                            location.reload();
+                        } else {
+                            alert('Archivo inválido');
+                        }
+                    } catch (error) {
+                        alert('Error al leer el archivo');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
         }
     </script>
 </body>
