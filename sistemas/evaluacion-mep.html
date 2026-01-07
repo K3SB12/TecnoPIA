@@ -357,17 +357,17 @@
                     <h2 class="text-2xl font-bold mb-2 text-yellow-300">
                         <i class="fas fa-clipboard-list mr-3"></i>Registro de Trabajo Cotidiano
                     </h2>
-                    <p class="text-gray-400">Evalúe los indicadores de logro en el trabajo diario de los estudiantes</p>
+                    <p class="text-gray-400">Evalúe los indicadores de logro en el trabajo diario de los estudiantes (50-65% de la nota final)</p>
                 </div>
                 
-                <!-- Selector de Grupo y Fecha -->
+                <!-- Panel de Control de Evaluación -->
                 <div class="glass-dark rounded-xl p-5 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm text-gray-400 mb-1">Seleccionar Grupo</label>
+                            <label class="block text-sm text-gray-400 mb-1">Grupo a Evaluar</label>
                             <select id="grupo-cotidiano" class="input-evaluacion" onchange="cargarEstudiantesParaEvaluar()">
                                 <option value="">Seleccione un grupo</option>
-                                <!-- Se llena desde GestorGrupos -->
+                                <!-- Se llena dinámicamente desde GestorGrupos -->
                             </select>
                         </div>
                         <div>
@@ -375,46 +375,134 @@
                             <input type="date" id="fecha-cotidiano" class="input-evaluacion" value="<?php echo date('Y-m-d'); ?>">
                         </div>
                         <div>
-                            <label class="block text-sm text-gray-400 mb-1">Indicadores a Evaluar</label>
-                            <select id="indicadores-cotidiano" class="input-evaluacion" multiple>
-                                <!-- Se llena desde Indicadores PNFT -->
-                            </select>
+                            <label class="block text-sm text-gray-400 mb-1">Período/Unidad</label>
+                            <input type="text" id="unidad-cotidiano" class="input-evaluacion" placeholder="Ej: Unidad 1 - Robótica">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Tema Evaluado</label>
+                            <input type="text" id="tema-cotidiano" class="input-evaluacion" placeholder="Ej: Montaje de circuito básico">
+                        </div>
+                    </div>
+                    
+                    <!-- Selector de Indicadores -->
+                    <div class="mt-4">
+                        <label class="block text-sm text-gray-400 mb-2">
+                            <i class="fas fa-bullseye mr-1"></i>Seleccione Indicadores a Evaluar (Máx. 10 por sesión)
+                        </label>
+                        <div id="selector-indicadores-cotidiano" class="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 glass rounded">
+                            <!-- Los indicadores se cargan aquí como checkboxes -->
+                            <p class="text-gray-500 text-sm py-4 px-2">Cargando indicadores...</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Tabla de Evaluación Cotidiana -->
-                <div class="table-container">
+                <!-- Estadísticas Rápidas -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Porcentaje TC:</span>
+                            <span class="font-bold text-blue-400" id="porcentaje-actual-tc">65%</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Del I Ciclo</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Estudiantes:</span>
+                            <span class="font-bold text-green-400" id="total-estudiantes-grupo">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">En grupo seleccionado</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Indicadores:</span>
+                            <span class="font-bold text-purple-400" id="total-indicadores-seleccionados">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Seleccionados</div>
+                    </div>
+                    <div class="glass-dark p-3 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-400">Evaluados hoy:</span>
+                            <span class="font-bold text-yellow-400" id="total-evaluados-hoy">0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">En esta fecha</div>
+                    </div>
+                </div>
+                
+                <!-- Tabla de Evaluación Cotidiana (EXCEVAL Style) -->
+                <div class="table-container mb-4">
                     <table class="w-full table-eval" id="tabla-evaluacion-cotidiana">
                         <thead>
                             <tr>
-                                <th class="text-left">Estudiante</th>
-                                <!-- Columnas para indicadores se agregan dinámicamente -->
+                                <th class="text-left w-48">Estudiante</th>
+                                <!-- Columnas para indicadores se agregan dinámicamente aquí -->
                                 <th class="text-left">Promedio</th>
-                                <th class="text-left">% Nota</th>
+                                <th class="text-left">% Aplicado</th>
+                                <th class="text-left">Nota TC</th>
+                                <th class="text-left">Observaciones</th>
                             </tr>
                         </thead>
                         <tbody id="cuerpo-evaluacion-cotidiana">
                             <tr>
-                                <td colspan="10" class="text-center py-8 text-gray-500">
-                                    <i class="fas fa-users text-3xl mb-3 block"></i>
-                                    <p>Seleccione un grupo para comenzar la evaluación</p>
+                                <td colspan="10" class="text-center py-12 text-gray-500">
+                                    <i class="fas fa-users text-4xl mb-4 block"></i>
+                                    <h4 class="text-lg font-medium mb-2">Seleccione un grupo para comenzar</h4>
+                                    <p class="text-sm text-gray-400 max-w-md mx-auto">
+                                        Elija un grupo en el panel superior y seleccione los indicadores PNFT que evaluará hoy.
+                                        El sistema calculará automáticamente el porcentaje de trabajo cotidiano.
+                                    </p>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 
+                <!-- Notas y Observaciones Generales -->
+                <div class="glass-dark rounded-xl p-5 mb-6">
+                    <h4 class="font-semibold mb-3 text-blue-300">
+                        <i class="fas fa-sticky-note mr-2"></i>Observaciones Generales de la Sesión
+                    </h4>
+                    <textarea id="observaciones-generales-cotidiano" 
+                              class="input-evaluacion w-full h-32" 
+                              placeholder="Escriba aquí observaciones generales de la clase, dificultades comunes, logros destacados, etc."></textarea>
+                </div>
+                
                 <!-- Acciones -->
-                <div class="flex justify-between mt-6">
-                    <button onclick="guardarEvaluacionCotidiana()" 
-                            class="btn-eval gradient-primary text-white px-6 py-3 rounded-lg">
-                        <i class="fas fa-save mr-2"></i>Guardar Evaluación
-                    </button>
-                    <button onclick="generarListaCotejo()" 
-                            class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-green-500">
-                        <i class="fas fa-list-check mr-2"></i>Generar Lista de Cotejo
-                    </button>
+                <div class="flex flex-wrap gap-3 justify-between">
+                    <div class="flex gap-3">
+                        <button onclick="guardarEvaluacionCotidiana()" 
+                                class="btn-eval gradient-primary text-white px-6 py-3 rounded-lg">
+                            <i class="fas fa-save mr-2"></i>Guardar Evaluación
+                        </button>
+                        <button onclick="limpiarEvaluacionCotidiana()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-yellow-500">
+                            <i class="fas fa-eraser mr-2"></i>Limpiar
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button onclick="generarListaCotejo()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-green-500">
+                            <i class="fas fa-list-check mr-2"></i>Lista de Cotejo
+                        </button>
+                        <button onclick="exportarEvaluacionCotidiana()" 
+                                class="btn-eval glass-dark border border-gray-700 px-5 py-3 rounded-lg hover:border-purple-500">
+                            <i class="fas fa-file-export mr-2"></i>Exportar
+                        </button>
+                        <button onclick="vistaPreviaReporte()" 
+                                class="btn-eval bg-gradient-to-r from-green-500 to-teal-500 text-white px-5 py-3 rounded-lg">
+                            <i class="fas fa-chart-bar mr-2"></i>Vista Previa
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Evaluaciones Recientes del Grupo -->
+                <div class="glass-dark rounded-xl p-5 mt-8">
+                    <h4 class="font-semibold mb-4 text-purple-300">
+                        <i class="fas fa-history mr-2"></i>Evaluaciones Recientes de este Grupo
+                    </h4>
+                    <div id="historial-evaluaciones-cotidiano" class="space-y-3">
+                        <p class="text-gray-500 text-center py-4">No hay evaluaciones previas registradas</p>
+                    </div>
                 </div>
             </div>
             
