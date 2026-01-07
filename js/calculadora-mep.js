@@ -1,498 +1,447 @@
-// calculadora-mep.js - Sistema oficial de cálculo de notas MEP
-
-/**
- * SISTEMA DE EVALUACIÓN MEP PARA FORMACIÓN TECNOLÓGICA
- * Basado en el Reglamento de Evaluación de los Aprendizajes (REA)
- */
-
-const SISTEMA_EVALUACION_MEP = {
-    // ========== MATERNO/TRANSICIÓN (EVALUACIÓN FORMATIVA) ==========
-    "materno": {
-        tipo: "formativo",
-        descripcion: "Evaluación cualitativa basada en observación directa",
-        instrumentos: ["Observación sistemática", "Registro anecdótico", "Listas de cotejo cualitativas"],
-        escala: ["En proceso", "Logrado", "Destacado"],
-        reporte: "Informe descriptivo cualitativo sin calificación numérica"
-    },
-    
-    // ========== I CICLO (1°-3° PRIMARIA) ==========
-    "ciclo1": {
-        tipo: "sumativo",
-        descripcion: "I Ciclo de la Educación General Básica",
-        componentes: [
-            { 
-                nombre: "Trabajo Cotidiano", 
-                codigo: "TC",
-                porcentaje: 65,
-                descripcion: "Evaluación continua del trabajo en clase",
-                instrumentos: ["Listas de cotejo", "Rúbricas de observación", "Registro de participación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Tareas", 
-                codigo: "TA",
-                porcentaje: 10,
-                descripcion: "Trabajos asignados para realizar fuera de clase",
-                instrumentos: ["Rúbricas de tareas", "Listas de verificación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Prueba de Ejecución", 
-                codigo: "PE",
-                porcentaje: 15,
-                descripcion: "Demostración práctica de habilidades tecnológicas",
-                instrumentos: ["Rúbricas de ejecución", "Protocolos de observación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Asistencia", 
-                codigo: "AS",
-                porcentaje: 10,
-                descripcion: "Puntualidad y asistencia a clases",
-                instrumentos: ["Registro de asistencia"],
-                rango: [0, 100],
-                notaMaxima: 100 // Asistencia perfecta = 100 puntos
-            }
-        ],
-        totalPorcentaje: 100,
-        escalaAprobacion: {
-            "aprobado": { min: 70, max: 100, descripcion: "Aprobado" },
-            "reprobado": { min: 0, max: 69, descripcion: "Reprobado" }
-        },
-        notaMinimaAprobacion: 70
-    },
-    
-    // ========== II CICLO (4°-6° PRIMARIA) ==========
-    "ciclo2": {
-        tipo: "sumativo",
-        descripcion: "II Ciclo de la Educación General Básica",
-        componentes: [
-            { 
-                nombre: "Trabajo Cotidiano", 
-                codigo: "TC",
-                porcentaje: 60,
-                descripcion: "Evaluación continua del trabajo en clase",
-                instrumentos: ["Listas de cotejo", "Rúbricas de observación", "Registro de participación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Tareas", 
-                codigo: "TA",
-                porcentaje: 10,
-                descripcion: "Trabajos asignados para realizar fuera de clase",
-                instrumentos: ["Rúbricas de tareas", "Listas de verificación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Prueba de Ejecución", 
-                codigo: "PE",
-                porcentaje: 20,
-                descripcion: "Demostración práctica de habilidades tecnológicas",
-                instrumentos: ["Rúbricas de ejecución", "Protocolos de observación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Asistencia", 
-                codigo: "AS",
-                porcentaje: 10,
-                descripcion: "Puntualidad y asistencia a clases",
-                instrumentos: ["Registro de asistencia"],
-                rango: [0, 100],
-                notaMaxima: 100
-            }
-        ],
-        totalPorcentaje: 100,
-        escalaAprobacion: {
-            "aprobado": { min: 70, max: 100, descripcion: "Aprobado" },
-            "reprobado": { min: 0, max: 69, descripcion: "Reprobado" }
-        },
-        notaMinimaAprobacion: 70
-    },
-    
-    // ========== III CICLO (7°-9° SECUNDARIA) ==========
-    "ciclo3": {
-        tipo: "sumativo",
-        descripcion: "III Ciclo de la Educación General Básica",
-        componentes: [
-            { 
-                nombre: "Trabajo Cotidiano", 
-                codigo: "TC",
-                porcentaje: 50,
-                descripcion: "Evaluación continua del trabajo en clase",
-                instrumentos: ["Listas de cotejo", "Rúbricas de observación", "Registro de participación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Tareas", 
-                codigo: "TA",
-                porcentaje: 10,
-                descripcion: "Trabajos asignados para realizar fuera de clase",
-                instrumentos: ["Rúbricas de tareas", "Listas de verificación"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Proyecto Tecnológico", 
-                codigo: "PT",
-                porcentaje: 30,
-                descripcion: "Desarrollo de solución tecnológica integral",
-                instrumentos: ["Rúbricas de proyectos", "Presentaciones", "Documentación técnica"],
-                rango: [0, 100]
-            },
-            { 
-                nombre: "Asistencia", 
-                codigo: "AS",
-                porcentaje: 10,
-                descripcion: "Puntualidad y asistencia a clases",
-                instrumentos: ["Registro de asistencia"],
-                rango: [0, 100],
-                notaMaxima: 100
-            }
-        ],
-        totalPorcentaje: 100,
-        escalaCalificacion: {
-            "excelente": { min: 90, max: 100, descripcion: "Excelente" },
-            "bueno": { min: 80, max: 89, descripcion: "Bueno" },
-            "aprobado": { min: 70, max: 79, descripcion: "Aprobado" },
-            "reprobado": { min: 0, max: 69, descripcion: "Reprobado" }
-        },
-        notaMinimaAprobacion: 70
-    }
-};
-
+// Calculadora de Notas MEP para Formación Tecnológica
 class CalculadoraMEP {
     constructor() {
-        this.sistema = SISTEMA_EVALUACION_MEP;
-        this.historialCalculos = [];
-    }
-    
-    /**
-     * Calcula la nota final según el ciclo y las puntuaciones
-     * @param {string} ciclo - 'ciclo1', 'ciclo2', 'ciclo3'
-     * @param {Object} puntuaciones - Objeto con las calificaciones por componente
-     * @returns {Object} - Nota final, condición y desglose
-     */
-    calcularNotaFinal(ciclo, puntuaciones) {
-        if (!this.sistema[ciclo]) {
-            throw new Error(`Ciclo no válido: ${ciclo}`);
-        }
-        
-        if (ciclo === 'materno') {
-            return this.generarReporteFormativo(puntuaciones);
-        }
-        
-        const componentes = this.sistema[ciclo].componentes;
-        let notaFinal = 0;
-        let desglose = {};
-        
-        // Calcular contribución de cada componente
-        componentes.forEach(componente => {
-            const codigo = componente.codigo;
-            const puntuacion = this.validarPuntuacion(puntuaciones[codigo], componente.rango);
-            const contribucion = (puntuacion * componente.porcentaje) / 100;
-            
-            notaFinal += contribucion;
-            desglose[codigo] = {
-                nombre: componente.nombre,
-                puntuacionBruta: puntuacion,
-                porcentaje: componente.porcentaje,
-                contribucion: contribucion,
-                notaRedondeada: this.redondearNota(contribucion)
-            };
-        });
-        
-        // Redondear nota final
-        notaFinal = this.redondearNota(notaFinal);
-        
-        // Determinar condición
-        const condicion = this.determinarCondicion(notaFinal, ciclo);
-        
-        // Guardar en historial
-        const calculo = {
-            fecha: new Date().toISOString(),
-            ciclo,
-            puntuaciones,
-            notaFinal,
-            condicion,
-            desglose
-        };
-        
-        this.historialCalculos.push(calculo);
-        this.guardarHistorial();
-        
-        return {
-            notaFinal,
-            condicion,
-            desglose,
-            escala: this.sistema[ciclo].escalaCalificacion || this.sistema[ciclo].escalaAprobacion,
-            mensaje: this.generarMensajeResultado(notaFinal, condicion, ciclo)
-        };
-    }
-    
-    /**
-     * Calcula la nota necesaria en un componente para alcanzar una nota final objetivo
-     * @param {string} ciclo - Ciclo educativo
-     * @param {Object} puntuacionesActuales - Puntuaciones actuales
-     * @param {string} componenteCodigo - Código del componente (TC, TA, PE, PT, AS)
-     * @param {number} notaObjetivo - Nota final que se desea alcanzar
-     * @returns {number} - Puntuación necesaria en el componente
-     */
-    calcularNotaNecesaria(ciclo, puntuacionesActuales, componenteCodigo, notaObjetivo) {
-        const componentes = this.sistema[ciclo].componentes;
-        const componente = componentes.find(c => c.codigo === componenteCodigo);
-        
-        if (!componente) {
-            throw new Error(`Componente no válido: ${componenteCodigo}`);
-        }
-        
-        // Calcular contribución actual de otros componentes
-        let contribucionOtros = 0;
-        componentes.forEach(comp => {
-            if (comp.codigo !== componenteCodigo) {
-                const puntuacion = this.validarPuntuacion(puntuacionesActuales[comp.codigo], comp.rango);
-                contribucionOtros += (puntuacion * comp.porcentaje) / 100;
-            }
-        });
-        
-        // Calcular puntuación necesaria
-        const contribucionNecesaria = notaObjetivo - contribucionOtros;
-        const puntuacionNecesaria = (contribucionNecesaria * 100) / componente.porcentaje;
-        
-        // Ajustar si supera el rango máximo
-        return Math.min(Math.max(puntuacionNecesaria, 0), 100);
-    }
-    
-    /**
-     * Genera reporte formativo para Materno/Transición
-     * @param {Object} observaciones - Observaciones cualitativas
-     * @returns {Object} - Reporte formativo
-     */
-    generarReporteFormativo(observaciones) {
-        const fecha = new Date().toLocaleDateString('es-CR', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        
-        return {
-            tipo: "Informe Formativo",
-            fecha,
-            areasEvaluadas: Object.keys(observaciones),
-            observaciones: observaciones,
-            recomendaciones: this.generarRecomendacionesFormativo(observaciones),
-            formato: "Cualitativo descriptivo",
-            proximosPasos: "Transición al I Ciclo con evaluación sumativa"
-        };
-    }
-    
-    /**
-     * Determina la condición según la nota y el ciclo
-     * @param {number} nota - Nota final (0-100)
-     * @param {string} ciclo - Ciclo educativo
-     * @returns {string} - Condición (Excelente, Bueno, Aprobado, Reprobado, etc.)
-     */
-    determinarCondicion(nota, ciclo) {
-        const sistemaCiclo = this.sistema[ciclo];
-        
-        if (!sistemaCiclo) {
-            return "Ciclo no válido";
-        }
-        
-        if (ciclo === 'ciclo1' || ciclo === 'ciclo2') {
-            return nota >= sistemaCiclo.notaMinimaAprobacion ? "Aprobado" : "Reprobado";
-        }
-        
-        if (ciclo === 'ciclo3') {
-            const escala = sistemaCiclo.escalaCalificacion;
-            for (const [key, rango] of Object.entries(escala)) {
-                if (nota >= rango.min && nota <= rango.max) {
-                    return rango.descripcion;
-                }
-            }
-        }
-        
-        return "No determinado";
-    }
-    
-    /**
-     * Valida que una puntuación esté dentro del rango permitido
-     * @param {number} puntuacion - Puntuación a validar
-     * @param {Array} rango - [min, max]
-     * @returns {number} - Puntuación validada
-     */
-    validarPuntuacion(puntuacion, rango = [0, 100]) {
-        if (puntuacion === undefined || puntuacion === null) {
-            return rango[0]; // Retorna el mínimo si no hay puntuación
-        }
-        
-        let puntuacionNum = parseFloat(puntuacion);
-        
-        if (isNaN(puntuacionNum)) {
-            return rango[0];
-        }
-        
-        // Asegurar que esté dentro del rango
-        puntuacionNum = Math.max(rango[0], Math.min(puntuacionNum, rango[1]));
-        
-        return puntuacionNum;
-    }
-    
-    /**
-     * Redondea una nota según estándares MEP
-     * @param {number} nota - Nota a redondear
-     * @param {number} decimales - Número de decimales (por defecto 2)
-     * @returns {number} - Nota redondeada
-     */
-    redondearNota(nota, decimales = 2) {
-        const factor = Math.pow(10, decimales);
-        return Math.round(nota * factor) / factor;
-    }
-    
-    /**
-     * Genera recomendaciones basadas en observaciones formativas
-     * @param {Object} observaciones - Observaciones por área
-     * @returns {Array} - Lista de recomendaciones
-     */
-    generarRecomendacionesFormativo(observaciones) {
-        const recomendaciones = [];
-        
-        if (observaciones.exploracionSensorial === 'en proceso') {
-            recomendaciones.push("Continuar con actividades de exploración sensorial con diferentes texturas y materiales seguros");
-        }
-        
-        if (observaciones.relacionCausaEfecto === 'en proceso') {
-            recomendaciones.push("Reforzar actividades que demuestren causa-efecto con dispositivos tecnológicos simples");
-        }
-        
-        if (observaciones.manejoMateriales === 'en proceso') {
-            recomendaciones.push("Supervisar el manejo seguro de materiales tecnológicos y reforzar normas de seguridad");
-        }
-        
-        if (recomendaciones.length === 0) {
-            recomendaciones.push("El estudiante muestra desarrollo adecuado para su nivel. Continuar con el proceso de estimulación tecnológica.");
-        }
-        
-        return recomendaciones;
-    }
-    
-    /**
-     * Genera mensaje descriptivo del resultado
-     * @param {number} nota - Nota final
-     * @param {string} condicion - Condición obtenida
-     * @param {string} ciclo - Ciclo educativo
-     * @returns {string} - Mensaje descriptivo
-     */
-    generarMensajeResultado(nota, condicion, ciclo) {
-        const mensajes = {
-            'ciclo1': {
-                'Aprobado': `El estudiante ha logrado los aprendizajes esperados con una calificación de ${nota}.`,
-                'Reprobado': `El estudiante requiere refuerzo en los aprendizajes. Calificación: ${nota}.`
+        // Porcentajes según Reglamento de Evaluación MEP
+        this.porcentajes = {
+            ciclo1: { // Materno a 3°
+                trabajoCotidiano: 0.65,
+                tareas: 0.10,
+                pruebaEjecucion: 0.15,
+                asistencia: 0.10,
+                proyecto: 0
             },
-            'ciclo2': {
-                'Aprobado': `Desempeño satisfactorio en Formación Tecnológica. Calificación: ${nota}.`,
-                'Reprobado': `Necesita apoyo adicional para alcanzar los aprendizajes. Calificación: ${nota}.`
+            ciclo2: { // 4° a 6°
+                trabajoCotidiano: 0.60,
+                tareas: 0.10,
+                pruebaEjecucion: 0.20,
+                asistencia: 0.10,
+                proyecto: 0
             },
-            'ciclo3': {
-                'Excelente': `Desempeño excepcional en todas las áreas tecnológicas. Calificación: ${nota}.`,
-                'Bueno': `Buen desempeño en Formación Tecnológica. Calificación: ${nota}.`,
-                'Aprobado': `Ha logrado los aprendizajes mínimos requeridos. Calificación: ${nota}.`,
-                'Reprobado': `No ha logrado los aprendizajes mínimos. Requiere refuerzo. Calificación: ${nota}.`
+            ciclo3: { // 7° a 9°
+                trabajoCotidiano: 0.50,
+                tareas: 0.10,
+                pruebaEjecucion: 0,
+                asistencia: 0.10,
+                proyecto: 0.30
             }
         };
         
-        return mensajes[ciclo]?.[condicion] || `Calificación: ${nota}. Condición: ${condicion}.`;
+        // Escalas de evaluación MEP
+        this.escalaMEP = [
+            { rango: [90, 100], letra: 'A', descripcion: 'Sobresaliente' },
+            { rango: [80, 89], letra: 'B', descripcion: 'Muy Bueno' },
+            { rango: [65, 79], letra: 'C', descripcion: 'Bueno' },
+            { rango: [50, 64], letra: 'D', descripcion: 'Regular' },
+            { rango: [0, 49], letra: 'F', descripcion: 'Necesita Mejorar' }
+        ];
     }
-    
-    /**
-     * Obtiene estadísticas de un grupo de estudiantes
-     * @param {Array} estudiantes - Lista de estudiantes con sus notas
-     * @returns {Object} - Estadísticas del grupo
-     */
-    obtenerEstadisticasGrupo(estudiantes) {
-        if (!estudiantes || estudiantes.length === 0) {
-            return {
-                total: 0,
-                promedio: 0,
-                maximo: 0,
-                minimo: 0,
-                aprobados: 0,
-                reprobados: 0,
-                porcentajeAprobacion: 0
-            };
+
+    // Calcular nota final según ciclo
+    calcularNotaFinal(notas, ciclo) {
+        const porcentajes = this.porcentajes[ciclo] || this.porcentajes.ciclo2;
+        
+        const notaFinal = 
+            (notas.trabajoCotidiano * porcentajes.trabajoCotidiano) +
+            (notas.tareas * porcentajes.tareas) +
+            (notas.pruebaEjecucion * porcentajes.pruebaEjecucion) +
+            (notas.proyecto * porcentajes.proyecto) +
+            (notas.asistencia * porcentajes.asistencia);
+        
+        return Math.min(100, Math.max(0, Math.round(notaFinal)));
+    }
+
+    // Convertir nivel de rúbrica (1-4) a porcentaje
+    nivelAPorcentaje(nivel) {
+        switch(nivel) {
+            case 1: return 60;  // Inicio
+            case 2: return 75;  // Proceso
+            case 3: return 90;  // Logrado
+            case 4: return 100; // Sobresaliente
+            default: return 0;
         }
+    }
+
+    // Calcular nota de trabajo cotidiano (promedio de evaluaciones)
+    calcularTrabajoCotidiano(evaluaciones) {
+        if (!evaluaciones || evaluaciones.length === 0) return 0;
         
-        const notas = estudiantes.map(e => e.notaFinal).filter(n => !isNaN(n));
-        const aprobados = estudiantes.filter(e => this.determinarCondicion(e.notaFinal, e.ciclo) !== 'Reprobado').length;
+        const total = evaluaciones.reduce((sum, eval) => {
+            // Convertir nivel de evaluación a porcentaje
+            const porcentaje = this.nivelAPorcentaje(eval.nivel || eval.promedio);
+            return sum + porcentaje;
+        }, 0);
         
-        const suma = notas.reduce((acc, nota) => acc + nota, 0);
-        const promedio = notas.length > 0 ? suma / notas.length : 0;
+        return total / evaluaciones.length;
+    }
+
+    // Obtener calificación según escala MEP
+    obtenerCalificacion(nota) {
+        const calificacion = this.escalaMEP.find(c => 
+            nota >= c.rango[0] && nota <= c.rango[1]
+        ) || this.escalaMEP[4];
         
         return {
-            total: estudiantes.length,
-            promedio: this.redondearNota(promedio),
-            maximo: Math.max(...notas),
-            minimo: Math.min(...notas),
-            aprobados,
-            reprobados: estudiantes.length - aprobados,
-            porcentajeAprobacion: this.redondearNota((aprobados / estudiantes.length) * 100)
+            nota: nota,
+            letra: calificacion.letra,
+            descripcion: calificacion.descripcion,
+            color: this.obtenerColorCalificacion(calificacion.letra)
         };
     }
-    
-    /**
-     * Guarda el historial de cálculos en localStorage
-     */
-    guardarHistorial() {
-        try {
-            localStorage.setItem('tecnoPIA_historial_calculos', JSON.stringify(this.historialCalculos));
-        } catch (error) {
-            console.error('Error al guardar historial:', error);
-        }
+
+    obtenerColorCalificacion(letra) {
+        const colores = {
+            'A': '#10B981', // Verde
+            'B': '#3B82F6', // Azul
+            'C': '#F59E0B', // Amarillo
+            'D': '#EF4444', // Rojo
+            'F': '#DC2626'  // Rojo oscuro
+        };
+        return colores[letra] || '#6B7280';
     }
-    
-    /**
-     * Carga el historial de cálculos desde localStorage
-     */
-    cargarHistorial() {
-        try {
-            const historial = localStorage.getItem('tecnoPIA_historial_calculos');
-            if (historial) {
-                this.historialCalculos = JSON.parse(historial);
-            }
-        } catch (error) {
-            console.error('Error al cargar historial:', error);
-        }
-    }
-    
-    /**
-     * Exporta datos en formato CSV para Excel
-     * @param {Array} datos - Datos a exportar
-     * @returns {string} - CSV formateado
-     */
-    exportarCSV(datos) {
-        if (!datos || datos.length === 0) {
-            return '';
-        }
-        
-        const headers = Object.keys(datos[0]).join(',');
-        const filas = datos.map(item => 
-            Object.values(item).map(val => 
-                typeof val === 'string' ? `"${val}"` : val
-            ).join(',')
+
+    // Calcular estadísticas de grupo
+    calcularEstadisticasGrupo(estudiantes, ciclo) {
+        const notasFinales = estudiantes.map(e => 
+            this.calcularNotaFinal(e.notas, ciclo)
         );
         
-        return [headers, ...filas].join('\n');
+        const asistenciaPromedio = estudiantes.length > 0 ? 
+            estudiantes.reduce((sum, e) => sum + (e.asistencia?.porcentaje || 0), 0) / estudiantes.length : 0;
+        
+        const aprobados = notasFinales.filter(n => n >= 65).length;
+        const reprobados = notasFinales.filter(n => n < 65).length;
+        
+        return {
+            totalEstudiantes: estudiantes.length,
+            promedioGrupo: this.calcularPromedio(notasFinales),
+            mediana: this.calcularMediana(notasFinales),
+            moda: this.calcularModa(notasFinales),
+            desviacionEstandar: this.calcularDesviacionEstandar(notasFinales),
+            asistenciaPromedio: asistenciaPromedio,
+            aprobados: aprobados,
+            reprobados: reprobados,
+            porcentajeAprobacion: (aprobados / estudiantes.length) * 100,
+            distribucion: this.obtenerDistribucionCalificaciones(notasFinales),
+            notasPorRango: this.obtenerNotasPorRango(notasFinales)
+        };
+    }
+
+    // Métodos estadísticos auxiliares
+    calcularPromedio(valores) {
+        if (valores.length === 0) return 0;
+        return valores.reduce((a, b) => a + b, 0) / valores.length;
+    }
+
+    calcularMediana(valores) {
+        if (valores.length === 0) return 0;
+        const sorted = [...valores].sort((a, b) => a - b);
+        const middle = Math.floor(sorted.length / 2);
+        
+        if (sorted.length % 2 === 0) {
+            return (sorted[middle - 1] + sorted[middle]) / 2;
+        }
+        return sorted[middle];
+    }
+
+    calcularModa(valores) {
+        if (valores.length === 0) return 0;
+        const frecuencia = {};
+        let maxFreq = 0;
+        let moda = valores[0];
+        
+        valores.forEach(valor => {
+            frecuencia[valor] = (frecuencia[valor] || 0) + 1;
+            if (frecuencia[valor] > maxFreq) {
+                maxFreq = frecuencia[valor];
+                moda = valor;
+            }
+        });
+        
+        return moda;
+    }
+
+    calcularDesviacionEstandar(valores) {
+        if (valores.length === 0) return 0;
+        const promedio = this.calcularPromedio(valores);
+        const diferenciasCuadradas = valores.map(valor => 
+            Math.pow(valor - promedio, 2)
+        );
+        const varianza = this.calcularPromedio(diferenciasCuadradas);
+        return Math.sqrt(varianza);
+    }
+
+    obtenerDistribucionCalificaciones(notas) {
+        return this.escalaMEP.map(nivel => ({
+            letra: nivel.letra,
+            descripcion: nivel.descripcion,
+            cantidad: notas.filter(n => n >= nivel.rango[0] && n <= nivel.rango[1]).length,
+            porcentaje: (notas.filter(n => n >= nivel.rango[0] && n <= nivel.rango[1]).length / notas.length) * 100
+        }));
+    }
+
+    obtenerNotasPorRango(notas) {
+        const rangos = [
+            { min: 0, max: 49, label: '0-49' },
+            { min: 50, max: 64, label: '50-64' },
+            { min: 65, max: 79, label: '65-79' },
+            { min: 80, max: 89, label: '80-89' },
+            { min: 90, max: 100, label: '90-100' }
+        ];
+        
+        return rangos.map(rango => ({
+            rango: rango.label,
+            cantidad: notas.filter(n => n >= rango.min && n <= rango.max).length,
+            porcentaje: (notas.filter(n => n >= rango.min && n <= rango.max).length / notas.length) * 100
+        }));
+    }
+
+    // Generar reporte de notas en formato MEP
+    generarReporteNotas(grupo, estudiantes) {
+        const estadisticas = this.calcularEstadisticasGrupo(estudiantes, grupo.ciclo);
+        
+        const reporte = {
+            grupo: {
+                nombre: grupo.nombre,
+                grado: grupo.grado,
+                ciclo: grupo.ciclo,
+                docente: grupo.docente,
+                institucion: grupo.institucion,
+                periodo: grupo.periodo,
+                año: grupo.año
+            },
+            fechaGeneracion: new Date().toISOString(),
+            estadisticas: estadisticas,
+            estudiantes: estudiantes.map(estudiante => {
+                const notaFinal = this.calcularNotaFinal(estudiante.notas, grupo.ciclo);
+                const calificacion = this.obtenerCalificacion(notaFinal);
+                
+                return {
+                    id: estudiante.id,
+                    nombre: estudiante.nombreCompleto,
+                    cedula: estudiante.cedula,
+                    asistencia: estudiante.asistencia,
+                    notas: estudiante.notas,
+                    notaFinal: notaFinal,
+                    calificacion: calificacion,
+                    evaluaciones: estudiante.evaluaciones?.length || 0
+                };
+            }),
+            resumen: {
+                fecha: new Date().toLocaleDateString('es-CR'),
+                hora: new Date().toLocaleTimeString('es-CR'),
+                generadoPor: 'TecnoPIA Sistema MEP',
+                version: '1.0.0'
+            }
+        };
+        
+        return reporte;
+    }
+
+    // Exportar reporte a diferentes formatos
+    exportarReporte(reporte, formato = 'json') {
+        switch(formato.toLowerCase()) {
+            case 'json':
+                return JSON.stringify(reporte, null, 2);
+                
+            case 'csv':
+                return this.convertirACSV(reporte);
+                
+            case 'html':
+                return this.convertirAHTML(reporte);
+                
+            default:
+                return JSON.stringify(reporte, null, 2);
+        }
+    }
+
+    convertirACSV(reporte) {
+        let csv = 'ID,Cédula,Nombre Completo,Asistencia%,TC,Tareas,PE,Proyecto,Nota Final,Calificación\n';
+        
+        reporte.estudiantes.forEach(est => {
+            csv += `"${est.id}","${est.cedula}","${est.nombre}",` +
+                   `${est.asistencia?.porcentaje || 0},${est.notas.trabajoCotidiano},` +
+                   `${est.notas.tareas},${est.notas.pruebaEjecucion},` +
+                   `${est.notas.proyecto},${est.notaFinal},"${est.calificacion.letra}"\n`;
+        });
+        
+        return csv;
+    }
+
+    convertirAHTML(reporte) {
+        let html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Reporte de Notas - ${reporte.grupo.nombre}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                .header { background: #4F46E5; color: white; padding: 20px; }
+                .stat { background: #f8f9fa; padding: 15px; margin: 10px 0; }
+                .aprobado { color: #10B981; }
+                .reprobado { color: #EF4444; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>${reporte.grupo.institucion}</h1>
+                <h2>${reporte.grupo.nombre} - ${reporte.grupo.grado}</h2>
+                <p>Docente: ${reporte.grupo.docente} | Periodo: ${reporte.grupo.periodo} ${reporte.grupo.año}</p>
+            </div>
+            
+            <div class="stat">
+                <h3>Estadísticas del Grupo</h3>
+                <p><strong>Promedio:</strong> ${reporte.estadisticas.promedioGrupo.toFixed(2)}</p>
+                <p><strong>Aprobación:</strong> ${reporte.estadisticas.porcentajeAprobacion.toFixed(1)}%</p>
+                <p><strong>Asistencia Promedio:</strong> ${reporte.estadisticas.asistenciaPromedio.toFixed(1)}%</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Asistencia</th>
+                        <th>Trabajo Cotidiano</th>
+                        <th>Tareas</th>
+                        <th>Prueba Ejecución</th>
+                        <th>Proyecto</th>
+                        <th>Nota Final</th>
+                        <th>Calificación</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        reporte.estudiantes.forEach(est => {
+            const claseNota = est.notaFinal >= 65 ? 'aprobado' : 'reprobado';
+            html += `
+                <tr>
+                    <td>${est.nombre}</td>
+                    <td>${est.asistencia?.porcentaje || 0}%</td>
+                    <td>${est.notas.trabajoCotidiano.toFixed(1)}</td>
+                    <td>${est.notas.tareas.toFixed(1)}</td>
+                    <td>${est.notas.pruebaEjecucion.toFixed(1)}</td>
+                    <td>${est.notas.proyecto.toFixed(1)}</td>
+                    <td class="${claseNota}"><strong>${est.notaFinal.toFixed(1)}</strong></td>
+                    <td class="${claseNota}"><strong>${est.calificacion.letra}</strong></td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                </tbody>
+            </table>
+            
+            <div style="margin-top: 30px; font-size: 12px; color: #666;">
+                <p>Generado el ${reporte.resumen.fecha} a las ${reporte.resumen.hora}</p>
+                <p>Sistema TecnoPIA - MEP Costa Rica</p>
+            </div>
+        </body>
+        </html>
+        `;
+        
+        return html;
+    }
+
+    // Validar si un estudiante aprueba según criterios MEP
+    validarAprobacion(notaFinal, asistenciaPorcentaje) {
+        const apruebaNota = notaFinal >= 65;
+        const apruebaAsistencia = asistenciaPorcentaje >= 80; // Mínimo 80% según MEP
+        
+        return {
+            aprueba: apruebaNota && apruebaAsistencia,
+            detalles: {
+                notaAprobada: apruebaNota,
+                asistenciaAprobada: apruebaAsistencia,
+                notaMinima: 65,
+                asistenciaMinima: 80
+            }
+        };
+    }
+
+    // Calcular nota necesaria para aprobar
+    calcularNotaNecesaria(notasActuales, ciclo, asistenciaPorcentaje) {
+        const porcentajes = this.porcentajes[ciclo] || this.porcentajes.ciclo2;
+        const notaActual = this.calcularNotaFinal(notasActuales, ciclo);
+        
+        if (notaActual >= 65) {
+            return { necesaria: 0, posible: true };
+        }
+        
+        // Calcular qué nota se necesita en el componente faltante
+        const puntosFaltantes = 65 - notaActual;
+        
+        // Asumiendo que solo falta trabajo cotidiano
+        const puntosPorPorcentaje = 100 * porcentajes.trabajoCotidiano;
+        const porcentajeNecesario = (puntosFaltantes / puntosPorPorcentaje) * 100;
+        
+        return {
+            necesaria: Math.ceil(porcentajeNecesario),
+            posible: porcentajeNecesario <= 100,
+            notaActual: notaActual,
+            puntosFaltantes: puntosFaltantes
+        };
     }
 }
 
-// Exportar para uso global
-window.CalculadoraMEP = CalculadoraMEP;
-window.SISTEMA_EVALUACION_MEP = SISTEMA_EVALUACION_MEP;
+// Inicializar calculadora global
+window.CalculadoraMEP = new CalculadoraMEP();
 
-// Inicialización automática
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Calculadora MEP cargada correctamente');
-    console.log('📊 Sistema de evaluación con porcentajes oficiales MEP');
-    console.log('🎯 I Ciclo: 65% TC + 10% TA + 15% PE + 10% AS');
-    console.log('🎯 II Ciclo: 60% TC + 10% TA + 20% PE + 10% AS');
-    console.log('🎯 III Ciclo: 50% TC + 10% TA + 30% PT + 10% AS');
-});
+// Funciones de utilidad para usar desde HTML
+window.calcularNotaEstudiante = function(estudiante, ciclo) {
+    return window.CalculadoraMEP.calcularNotaFinal(estudiante.notas, ciclo);
+};
+
+window.generarReporteGrupo = function(grupoId) {
+    const gestorGrupos = window.GestorGruposMEP;
+    if (!gestorGrupos) return null;
+    
+    const grupo = gestorGrupos.obtenerGrupoPorId(grupoId);
+    if (!grupo) return null;
+    
+    const reporte = window.CalculadoraMEP.generarReporteNotas(
+        grupo,
+        grupo.estudiantes.filter(e => e.activo)
+    );
+    
+    return reporte;
+};
+
+window.exportarNotas = function(grupoId, formato = 'json') {
+    const reporte = window.generarReporteGrupo(grupoId);
+    if (!reporte) return null;
+    
+    const data = window.CalculadoraMEP.exportarReporte(reporte, formato);
+    const blob = new Blob([data], { 
+        type: formato === 'csv' ? 'text/csv' : 
+               formato === 'html' ? 'text/html' : 'application/json' 
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notas-${reporte.grupo.nombre.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.${formato}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    return data;
+};
+
+window.verEstadisticasGrupo = function(grupoId) {
+    const gestorGrupos = window.GestorGruposMEP;
+    if (!gestorGrupos) return null;
+    
+    const grupo = gestorGrupos.obtenerGrupoPorId(grupoId);
+    if (!grupo) return null;
+    
+    const estadisticas = window.CalculadoraMEP.calcularEstadisticasGrupo(
+        grupo.estudiantes.filter(e => e.activo),
+        grupo.ciclo
+    );
+    
+    console.log('Estadísticas del grupo:', estadisticas);
+    return estadisticas;
+};
