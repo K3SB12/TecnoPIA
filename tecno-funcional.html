@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoPIA Funcional - Evaluación MEP</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .tab-btn.active { 
+            background-color: #3b82f6;
+            color: white;
+        }
+        .indicador-card {
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s ease;
+        }
+        .indicador-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1);
+        }
+        .estudiante-row:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto p-4 max-w-7xl">
+        <!-- Header Principal -->
+        <header class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div class="mb-4 md:mb-0">
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                        <i class="fas fa-laptop-code text-blue-600 mr-3"></i>
+                        Tecno<span class="text-blue-600">PIA</span>
+                    </h1>
+                    <p class="text-gray-600 mt-2">Sistema de evaluación para Formación Tecnológica - MEP Costa Rica</p>
+                    <div class="flex items-center mt-3 text-sm text-gray-500">
+                        <i class="fas fa-user-graduate mr-2"></i>
+                        <span id="docente-actual">Docente: No configurado</span>
+                        <i class="fas fa-school mx-4"></i>
+                        <span id="grupo-actual">Grupo: No seleccionado</span>
+                    </div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div class="text-right mb-3">
+                        <p class="text-sm text-gray-500" id="fecha-hoy"></p>
+                        <p class="text-sm text-gray-500" id="hora-actual"></p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="guardarTodo()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                            <i class="fas fa-save mr-2"></i>Guardar Todo
+                        </button>
+                        <button onclick="exportarDatos()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-download mr-2"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sistema de Pestañas -->
+        <div class="mb-8">
+            <div class="flex flex-wrap gap-2 bg-white p-2 rounded-xl shadow">
+                <button class="tab-btn active px-5 py-3 rounded-lg font-semibold flex items-center" onclick="cambiarTab(1)">
+                    <i class="fas fa-cog mr-2"></i>Configuración
+                </button>
+                <button class="tab-btn px-5 py-3 rounded-lg font-semibold flex items-center" onclick="cambiarTab(2)">
+                    <i class="fas fa-database mr-2"></i>Indicadores PNFT
+                </button>
+                <button class="tab-btn px-5 py-3 rounded-lg font-semibold flex items-center" onclick="cambiarTab(3)">
+                    <i class="fas fa-users mr-2"></i>Estudiantes
+                </button>
+                <button class="tab-btn px-5 py-3 rounded-lg font-semibold flex items-center" onclick="cambiarTab(4)">
+                    <i class="fas fa-clipboard-check mr-2"></i>Evaluar
+                </button>
+                <button class="tab-btn px-5 py-3 rounded-lg font-semibold flex items-center" onclick="cambiarTab(5)">
+                    <i class="fas fa-chart-bar mr-2"></i>Resultados
+                </button>
+            </div>
+        </div>
+
+        <!-- ==================== CONTENIDO DE PESTAÑAS ==================== -->
+
+        <!-- Pestaña 1: Configuración -->
+        <div id="tab1" class="tab-content active bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-cog text-blue-600 mr-2"></i>Configuración del Sistema
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Datos del Docente -->
+                <div class="space-y-6">
+                    <div class="bg-blue-50 p-5 rounded-xl">
+                        <h3 class="text-xl font-bold mb-4 text-blue-800">
+                            <i class="fas fa-user-tie mr-2"></i>Datos del Docente
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block font-medium mb-2">Nombre completo</label>
+                                <input type="text" id="input-docente" placeholder="Ej: Juan Pérez González" 
+                                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-2">Correo electrónico</label>
+                                <input type="email" id="input-email" placeholder="docente@institucion.ed.cr" 
+                                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-2">Institución educativa</label>
+                                <input type="text" id="input-institucion" placeholder="Nombre de la institución" 
+                                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Datos del Grupo -->
+                    <div class="bg-green-50 p-5 rounded-xl">
+                        <h3 class="text-xl font-bold mb-4 text-green-800">
+                            <i class="fas fa-users mr-2"></i>Datos del Grupo
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block font-medium mb-2">Nombre del grupo</label>
+                                <input type="text" id="input-grupo" placeholder="Ej: 5°A Tecnología" 
+                                       class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-2">Grado</label>
+                                <select id="select-grado" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                    <option value="">Seleccionar grado</option>
+                                    <option value="Materno">Materno Infantil/Transición</option>
+                                    <option value="1°">1° Grado</option>
+                                    <option value="2°">2° Grado</option>
+                                    <option value="3°">3° Grado</option>
+                                    <option value="4°">4° Grado</option>
+                                    <option value="5°">5° Grado</option>
+                                    <option value="6°">6° Grado</option>
+                                    <option value="7°">7° Grado</option>
+                                    <option value="8°">8° Grado</option>
+                                    <option value="9°">9° Grado</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-medium mb-2">Periodo lectivo</label>
+                                <select id="select-periodo" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500">
+                                    <option value="I Trimestre">I Trimestre</option>
+                                    <option value="II Trimestre">II Trimestre</option>
+                                    <option value="III Trimestre">III Trimestre</option>
+                                    <option value="Semestre I">Semestre I</option>
+                                    <option value="Semestre II">Semestre II</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Porcentajes MEP -->
+                <div class="space-y-6">
+                    <div class="bg-yellow-50 p-5 rounded-xl">
+                        <h3 class="text-xl font-bold mb-4 text-yellow-800">
+                            <i class="fas fa-percentage mr-2"></i>Porcentajes de Evaluación MEP
+                        </h3>
+                        <p class="text-gray-600 mb-4">Configura los porcentajes según el reglamento de evaluación</p>
+                        
+                        <div class="space-y-4">
+                            <!-- Ciclo 1 -->
+                            <div class="p-4 bg-white rounded-lg border">
+                                <h4 class="font-bold mb-3 text-blue-700">Ciclo 1 (Materno - 3° Grado)</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Trabajo Cotidiano</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="65" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo1-tc">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Tareas</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo1-tareas">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Prueba Ejecución</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="15" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo1-prueba">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Asistencia</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo1-asistencia">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ciclo 2 -->
+                            <div class="p-4 bg-white rounded-lg border">
+                                <h4 class="font-bold mb-3 text-green-700">Ciclo 2 (4° - 6° Grado)</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Trabajo Cotidiano</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="60" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo2-tc">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Tareas</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo2-tareas">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Prueba Ejecución</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="20" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo2-prueba">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Asistencia</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo2-asistencia">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ciclo 3 -->
+                            <div class="p-4 bg-white rounded-lg border">
+                                <h4 class="font-bold mb-3 text-purple-700">Ciclo 3 (7° - 9° Grado)</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Trabajo Cotidiano</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="50" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo3-tc">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Tareas</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo3-tareas">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Proyecto Tecnológico</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="30" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo3-proyecto">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Asistencia</label>
+                                        <div class="flex items-center">
+                                            <input type="number" value="10" min="0" max="100" 
+                                                   class="w-20 p-2 border rounded" id="ciclo3-asistencia">
+                                            <span class="ml-2">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botón de guardar -->
+                    <div class="text-center">
+                        <button onclick="guardarConfiguracion()" 
+                                class="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold text-lg">
+                            <i class="fas fa-save mr-2"></i>Guardar Configuración
+                        </button>
+                        <p class="text-sm text-gray-500 mt-2">Los datos se guardan automáticamente en tu navegador</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 2: Indicadores PNFT -->
+        <div id="tab2" class="tab-content bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-database text-blue-600 mr-2"></i>Base de Datos PNFT
+            </h2>
+            
+            <!-- Filtros -->
+            <div class="mb-8 p-5 bg-blue-50 rounded-xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block font-medium mb-2">Grado</label>
+                        <select id="filtro-grado" onchange="filtrarPorGrado()" 
+                                class="w-full p-3 border rounded-lg">
+                            <option value="">Todos los grados</option>
+                            <option value="Materno">Materno/Transición</option>
+                            <option value="1°">1° Grado</option>
+                            <option value="2°">2° Grado</option>
+                            <option value="3°">3° Grado</option>
+                            <option value="4°">4° Grado</option>
+                            <option value="5°">5° Grado</option>
+                            <option value="6°">6° Grado</option>
+                            <option value="7°">7° Grado</option>
+                            <option value="8°">8° Grado</option>
+                            <option value="9°">9° Grado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">Módulo</label>
+                        <select id="filtro-modulo" onchange="filtrarPorModulo()" 
+                                class="w-full p-3 border rounded-lg">
+                            <option value="">Todos los módulos</option>
+                            <option value="Módulo 1">Módulo 1</option>
+                            <option value="Módulo 2">Módulo 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-2">Área de Conocimiento</label>
+                        <select id="filtro-area" onchange="filtrarPorArea()" 
+                                class="w-full p-3 border rounded-lg">
+                            <option value="">Todas las áreas</option>
+                            <option value="Apropiación tecnológica y Digital">Apropiación tecnológica</option>
+                            <option value="Programación y Algoritmos">Programación</option>
+                            <option value="Computación física y Robótica">Robótica</option>
+                            <option value="Ciencia de datos e Inteligencia artificial">Ciencia de datos</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <div class="text-blue-700 font-medium">
+                        <i class="fas fa-filter mr-2"></i>
+                        <span id="contador-indicadores">Cargando indicadores...</span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="agregarIndicadorPersonalizado()" 
+                                class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-plus mr-2"></i>Agregar Indicador
+                        </button>
+                        <button onclick="exportarPNFT()" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-file-export mr-2"></i>Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Indicadores -->
+            <div id="lista-indicadores" class="space-y-4">
+                <!-- Los indicadores se cargarán aquí dinámicamente -->
+                <div class="text-center py-12 text-gray-400">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-4"></i>
+                    <p class="text-lg">Cargando base de datos PNFT...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 3: Estudiantes -->
+        <div id="tab3" class="tab-content bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-users text-blue-600 mr-2"></i>Gestión de Estudiantes
+            </h2>
+            
+            <!-- Formulario para agregar estudiantes -->
+            <div class="mb-8 p-5 bg-green-50 rounded-xl">
+                <h3 class="text-lg font-bold mb-4 text-green-800">Agregar Nuevo Estudiante</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="text" id="input-cedula" placeholder="Cédula o ID" 
+                           class="p-3 border rounded-lg">
+                    <input type="text" id="input-nombre" placeholder="Nombre completo" 
+                           class="p-3 border rounded-lg">
+                    <input type="email" id="input-email-est" placeholder="Correo (opcional)" 
+                           class="p-3 border rounded-lg">
+                    <button onclick="agregarEstudiante()" 
+                            class="p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                        <i class="fas fa-user-plus mr-2"></i>Agregar
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-3">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Puedes agregar estudiantes individualmente o importar desde Excel
+                </p>
+            </div>
+
+            <!-- Lista de estudiantes -->
+            <div class="overflow-x-auto rounded-xl border">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                N°
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                Cédula/ID
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                Nombre completo
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                Estado
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-estudiantes" class="bg-white divide-y divide-gray-200">
+                        <!-- Los estudiantes se cargarán aquí -->
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                                <i class="fas fa-user-friends text-3xl mb-3"></i>
+                                <p class="text-lg">No hay estudiantes registrados</p>
+                                <p class="text-sm">Agrega estudiantes usando el formulario superior</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Acciones masivas -->
+            <div class="mt-6 flex justify-between items-center">
+                <div class="text-gray-600">
+                    <span id="contador-estudiantes">0 estudiantes</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="importarEstudiantes()" 
+                            class="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50">
+                        <i class="fas fa-file-import mr-2"></i>Importar desde Excel
+                    </button>
+                    <button onclick="exportarEstudiantes()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-file-export mr-2"></i>Exportar lista
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 4: Evaluar -->
+        <div id="tab4" class="tab-content bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-clipboard-check text-blue-600 mr-2"></i>Evaluación de Estudiantes
+            </h2>
+            
+            <!-- Selector de indicador a evaluar -->
+            <div class="mb-8 p-5 bg-yellow-50 rounded-xl">
+                <h3 class="text-lg font-bold mb-4 text-yellow-800">Seleccionar Indicador para Evaluar</h3>
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                    <div class="flex-1">
+                        <select id="selector-indicador-evaluar" 
+                                class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yellow-500">
+                            <option value="">-- Selecciona un indicador PNFT --</option>
+                            <!-- Los indicadores se cargarán aquí dinámicamente -->
+                        </select>
+                        <p class="text-sm text-gray-500 mt-2" id="descripcion-indicador">
+                            Selecciona un indicador para ver su descripción
+                        </p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="cargarIndicadorParaEvaluar()" 
+                                class="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium">
+                            <i class="fas fa-play mr-2"></i>Comenzar Evaluación
+                        </button>
+                        <button onclick="cambiarTab(2)" 
+                                class="px-6 py-3 border border-yellow-600 text-yellow-600 rounded-lg hover:bg-yellow-50">
+                            <i class="fas fa-search mr-2"></i>Buscar más
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de evaluación -->
+            <div id="contenedor-evaluacion" class="hidden">
+                <div class="mb-6 p-4 bg-blue-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-lg" id="titulo-evaluacion-actual"></h4>
+                        <p class="text-sm text-gray-600" id="subtitulo-evaluacion"></p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm text-gray-500">Escala: </span>
+                        <span class="font-bold text-blue-700">1-4 (1=Inicio, 4=Sobresaliente)</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Estudiante
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Evaluación
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Puntaje
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Observaciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-evaluacion-estudiantes" class="bg-white divide-y divide-gray-200">
+                            <!-- Las filas de evaluación se generarán aquí -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 flex justify-between items-center">
+                    <button onclick="cancelarEvaluacion()" 
+                            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <div class="flex space-x-3">
+                        <button onclick="guardarEvaluacionParcial()" 
+                                class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                            <i class="fas fa-save mr-2"></i>Guardar Parcial
+                        </button>
+                        <button onclick="finalizarEvaluacion()" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            <i class="fas fa-check-double mr-2"></i>Finalizar Evaluación
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sin indicador seleccionado -->
+            <div id="sin-evaluacion" class="text-center py-16">
+                <i class="fas fa-clipboard-list text-5xl text-gray-300 mb-6"></i>
+                <h3 class="text-2xl font-bold text-gray-400 mb-3">No hay evaluación en curso</h3>
+                <p class="text-gray-500 mb-6 max-w-md mx-auto">
+                    Selecciona un indicador PNFT de la base de datos para comenzar a evaluar a tus estudiantes
+                </p>
+                <button onclick="cambiarTab(2)" 
+                        class="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-lg font-medium">
+                    <i class="fas fa-database mr-2"></i>Explorar Indicadores PNFT
+                </button>
+            </div>
+        </div>
+
+        <!-- Pestaña 5: Resultados -->
+        <div id="tab5" class="tab-content bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
+                <i class="fas fa-chart-bar text-blue-600 mr-2"></i>Resultados y Reportes
+            </h2>
+            
+            <!-- Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-blue-50 p-5 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-blue-700 mb-2" id="estadistica-estudiantes">0</div>
+                    <div class="text-blue-600 font-medium">Estudiantes</div>
+                </div>
+                <div class="bg-green-50 p-5 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-green-700 mb-2" id="estadistica-evaluaciones">0</div>
+                    <div class="text-green-600 font-medium">Evaluaciones</div>
+                </div>
+                <div class="bg-yellow-50 p-5 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-yellow-700 mb-2" id="estadistica-promedio">0.00</div>
+                    <div class="text-yellow-600 font-medium">Promedio Grupo</div>
+                </div>
+                <div class="bg-purple-50 p-5 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-purple-700 mb-2" id="estadistica-completado">0%</div>
+                    <div class="text-purple-600 font-medium">Completado</div>
+                </div>
+            </div>
+
+            <!-- Reportes disponibles -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="border rounded-xl p-5 hover:shadow-lg transition cursor-pointer" 
+                     onclick="generarReporte('individual')">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-graduate text-4xl text-blue-600"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-center">Reporte Individual</h4>
+                    <p class="text-gray-600 text-sm text-center">Boletín detallado por estudiante con todos los indicadores evaluados</p>
+                </div>
+                
+                <div class="border rounded-xl p-5 hover:shadow-lg transition cursor-pointer"
+                     onclick="generarReporte('grupal')">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-users text-4xl text-green-600"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-center">Reporte Grupal</h4>
+                    <p class="text-gray-600 text-sm text-center">Resumen estadístico de todo el grupo con gráficos</p>
+                </div>
+                
+                <div class="border rounded-xl p-5 hover:shadow-lg transition cursor-pointer"
+                     onclick="generarReporte('mep')">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-file-excel text-4xl text-purple-600"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2 text-center">Formato MEP</h4>
+                    <p class="text-gray-600 text-sm text-center">Plantilla Excel compatible con el sistema oficial MEP</p>
+                </div>
+            </div>
+
+            <!-- Vista previa de resultados -->
+            <div class="border rounded-xl p-5">
+                <h4 class="font-bold text-lg mb-4">Resultados Recientes</h4>
+                <div id="vista-resultados" class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Estudiante</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">TC (65%)</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Tareas (10%)</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Prueba (15%)</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Asistencia (10%)</th>
+                                <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Final</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-resultados" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                                    No hay resultados disponibles
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-8 border-t border-gray-200 text-center text-gray-500">
+            <p class="mb-2">
+                <strong>TecnoPIA</strong> - Sistema de evaluación para Formación Tecnológica
+            </p>
+            <p class="text-sm">
+                Basado en el Reglamento de Evaluación de los Aprendizajes MEP y la Propuesta Nacional de Formación Tecnológica (PNFT)
+            </p>
+            <div class="mt-4 flex justify-center space-x-6 text-sm">
+                <span><i class="fas fa-graduation-cap mr-1"></i> Para docentes</span>
+                <span><i class="fas fa-laptop-code mr-1"></i> Formación Tecnológica</span>
+                <span><i class="fas fa-flag mr-1"></i> Costa Rica</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ==================== JAVASCRIPT COMPLETO ==================== -->
+    <script>
+        // ==================== VARIABLES GLOBALES ====================
+        let configuracion = {};
+        let estudiantes = [];
+        let indicadoresPNFT = {};
+        let evaluaciones = [];
+        let evaluacionActual = null;
+
+        // ==================== BASE DE DATOS PNFT (COMPLETA) ====================
+        const PNFT_BASE_DATOS = {
+            // Materno Infantil / Transición
+            "Materno": {
+                "Módulo 1": {
+                    "Apropiación tecnológica y Digital": [
+                        { id: "M1-ATD-1", saber: "Computadora", indicador: "Identificar qué es una computadora y algunas de sus características, a partir de experiencias prácticas de interacción con dispositivos digitales." },
+                        { id: "M1-ATD-2", saber: "Software", indicador: "Reconocer elementos visuales básicos de la interfaz de software (iconos, botones, ventanas), interactuando con ellos mediante el uso guiado de dispositivos digitales." }
+                    ],
+                    "Programación y Algoritmos": [
+                        { id: "M1-PA-1", saber: "Entorno de programación iconográfico", indicador: "Reconocer el entorno de programación iconográfico, interactuando con bloques de la interfaz, como desplazamiento, apariencia o sonido, mediante el uso guiado del docente." }
+                    ]
+                },
+                "Módulo 2": {
+                    "Apropiación tecnológica y Digital": [
+                        { id: "M2-ATD-1", saber: "Hardware", indicador: "Reconocer componentes básicos del hardware, como dispositivos de entrada y salida de datos, explorando su función al encender, usar o interactuar con la computadora en actividades cotidianas." }
+                    ],
+                    "Computación física y Robótica": [
+                        { id: "M2-CFR-1", saber: "Robot", indicador: "Reconocer qué es un robot, sus componentes y algunos de sus usos, mediante actividades lúdicas de exploración o programación guiada." }
+                    ]
+                }
+            },
+            // 1° Grado
+            "1°": {
+                "Módulo 1": {
+                    "Apropiación tecnológica y Digital": [
+                        { id: "1M1-ATD-1", saber: "Computadora", indicador: "Reconocer la computadora como una herramienta tecnológica, identificando sus características básicas, funciones e importancia en la vida cotidiana, por medio de la observación y manipulación práctica." },
+                        { id: "1M1-ATD-2", saber: "Hardware", indicador: "Identificar el hardware básico de una computadora, reconociendo dispositivos de entrada, salida y las acciones de encendido y apagado, mediante actividades prácticas guiadas." }
+                    ],
+                    "Programación y Algoritmos": [
+                        { id: "1M1-PA-1", saber: "Entorno de programación iconográfico", indicador: "Reconocer elementos básicos de un entorno de programación iconográfico, como bloques de desplazamiento, orientación, apariencia, sonido, eventos y control, mediante la navegación en la interfaz con actividades guiadas." }
+                    ]
+                },
+                "Módulo 2": {
+                    "Programación y Algoritmos": [
+                        { id: "1M2-PA-1", saber: "Estructuras repetitivas", indicador: "Reconocer estructuras repetitivas al identificar ciclos finitos (como una canción o rutina) e infinitos (como el tic-tac del reloj o el movimiento del ventilador) en situaciones de la vida diaria." }
+                    ]
+                }
+            },
+            // 2° Grado
+            "2°": {
+                "Módulo 1": {
+                    "Apropiación tecnológica y Digital": [
+                        { id: "2M1-ATD-1", saber: "Hardware", indicador: "Identificar el funcionamiento de los componentes básicos del hardware, reconociendo cómo cuidarlos mientras utilizan la computadora en la cotidianidad." },
+                        { id: "2M1-ATD-2", saber: "Herramienta de productividad", indicador: "Utilizar herramientas de productividad como el procesador de texto, reconociendo la cinta de opciones, pestañas y comandos básicos, así como sus funciones por teclado, durante la creación de textos sencillos." }
+                    ]
+                }
+            },
+            // 3° Grado
+            "3°": {
+                "Módulo 1": {
+                    "Apropiación tecnológica y Digital": [
+                        { id: "3M1-ATD-1", saber: "Redes de comunicación", indicador: "Describir qué son las redes de comunicación y cómo funciona una red local, a partir de la observación y la práctica de intercambio de información entre dispositivos conectados en el aula." }
+                    ]
+                }
+            },
+            // 4° Grado
+            "4°": {
+                "Módulo 1": {
+                    "Programación y Algoritmos": [
+                        { id: "4M1-PA-1", saber: "Entorno de programación por bloques", indicador: "Utilizar el entorno de programación por bloques, explorando la interfaz y organizando bloques en el área de programación en la resolución de retos programados." }
+                    ]
+                }
+            },
+            // 5° Grado
+            "5°": {
+                "Módulo 1": {
+                    "Computación física y Robótica": [
+                        { id: "5M1-CFR-1", saber: "Computación física", indicador: "Reconocer los componentes básicos de la computación física, como el microcontrolador, sensores, actuadores y el entorno de programación, relacionándolos con sus usos y aplicaciones en contextos cotidianos." }
+                    ]
+                }
+            },
+            // 6° Grado
+            "6°": {
+                "Módulo 1": {
+                    "Ciencia de datos e Inteligencia artificial": [
+                        { id: "6M1-CDIA-1", saber: "Visualización de datos", indicador: "Aplicar técnicas de visualización de datos, creando representaciones gráficas simples como gráficos pictóricos o de barras." }
+                    ]
+                }
+            },
+            // 7° Grado
+            "7°": {
+                "Módulo 1": {
+                    "Programación y Algoritmos": [
+                        { id: "7M1-PA-1", saber: "Lógica de programación", indicador: "Identificar la lógica de programación con el uso de proposiciones y conectores lógicos (AND, OR, NOT), reconociendo su uso en tablas de verdad para la evaluación de expresiones lógicas." }
+                    ]
+                }
+            },
+            // 8° Grado
+            "8°": {
+                "Módulo 1": {
+                    "Computación física y Robótica": [
+                        { id: "8M1-CFR-1", saber: "Robótica", indicador: "Diferenciar la computación física con la robótica, identificando cómo los sensores, actuadores y sistemas de control se integran en mecanismos robóticos." }
+                    ]
+                }
+            },
+            // 9° Grado
+            "9°": {
+                "Módulo 1": {
+                    "Ciencia de datos e Inteligencia artificial": [
+                        { id: "9M1-CDIA-1", saber: "Herramientas generativas", indicador: "Aplicar herramientas generativas con inteligencia artificial en la producción de contenido digital, considerando criterios de seguridad, propiedad intelectual y responsabilidad digital." }
+                    ]
+                }
+            }
+        };
+
+        // ==================== INICIALIZACIÓN ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("TecnoPIA - Inicializando sistema...");
+            
+            // Configurar fecha y hora
+            actualizarFechaHora();
+            setInterval(actualizarFechaHora, 60000);
+            
+            // Cargar datos guardados
+            cargarDatosGuardados();
+            
+            // Inicializar interfaz
+            inicializarInterfaz();
+            
+            // Cargar indicadores PNFT
+            cargarTodosIndicadores();
+            
+            console.log("✅ Sistema listo");
+        });
+
+        function actualizarFechaHora() {
+            const ahora = new Date();
+            document.getElementById('fecha-hoy').textContent = 
+                ahora.toLocaleDateString('es-ES', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+            document.getElementById('hora-actual').textContent = 
+                ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function cargarDatosGuardados() {
+            // Cargar configuración
+            const configGuardada = localStorage.getItem('tecnoPIA_config');
+            if (configGuardada) {
+                configuracion = JSON.parse(configGuardada);
+                cargarConfiguracionEnFormulario();
+            } else {
+                // Configuración por defecto
+                configuracion = {
+                    docente: "",
+                    email: "",
+                    institucion: "",
+                    grupo: "",
+                    grado: "",
+                    periodo: "I Trimestre",
+                    porcentajes: {
+                        ciclo1: { tc: 65, tareas: 10, prueba: 15, asistencia: 10 },
+                        ciclo2: { tc: 60, tareas: 10, prueba: 20, asistencia: 10 },
+                        ciclo3: { tc: 50, tareas: 10, proyecto: 30, asistencia: 10 }
+                    }
+                };
+            }
+            
+            // Cargar estudiantes
+            const estudiantesGuardados = localStorage.getItem('tecnoPIA_estudiantes');
+            if (estudiantesGuardados) {
+                estudiantes = JSON.parse(estudiantesGuardados);
+                actualizarListaEstudiantes();
+            }
+            
+            // Cargar indicadores personalizados
+            const indicadoresGuardados = localStorage.getItem('tecnoPIA_indicadores');
+            if (indicadoresGuardados) {
+                indicadoresPNFT = JSON.parse(indicadoresGuardados);
+            } else {
+                indicadoresPNFT = PNFT_BASE_DATOS;
+            }
+            
+            // Cargar evaluaciones
+            const evaluacionesGuardadas = localStorage.getItem('tecnoPIA_evaluaciones');
+            if (evaluacionesGuardadas) {
+                evaluaciones = JSON.parse(evaluacionesGuardadas);
+                actualizarResultados();
+            }
+            
+            // Actualizar header
+            actualizarHeader();
+        }
+
+        function inicializarInterfaz() {
+            // Actualizar contadores
+            actualizarContadores();
+            
+            // Configurar event listeners
+            document.getElementById('input-docente').addEventListener('input', function() {
+                configuracion.docente = this.value;
+                actualizarHeader();
+            });
+            
+            document.getElementById('input-grupo').addEventListener('input', function() {
+                configuracion.grupo = this.value;
+                actualizarHeader();
+            });
+            
+            document.getElementById('select-grado').addEventListener('change', function() {
+                configuracion.grado = this.value;
+                actualizarHeader();
+            });
+        }
+
+        // ==================== FUNCIONES DE INTERFAZ ====================
+        function cambiarTab(tabNum) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Desactivar todos los botones
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Mostrar pestaña seleccionada
+            document.getElementById('tab' + tabNum).classList.add('active');
+            
+            // Activar botón seleccionado
+            event.currentTarget.classList.add('active');
+            
+            // Actualizar datos específicos de la pestaña
+            switch(tabNum) {
+                case 3:
+                    actualizarListaEstudiantes();
+                    break;
+                case 5:
+                    actualizarResultados();
+                    break;
+            }
+        }
+
+        function actualizarHeader() {
+            document.getElementById('docente-actual').textContent = 
+                `Docente: ${configuracion.docente || 'No configurado'}`;
+            document.getElementById('grupo-actual').textContent = 
+                `Grupo: ${configuracion.grupo || 'No seleccionado'} ${configuracion.grado || ''}`;
+        }
+
+        function actualizarContadores() {
+            document.getElementById('estadistica-estudiantes').textContent = estudiantes.length;
+            document.getElementById('estadistica-evaluaciones').textContent = evaluaciones.length;
+            
+            if (estudiantes.length > 0) {
+                const promedio = calcularPromedioGrupo();
+                document.getElementById('estadistica-promedio').textContent = promedio.toFixed(2);
+                const completado = Math.min(100, Math.round((evaluaciones.length / (estudiantes.length * 5)) * 100));
+                document.getElementById('estadistica-completado').textContent = `${completado}%`;
+            }
+        }
+
+        // ==================== CONFIGURACIÓN ====================
+        function cargarConfiguracionEnFormulario() {
+            if (!configuracion) return;
+            
+            document.getElementById('input-docente').value = configuracion.docente || '';
+            document.getElementById('input-email').value = configuracion.email || '';
+            document.getElementById('input-institucion').value = configuracion.institucion || '';
+            document.getElementById('input-grupo').value = configuracion.grupo || '';
+            document.getElementById('select-grado').value = configuracion.grado || '';
+            document.getElementById('select-periodo').value = configuracion.periodo || 'I Trimestre';
+            
+            // Cargar porcentajes
+            if (configuracion.porcentajes) {
+                const p = configuracion.porcentajes;
+                document.getElementById('ciclo1-tc').value = p.ciclo1?.tc || 65;
+                document.getElementById('ciclo1-tareas').value = p.ciclo1?.tareas || 10;
+                document.getElementById('ciclo1-prueba').value = p.ciclo1?.prueba || 15;
+                document.getElementById('ciclo1-asistencia').value = p.ciclo1?.asistencia || 10;
+                
+                document.getElementById('ciclo2-tc').value = p.ciclo2?.tc || 60;
+                document.getElementById('ciclo2-tareas').value = p.ciclo2?.tareas || 10;
+                document.getElementById('ciclo2-prueba').value = p.ciclo2?.prueba || 20;
+                document.getElementById('ciclo2-asistencia').value = p.ciclo2?.asistencia || 10;
+                
+                document.getElementById('ciclo3-tc').value = p.ciclo3?.tc || 50;
+                document.getElementById('ciclo3-tareas').value = p.ciclo3?.tareas || 10;
+                document.getElementById('ciclo3-proyecto').value = p.ciclo3?.proyecto || 30;
+                document.getElementById('ciclo3-asistencia').value = p.ciclo3?.asistencia || 10;
+            }
+        }
+
+        function guardarConfiguracion() {
+            // Guardar datos básicos
+            configuracion.docente = document.getElementById('input-docente').value;
+            configuracion.email = document.getElementById('input-email').value;
+            configuracion.institucion = document.getElementById('input-institucion').value;
+            configuracion.grupo = document.getElementById('input-grupo').value;
+            configuracion.grado = document.getElementById('select-grado').value;
+            configuracion.periodo = document.getElementById('select-periodo').value;
+            
+            // Guardar porcentajes
+            configuracion.porcentajes = {
+                ciclo1: {
+                    tc: parseInt(document.getElementById('ciclo1-tc').value) || 65,
+                    tareas: parseInt(document.getElementById('ciclo1-tareas').value) || 10,
+                    prueba: parseInt(document.getElementById('ciclo1-prueba').value) || 15,
+                    asistencia: parseInt(document.getElementById('ciclo1-asistencia').value) || 10
+                },
+                ciclo2: {
+                    tc: parseInt(document.getElementById('ciclo2-tc').value) || 60,
+                    tareas: parseInt(document.getElementById('ciclo2-tareas').value) || 10,
+                    prueba: parseInt(document.getElementById('ciclo2-prueba').value) || 20,
+                    asistencia: parseInt(document.getElementById('ciclo2-asistencia').value) || 10
+                },
+                ciclo3: {
+                    tc: parseInt(document.getElementById('ciclo3-tc').value) || 50,
+                    tareas: parseInt(document.getElementById('ciclo3-tareas').value) || 10,
+                    proyecto: parseInt(document.getElementById('ciclo3-proyecto').value) || 30,
+                    asistencia: parseInt(document.getElementById('ciclo3-asistencia').value) || 10
+                }
+            };
+            
+            // Guardar en localStorage
+            localStorage.setItem('tecnoPIA_config', JSON.stringify(configuracion));
+            
+            // Actualizar interfaz
+            actualizarHeader();
+            actualizarContadores();
+            
+            // Mostrar confirmación
+            mostrarNotificacion('✅ Configuración guardada exitosamente', 'success');
+        }
+
+        // ==================== ESTUDIANTES ====================
+        function agregarEstudiante() {
+            const cedula = document.getElementById('input-cedula').value.trim();
+            const nombre = document.getElementById('input-nombre').value.trim();
+            const email = document.getElementById('input-email-est').value.trim();
+            
+            if (!cedula || !nombre) {
+                mostrarNotificacion('❌ Cédula y nombre son requeridos', 'error');
+                return;
+            }
+            
+            // Verificar si ya existe
+            if (estudiantes.some(e => e.cedula === cedula)) {
+                mostrarNotificacion('⚠️ Ya existe un estudiante con esta cédula', 'warning');
+                return;
+            }
+            
+            const nuevoEstudiante = {
+                id: Date.now(),
+                cedula: cedula,
+                nombre: nombre,
+                email: email || '',
+                activo: true,
+                fechaRegistro: new Date().toISOString()
+            };
+            
+            estudiantes.push(nuevoEstudiante);
+            guardarEstudiantes();
+            actualizarListaEstudiantes();
+            
+            // Limpiar formulario
+            document.getElementById('input-cedula').value = '';
+            document.getElementById('input-nombre').value = '';
+            document.getElementById('input-email-est').value = '';
+            
+            mostrarNotificacion('✅ Estudiante agregado exitosamente', 'success');
+        }
+
+        function actualizarListaEstudiantes() {
+            const tbody = document.getElementById('tabla-estudiantes');
+            const contador = document.getElementById('contador-estudiantes');
+            
+            if (estudiantes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fas fa-user-friends text-3xl mb-3"></i>
+                            <p class="text-lg">No hay estudiantes registrados</p>
+                            <p class="text-sm">Agrega estudiantes usando el formulario superior</p>
+                        </td>
+                    </tr>
+                `;
+                contador.textContent = '0 estudiantes';
+                return;
+            }
+            
+            let html = '';
+            estudiantes.forEach((est, index) => {
+                html += `
+                    <tr class="estudiante-row hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${index + 1}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${est.cedula}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">${est.nombre}</div>
+                            ${est.email ? `<div class="text-sm text-gray-500">${est.email}</div>` : ''}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${est.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${est.activo ? 'Activo' : 'Inactivo'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <button onclick="editarEstudiante(${est.id})" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="eliminarEstudiante(${est.id})" class="text-red-600 hover:text-red-900">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            contador.textContent = `${estudiantes.length} estudiante${estudiantes.length !== 1 ? 's' : ''}`;
+        }
+
+        function guardarEstudiantes() {
+            localStorage.setItem('tecnoPIA_estudiantes', JSON.stringify(estudiantes));
+            actualizarContadores();
+        }
+
+        // ==================== INDICADORES PNFT ====================
+        function cargarTodosIndicadores() {
+            const lista = document.getElementById('lista-indicadores');
+            const contador = document.getElementById('contador-indicadores');
+            const selector = document.getElementById('selector-indicador-evaluar');
+            
+            let totalIndicadores = 0;
+            let html = '';
+            let opciones = '<option value="">-- Selecciona un indicador PNFT --</option>';
+            
+            // Recorrer todos los grados
+            Object.keys(indicadoresPNFT).forEach(grado => {
+                Object.keys(indicadoresPNFT[grado]).forEach(modulo => {
+                    Object.keys(indicadoresPNFT[grado][modulo]).forEach(area => {
+                        const indicadores = indicadoresPNFT[grado][modulo][area];
+                        totalIndicadores += indicadores.length;
+                        
+                        // Agregar al HTML
+                        html += `
+                            <div class="mb-6">
+                                <h4 class="font-bold text-lg mb-3 text-gray-800">
+                                    ${grado} - ${modulo} - ${area}
+                                    <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded ml-2">
+                                        ${indicadores.length} indicadores
+                                    </span>
+                                </h4>
+                                <div class="space-y-3">
+                        `;
+                        
+                        indicadores.forEach((indicador, idx) => {
+                            html += `
+                                <div class="indicador-card p-4 bg-white border rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <div class="flex items-center mb-2">
+                                                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-2">
+                                                    ${indicador.saber}
+                                                </span>
+                                                <span class="text-xs text-gray-500">ID: ${indicador.id}</span>
+                                            </div>
+                                            <p class="text-gray-700">${indicador.indicador}</p>
+                                        </div>
+                                        <div class="ml-4 flex space-x-2">
+                                            <button onclick="seleccionarParaEvaluar('${grado}', '${modulo}', '${area}', ${idx})" 
+                                                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
+                                                <i class="fas fa-check mr-1"></i>Evaluar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Agregar a selector
+                            opciones += `<option value="${grado}|${modulo}|${area}|${idx}">${grado} - ${indicador.saber}: ${indicador.indicador.substring(0, 60)}...</option>`;
+                        });
+                        
+                        html += `</div></div>`;
+                    });
+                });
+            });
+            
+            lista.innerHTML = html || '<p class="text-gray-500">No hay indicadores cargados</p>';
+            contador.textContent = `${totalIndicadores} indicadores disponibles`;
+            selector.innerHTML = opciones;
+            
+            // Configurar evento en selector
+            selector.addEventListener('change', function() {
+                if (this.value) {
+                    const [grado, modulo, area, idx] = this.value.split('|');
+                    const indicador = indicadoresPNFT[grado][modulo][area][idx];
+                    document.getElementById('descripcion-indicador').textContent = 
+                        `${indicador.saber}: ${indicador.indicador}`;
+                } else {
+                    document.getElementById('descripcion-indicador').textContent = 
+                        'Selecciona un indicador para ver su descripción';
+                }
+            });
+        }
+
+        function filtrarPorGrado() {
+            const filtro = document.getElementById('filtro-grado').value;
+            // Implementar filtrado
+            cargarTodosIndicadores(); // Por ahora recargar todos
+        }
+
+        function seleccionarParaEvaluar(grado, modulo, area, indice) {
+            const indicador = indicadoresPNFT[grado][modulo][area][indice];
+            
+            evaluacionActual = {
+                grado: grado,
+                modulo: modulo,
+                area: area,
+                indicador: indicador,
+                fecha: new Date().toISOString(),
+                evaluaciones: []
+            };
+            
+            // Cambiar a pestaña de evaluación
+            cambiarTab(4);
+            
+            // Configurar interfaz de evaluación
+            document.getElementById('sin-evaluacion').classList.add('hidden');
+            document.getElementById('contenedor-evaluacion').classList.remove('hidden');
+            
+            document.getElementById('titulo-evaluacion-actual').textContent = 
+                `Evaluando: ${indicador.saber}`;
+            document.getElementById('subtitulo-evaluacion').textContent = 
+                `${grado} - ${modulo} - ${area}`;
+            
+            // Generar tabla de evaluación
+            generarTablaEvaluacion();
+        }
+
+        // ==================== EVALUACIÓN ====================
+        function generarTablaEvaluacion() {
+            const tbody = document.getElementById('tabla-evaluacion-estudiantes');
+            
+            if (estudiantes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-8 text-center text-gray-400">
+                            No hay estudiantes para evaluar. Agrega estudiantes en la pestaña "Estudiantes".
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            estudiantes.forEach(est => {
+                // Buscar evaluación existente
+                const evalExistente = evaluacionActual.evaluaciones.find(e => e.estudianteId === est.id);
+                
+                html += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-900">${est.nombre}</div>
+                            <div class="text-sm text-gray-500">${est.cedula}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <select class="evaluacion-estudiante w-full p-2 border rounded" 
+                                    data-estudiante="${est.id}"
+                                    onchange="actualizarPuntaje(${est.id})">
+                                <option value="0" ${(!evalExistente || evalExistente.valor === 0) ? 'selected' : ''}>No evaluado</option>
+                                <option value="1" ${(evalExistente && evalExistente.valor === 1) ? 'selected' : ''}>1 - En inicio</option>
+                                <option value="2" ${(evalExistente && evalExistente.valor === 2) ? 'selected' : ''}>2 - En proceso</option>
+                                <option value="3" ${(evalExistente && evalExistente.valor === 3) ? 'selected' : ''}>3 - Logrado</option>
+                                <option value="4" ${(evalExistente && evalExistente.valor === 4) ? 'selected' : ''}>4 - Sobresaliente</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="puntaje-estudiante font-bold" data-estudiante="${est.id}">
+                                ${evalExistente ? (evalExistente.valor * 0.25).toFixed(2) : '0.00'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <input type="text" class="observacion-estudiante w-full p-2 border rounded text-sm" 
+                                   placeholder="Observaciones..." 
+                                   data-estudiante="${est.id}"
+                                   value="${evalExistente ? evalExistente.observaciones || '' : ''}">
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function actualizarPuntaje(estudianteId) {
+            const select = document.querySelector(`select[data-estudiante="${estudianteId}"]`);
+            const puntajeSpan = document.querySelector(`span[data-estudiante="${estudianteId}"]`);
+            const valor = parseInt(select.value);
+            const puntaje = valor * 0.25; // Convertir a escala 0-1
+            
+            puntajeSpan.textContent = puntaje.toFixed(2);
+            
+            // Actualizar en evaluación actual
+            const index = evaluacionActual.evaluaciones.findIndex(e => e.estudianteId === estudianteId);
+            
+            if (valor > 0) {
+                const observacion = document.querySelector(`input[data-estudiante="${estudianteId}"]`).value;
+                
+                if (index === -1) {
+                    evaluacionActual.evaluaciones.push({
+                        estudianteId: estudianteId,
+                        valor: valor,
+                        puntaje: puntaje,
+                        observaciones: observacion,
+                        fecha: new Date().toISOString()
+                    });
+                } else {
+                    evaluacionActual.evaluaciones[index] = {
+                        ...evaluacionActual.evaluaciones[index],
+                        valor: valor,
+                        puntaje: puntaje,
+                        observaciones: observacion
+                    };
+                }
+            } else if (index !== -1) {
+                evaluacionActual.evaluaciones.splice(index, 1);
+            }
+        }
+
+        function guardarEvaluacionParcial() {
+            // Guardar observaciones
+            document.querySelectorAll('.observacion-estudiante').forEach(input => {
+                const estudianteId = parseInt(input.dataset.estudiante);
+                const index = evaluacionActual.evaluaciones.findIndex(e => e.estudianteId === estudianteId);
+                
+                if (index !== -1) {
+                    evaluacionActual.evaluaciones[index].observaciones = input.value;
+                }
+            });
+            
+            mostrarNotificacion('✅ Evaluación parcial guardada', 'success');
+        }
+
+        function finalizarEvaluacion() {
+            if (!evaluacionActual || evaluacionActual.evaluaciones.length === 0) {
+                mostrarNotificacion('❌ No hay evaluaciones para guardar', 'error');
+                return;
+            }
+            
+            // Guardar observaciones finales
+            guardarEvaluacionParcial();
+            
+            // Agregar a historial de evaluaciones
+            evaluaciones.push({
+                ...evaluacionActual,
+                id: Date.now()
+            });
+            
+            // Guardar en localStorage
+            localStorage.setItem('tecnoPIA_evaluaciones', JSON.stringify(evaluaciones));
+            
+            // Actualizar resultados
+            actualizarResultados();
+            actualizarContadores();
+            
+            // Limpiar evaluación actual
+            evaluacionActual = null;
+            document.getElementById('sin-evaluacion').classList.remove('hidden');
+            document.getElementById('contenedor-evaluacion').classList.add('hidden');
+            
+            mostrarNotificacion('✅ Evaluación finalizada y guardada exitosamente', 'success');
+        }
+
+        function cancelarEvaluacion() {
+            if (confirm('¿Estás seguro de cancelar esta evaluación? Se perderán los cambios no guardados.')) {
+                evaluacionActual = null;
+                document.getElementById('sin-evaluacion').classList.remove('hidden');
+                document.getElementById('contenedor-evaluacion').classList.add('hidden');
+                mostrarNotificacion('Evaluación cancelada', 'info');
+            }
+        }
+
+        // ==================== RESULTADOS ====================
+        function calcularPromedioGrupo() {
+            if (evaluaciones.length === 0 || estudiantes.length === 0) return 0;
+            
+            let totalPuntos = 0;
+            let totalEvaluaciones = 0;
+            
+            evaluaciones.forEach(eval => {
+                eval.evaluaciones.forEach(e => {
+                    totalPuntos += e.puntaje;
+                    totalEvaluaciones++;
+                });
+            });
+            
+            return totalEvaluaciones > 0 ? (totalPuntos / totalEvaluaciones) * 100 : 0;
+        }
+
+        function actualizarResultados() {
+            const tbody = document.getElementById('tabla-resultados');
+            
+            if (estudiantes.length === 0 || evaluaciones.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                            No hay resultados disponibles
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            // Por simplicidad, mostramos algunos resultados de ejemplo
+            estudiantes.slice(0, 5).forEach(est => {
+                const evaluacionesEst = evaluaciones.filter(e => 
+                    e.evaluaciones.some(ev => ev.estudianteId === est.id)
+                );
+                
+                if (evaluacionesEst.length > 0) {
+                    const promedioTC = 85; // Esto se calcularía con la lógica real
+                    const promedioTareas = 90;
+                    const promedioPrueba = 80;
+                    const promedioAsistencia = 95;
+                    const final = (promedioTC * 0.65) + (promedioTareas * 0.10) + 
+                                 (promedioPrueba * 0.15) + (promedioAsistencia * 0.10);
+                    
+                    html += `
+                        <tr>
+                            <td class="px-4 py-3 text-sm">${est.nombre}</td>
+                            <td class="px-4 py-3 text-sm">${promedioTC.toFixed(1)}%</td>
+                            <td class="px-4 py-3 text-sm">${promedioTareas.toFixed(1)}%</td>
+                            <td class="px-4 py-3 text-sm">${promedioPrueba.toFixed(1)}%</td>
+                            <td class="px-4 py-3 text-sm">${promedioAsistencia.toFixed(1)}%</td>
+                            <td class="px-4 py-3 text-sm font-bold">${final.toFixed(1)}%</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            tbody.innerHTML = html || `
+                <tr>
+                    <td colspan="6" class="px-4 py-8 text-center text-gray-400">
+                        No hay resultados disponibles
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ==================== FUNCIONES GENERALES ====================
+        function guardarTodo() {
+            guardarConfiguracion();
+            guardarEstudiantes();
+            
+            // Guardar indicadores personalizados
+            localStorage.setItem('tecnoPIA_indicadores', JSON.stringify(indicadoresPNFT));
+            
+            // Guardar evaluaciones
+            localStorage.setItem('tecnoPIA_evaluaciones', JSON.stringify(evaluaciones));
+            
+            mostrarNotificacion('✅ Todos los datos han sido guardados', 'success');
+        }
+
+        function exportarDatos() {
+            const datos = {
+                configuracion: configuracion,
+                estudiantes: estudiantes,
+                evaluaciones: evaluaciones,
+                fechaExportacion: new Date().toISOString(),
+                version: 'TecnoPIA 1.0'
+            };
+            
+            const datosStr = JSON.stringify(datos, null, 2);
+            const blob = new Blob([datosStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            
+            a.href = url;
+            a.download = `tecnoPIA_backup_${new Date().getTime()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            mostrarNotificacion('✅ Datos exportados exitosamente', 'success');
+        }
+
+        function mostrarNotificacion(mensaje, tipo) {
+            // Crear notificación
+            const notificacion = document.createElement('div');
+            notificacion.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50 
+                ${tipo === 'success' ? 'bg-green-600' : 
+                  tipo === 'error' ? 'bg-red-600' : 
+                  tipo === 'warning' ? 'bg-yellow-600' : 'bg-blue-600'}`;
+            notificacion.textContent = mensaje;
+            notificacion.style.animation = 'slideIn 0.3s ease';
+            
+            document.body.appendChild(notificacion);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                notificacion.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notificacion);
+                }, 300);
+            }, 3000);
+            
+            // Agregar estilos de animación si no existen
+            if (!document.querySelector('#notificacion-estilos')) {
+                const estilos = document.createElement('style');
+                estilos.id = 'notificacion-estilos';
+                estilos.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(estilos);
+            }
+        }
+
+        // ==================== FUNCIONES PENDIENTES (para implementar) ====================
+        function agregarIndicadorPersonalizado() {
+            mostrarNotificacion('🔧 Esta función estará disponible en la próxima actualización', 'info');
+        }
+
+        function exportarPNFT() {
+            mostrarNotificacion('🔧 Exportación de indicadores PNFT - Próximamente', 'info');
+        }
+
+        function editarEstudiante(id) {
+            mostrarNotificacion('🔧 Editar estudiante - Próximamente', 'info');
+        }
+
+        function eliminarEstudiante(id) {
+            if (confirm('¿Estás seguro de eliminar este estudiante?')) {
+                estudiantes = estudiantes.filter(e => e.id !== id);
+                guardarEstudiantes();
+                actualizarListaEstudiantes();
+                mostrarNotificacion('✅ Estudiante eliminado', 'success');
+            }
+        }
+
+        function importarEstudiantes() {
+            mostrarNotificacion('🔧 Importar desde Excel - Próximamente', 'info');
+        }
+
+        function exportarEstudiantes() {
+            mostrarNotificacion('🔧 Exportar lista de estudiantes - Próximamente', 'info');
+        }
+
+        function cargarIndicadorParaEvaluar() {
+            const valor = document.getElementById('selector-indicador-evaluar').value;
+            if (valor) {
+                const [grado, modulo, area, idx] = valor.split('|');
+                seleccionarParaEvaluar(grado, modulo, area, parseInt(idx));
+            } else {
+                mostrarNotificacion('❌ Selecciona un indicador primero', 'error');
+            }
+        }
+
+        function generarReporte(tipo) {
+            let mensaje = '';
+            switch(tipo) {
+                case 'individual': mensaje = '🔧 Reporte individual - Próximamente'; break;
+                case 'grupal': mensaje = '🔧 Reporte grupal - Próximamente'; break;
+                case 'mep': mensaje = '🔧 Formato MEP - Próximamente'; break;
+            }
+            mostrarNotificacion(mensaje, 'info');
+        }
+
+        // ==================== INICIALIZAR ESTILOS DE NOTIFICACIÓN ====================
+        const estilosNotificacion = document.createElement('style');
+        estilosNotificacion.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(estilosNotificacion);
+    </script>
+</body>
+</html>
