@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoPIA - Sistema Completo PNFT</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+        }
+
+        .gradient-purple {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-green {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .hover-scale {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-scale:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .indicator-level-1 { background: rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; }
+        .indicator-level-2 { background: rgba(245, 158, 11, 0.2); border-left: 4px solid #f59e0b; }
+        .indicator-level-3 { background: rgba(16, 185, 129, 0.2); border-left: 4px solid #10b981; }
+        .indicator-level-4 { background: rgba(59, 130, 246, 0.2); border-left: 4px solid #3b82f6; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <!-- Header -->
+    <header class="glass-card sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <a href="../index.html" class="text-2xl font-bold hover:text-blue-200 transition">
+                        <i class="fas fa-robot mr-2"></i>TecnoPIA
+                    </a>
+                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">Sistema Completo PNFT</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="dashboard.html" class="hover:text-blue-200 transition">
+                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
+                    </a>
+                    <a href="../index.html" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-home mr-1"></i>Inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">Sistema de Evaluación PNFT Completo</h1>
+            <p class="text-xl text-white/80 mb-6">Evaluación integral basada en los 4 áreas de conocimiento del Programa Nacional de Formación Tecnológica</p>
+            
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <div class="bg-white/10 px-4 py-2 rounded-full">
+                    <i class="fas fa-laptop mr-2"></i>Apropiación Tecnológica
+                </div>
+                <div class="bg-white/10 px-4 py-2 rounded-full">
+                    <i class="fas fa-code mr-2"></i>Programación
+                </div>
+                <div class="bg-white/10 px-4 py-2 rounded-full">
+                    <i class="fas fa-robot mr-2"></i>Robótica
+                </div>
+                <div class="bg-white/10 px-4 py-2 rounded-full">
+                    <i class="fas fa-brain mr-2"></i>Ciencia de Datos
+                </div>
+            </div>
+        </div>
+
+        <!-- Steps Navigation -->
+        <div class="glass-card rounded-xl p-6 mb-8">
+            <div class="flex flex-wrap justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">1</div>
+                    <span>Seleccionar Grupo</span>
+                </div>
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">2</div>
+                    <span class="text-white/60">Elegir Indicador</span>
+                </div>
+                <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">3</div>
+                    <span class="text-white/60">Evaluar Estudiantes</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">4</div>
+                    <span class="text-white/60">Generar Reporte</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Columns Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Group Selection -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-xl p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Seleccionar Grupo</h2>
+                    <div class="space-y-3" id="groupSelection">
+                        <!-- Groups loaded dynamically -->
+                    </div>
+                    
+                    <button onclick="createNewGroup()" class="w-full mt-4 gradient-green hover:opacity-90 py-3 rounded-lg transition flex items-center justify-center">
+                        <i class="fas fa-plus mr-2"></i>Crear Nuevo Grupo
+                    </button>
+                </div>
+
+                <!-- Selected Group Info -->
+                <div class="glass-card rounded-xl p-6" id="selectedGroupInfo" style="display: none;">
+                    <h2 class="text-xl font-bold mb-4">Grupo Seleccionado</h2>
+                    <div id="groupDetails">
+                        <!-- Group details loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Indicators and Evaluation -->
+            <div class="lg:col-span-2">
+                <!-- Areas of Knowledge -->
+                <div class="glass-card rounded-xl p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Áreas de Conocimiento PNFT</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="areasContainer">
+                        <!-- Areas loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Indicators List -->
+                <div class="glass-card rounded-xl p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-4">Indicadores de Logro</h2>
+                    <div class="mb-4">
+                        <select id="gradeFilter" class="w-full bg-white/10 border border-white/20 rounded-lg p-2 mb-3">
+                            <option value="">Filtrar por grado...</option>
+                            <option value="Materno">Materno</option>
+                            <option value="Transición">Transición</option>
+                            <option value="1°">1° Grado</option>
+                            <option value="2°">2° Grado</option>
+                            <option value="3°">3° Grado</option>
+                            <option value="4°">4° Grado</option>
+                            <option value="5°">5° Grado</option>
+                            <option value="6°">6° Grado</option>
+                            <option value="7°">7° Grado</option>
+                            <option value="8°">8° Grado</option>
+                            <option value="9°">9° Grado</option>
+                        </select>
+                    </div>
+                    <div class="space-y-3" id="indicatorsList">
+                        <!-- Indicators loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Evaluation Interface -->
+                <div class="glass-card rounded-xl p-6" id="evaluationInterface" style="display: none;">
+                    <h2 class="text-xl font-bold mb-4" id="evaluationTitle">Evaluación</h2>
+                    
+                    <!-- Rubric -->
+                    <div class="mb-6">
+                        <h3 class="font-bold mb-3">Rúbrica de Evaluación</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3" id="rubricContainer">
+                            <!-- Rubric levels loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Students Evaluation -->
+                    <div>
+                        <h3 class="font-bold mb-3">Evaluar Estudiantes</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full" id="studentsTable">
+                                <thead>
+                                    <tr class="border-b border-white/20">
+                                        <th class="text-left py-2">Estudiante</th>
+                                        <th class="text-center py-2">Nivel 1</th>
+                                        <th class="text-center py-2">Nivel 2</th>
+                                        <th class="text-center py-2">Nivel 3</th>
+                                        <th class="text-center py-2">Nivel 4</th>
+                                        <th class="text-center py-2">Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentsEvaluationBody">
+                                    <!-- Students loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between mt-6">
+                        <button onclick="cancelEvaluation()" class="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-lg transition">
+                            Cancelar
+                        </button>
+                        <button onclick="saveEvaluation()" class="gradient-purple hover:opacity-90 px-6 py-2 rounded-lg transition">
+                            <i class="fas fa-save mr-2"></i>Guardar Evaluación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="glass-card rounded-xl p-6 mt-8">
+            <h2 class="text-xl font-bold mb-4">Estadísticas de Evaluación</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="evaluationStats">
+                <!-- Stats loaded dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="container mx-auto px-4 py-8 mt-12 border-t border-white/10">
+        <div class="text-center text-white/60">
+            <p class="mb-2">Sistema de Evaluación PNFT - Programa Nacional de Formación Tecnológica</p>
+            <p>© 2024 Ministerio de Educación Pública de Costa Rica</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Global variables
+        let selectedGroup = null;
+        let selectedIndicator = null;
+        let currentEvaluation = null;
+
+        // Initialize system
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroups();
+            loadAreas();
+            loadEvaluationStats();
+            
+            // Event listeners
+            document.getElementById('gradeFilter').addEventListener('change', filterIndicators);
+        });
+
+        // Load groups for selection
+        function loadGroups() {
+            const groups = window.GestorGruposMEP?.obtenerGrupos() || [];
+            const container = document.getElementById('groupSelection');
+            
+            if (groups.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-white/60">
+                        <i class="fas fa-users text-3xl mb-2"></i>
+                        <p>No hay grupos creados</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = groups.map(group => `
+                <div class="group-item bg-white/5 hover:bg-white/10 rounded-lg p-3 cursor-pointer transition" 
+                     onclick="selectGroup('${group.id}')">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold">${group.nombre}</h3>
+                            <p class="text-sm text-white/70">${group.grado} • ${group.estudiantes.length} estudiantes</p>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load areas of knowledge
+        function loadAreas() {
+            const areas = window.GestorIndicadoresPNFT?.obtenerAreas() || [];
+            const container = document.getElementById('areasContainer');
+            
+            container.innerHTML = areas.map(area => `
+                <div class="bg-white/5 rounded-lg p-4 hover-scale cursor-pointer" onclick="selectArea('${area.id}')">
+                    <div class="flex items-center mb-2">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3" 
+                             style="background: ${area.color}20; color: ${area.color}">
+                            <i class="fas ${area.icono}"></i>
+                        </div>
+                        <h3 class="font-bold">${area.nombre}</h3>
+                    </div>
+                    <p class="text-sm text-white/70">${area.descripcion}</p>
+                </div>
+            `).join('');
+        }
+
+        // Select group function
+        function selectGroup(groupId) {
+            const groups = window.GestorGruposMEP?.obtenerGrupos() || [];
+            selectedGroup = groups.find(g => g.id === groupId);
+            
+            if (selectedGroup) {
+                // Update UI
+                document.getElementById('selectedGroupInfo').style.display = 'block';
+                document.getElementById('groupDetails').innerHTML = `
+                    <h3 class="font-bold text-lg mb-2">${selectedGroup.nombre}</h3>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <div>
+                            <p class="text-sm text-white/70">Grado</p>
+                            <p class="font-bold">${selectedGroup.grado}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-white/70">Estudiantes</p>
+                            <p class="font-bold">${selectedGroup.estudiantes.length}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-white/70">Ciclo</p>
+                            <p class="font-bold">${selectedGroup.ciclo}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-white/70">Áreas</p>
+                            <p class="font-bold">${selectedGroup.areas?.length || 4}</p>
+                        </div>
+                    </div>
+                    <button onclick="startNewEvaluation()" class="w-full gradient-purple hover:opacity-90 py-2 rounded-lg transition">
+                        <i class="fas fa-plus-circle mr-2"></i>Nueva Evaluación
+                    </button>
+                `;
+                
+                // Load indicators for this group's grade
+                loadIndicatorsForGrade(selectedGroup.grado.replace('°', ''));
+            }
+        }
+
+        // Load indicators for specific grade
+        function loadIndicatorsForGrade(grade) {
+            const indicators = window.GestorIndicadoresPNFT?.obtenerIndicadoresPorGrado(grade) || [];
+            const container = document.getElementById('indicatorsList');
+            
+            if (indicators.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-white/60">
+                        <i class="fas fa-search text-3xl mb-2"></i>
+                        <p>No hay indicadores para este grado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = indicators.map(indicator => `
+                <div class="indicator-item bg-white/5 rounded-lg p-3 hover-scale cursor-pointer" 
+                     onclick="selectIndicator('${indicator.id}')">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-bold">${indicator.descripcion}</h3>
+                            <p class="text-sm text-white/70">${indicator.grado} • Módulo ${indicator.modulo}</p>
+                        </div>
+                        <span class="text-xs bg-white/20 px-2 py-1 rounded">${indicator.nivel}</span>
+                    </div>
+                    <div class="text-sm">
+                        <p class="text-white/80"><strong>Saberes:</strong> ${indicator.saberes.join(', ')}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter indicators by grade
+        function filterIndicators() {
+            const grade = document.getElementById('gradeFilter').value;
+            if (grade) {
+                loadIndicatorsForGrade(grade.replace('°', ''));
+            }
+        }
+
+        // Select indicator function
+        function selectIndicator(indicatorId) {
+            selectedIndicator = window.GestorIndicadoresPNFT?.obtenerIndicadorPorId(indicatorId);
+            
+            if (selectedIndicator && selectedGroup) {
+                // Show evaluation interface
+                document.getElementById('evaluationInterface').style.display = 'block';
+                document.getElementById('evaluationTitle').textContent = `Evaluar: ${selectedIndicator.descripcion}`;
+                
+                // Load rubric
+                loadRubric();
+                
+                // Load students for evaluation
+                loadStudentsForEvaluation();
+            } else {
+                alert('Por favor seleccione un grupo primero');
+            }
+        }
+
+        // Load rubric for evaluation
+        function loadRubric() {
+            const rubric = window.GestorIndicadoresPNFT?.rubricas || {};
+            const container = document.getElementById('rubricContainer');
+            
+            if (rubric.niveles) {
+                container.innerHTML = rubric.niveles.map(level => `
+                    <div class="indicator-level-${level.id} rounded-lg p-3">
+                        <div class="font-bold mb-1">Nivel ${level.id}: ${level.nombre}</div>
+                        <div class="text-sm">${level.descripcion}</div>
+                        <div class="mt-2 text-xs">Puntaje: ${level.puntaje}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Load students for evaluation
+        function loadStudentsForEvaluation() {
+            if (!selectedGroup) return;
+            
+            const container = document.getElementById('studentsEvaluationBody');
+            container.innerHTML = selectedGroup.estudiantes.map((student, index) => `
+                <tr class="border-b border-white/10">
+                    <td class="py-3">
+                        <div>
+                            <p class="font-medium">${student.nombreCompleto}</p>
+                            <p class="text-sm text-white/70">${student.id}</p>
+                        </div>
+                    </td>
+                    ${[1, 2, 3, 4].map(level => `
+                        <td class="text-center">
+                            <input type="radio" name="eval-${student.id}" value="${level}" 
+                                   ${index === 0 && level === 3 ? 'checked' : ''}
+                                   class="w-4 h-4">
+                        </td>
+                    `).join('')}
+                    <td>
+                        <input type="text" 
+                               placeholder="Observaciones..." 
+                               class="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-sm">
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Start new evaluation
+        function startNewEvaluation() {
+            // Show indicator selection
+            document.getElementById('evaluationInterface').style.display = 'none';
+            document.getElementById('indicatorsList').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cancel evaluation
+        function cancelEvaluation() {
+            selectedIndicator = null;
+            document.getElementById('evaluationInterface').style.display = 'none';
+        }
+
+        // Save evaluation
+        function saveEvaluation() {
+            if (!selectedGroup || !selectedIndicator) {
+                alert('Por favor seleccione grupo e indicador');
+                return;
+            }
+
+            // Collect evaluation data
+            const studentEvaluations = [];
+            const inputs = document.querySelectorAll('#studentsEvaluationBody tr');
+            
+            inputs.forEach(row => {
+                const studentId = row.querySelector('input[type="radio"]').name.replace('eval-', '');
+                const level = row.querySelector('input[type="radio"]:checked')?.value || 1;
+                const observations = row.querySelector('input[type="text"]').value;
+                
+                studentEvaluations.push({
+                    studentId,
+                    level: parseInt(level),
+                    observations
+                });
+            });
+
+            // Create evaluation in system
+            const evaluation = window.GestorIndicadoresPNFT?.crearEvaluacion({
+                grupoId: selectedGroup.id,
+                grupoNombre: selectedGroup.nombre,
+                indicadorId: selectedIndicator.id,
+                tipo: 'Trabajo Cotidiano',
+                fecha: new Date().toISOString().split('T')[0],
+                periodo: 1,
+                criterios: window.GestorIndicadoresPNFT?.generarCriteriosParaIndicador(selectedIndicator.id)
+            });
+
+            // Register results
+            studentEvaluations.forEach(eval => {
+                window.GestorIndicadoresPNFT?.registrarResultado(
+                    evaluation.id,
+                    eval.studentId,
+                    { criterio1: eval.level }
+                );
+            });
+
+            // Complete evaluation
+            window.GestorIndicadoresPNFT?.completarEvaluacion(evaluation.id);
+
+            alert('Evaluación guardada exitosamente');
+            cancelEvaluation();
+            loadEvaluationStats();
+        }
+
+        // Create new group
+        function createNewGroup() {
+            const nombre = prompt('Nombre del grupo:');
+            const grado = prompt('Grado (ej: 5°):');
+            const ciclo = prompt('Ciclo (ciclo1, ciclo2, ciclo3):');
+            
+            if (nombre && grado && ciclo) {
+                const grupo = window.GestorGruposMEP?.crearGrupo({
+                    nombre,
+                    grado,
+                    ciclo,
+                    institucion: 'Nueva Institución',
+                    docente: 'Nuevo Docente',
+                    año: new Date().getFullYear(),
+                    periodo: 1
+                });
+                
+                if (grupo) {
+                    alert(`Grupo "${grupo.nombre}" creado exitosamente`);
+                    loadGroups();
+                }
+            }
+        }
+
+        // Load evaluation statistics
+        function loadEvaluationStats() {
+            const stats = window.GestorIndicadoresPNFT?.evaluaciones || [];
+            const completed = stats.filter(e => e.estado === 'completada').length;
+            const pending = stats.filter(e => e.estado === 'pendiente').length;
+            
+            document.getElementById('evaluationStats').innerHTML = `
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-sm text-white/70">Total Evaluaciones</p>
+                    <p class="text-2xl font-bold">${stats.length}</p>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-sm text-white/70">Completadas</p>
+                    <p class="text-2xl font-bold text-green-400">${completed}</p>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-sm text-white/70">Pendientes</p>
+                    <p class="text-2xl font-bold text-yellow-400">${pending}</p>
+                </div>
+                <div class="bg-white/5 rounded-lg p-4">
+                    <p class="text-sm text-white/70">Porcentaje</p>
+                    <p class="text-2xl font-bold">${stats.length > 0 ? Math.round((completed / stats.length) * 100) : 0}%</p>
+                </div>
+            `;
+        }
+
+        // Utility function to scroll to element
+        function scrollToElement(elementId) {
+            document.getElementById(elementId)?.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+
+    <!-- Include external JavaScript files -->
+    <script src="../js/gestor-grupos-mep.js"></script>
+    <script src="../js/gestor-indicadores.js"></script>
+</body>
+</html>
