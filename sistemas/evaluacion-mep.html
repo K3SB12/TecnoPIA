@@ -4,788 +4,571 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TecnoPIA - Evaluación MEP</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Inter', sans-serif; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        }
-        .gradient-bg {
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-        }
-        .gradient-purple {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .gradient-green {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        }
-        .hover-scale {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .hover-scale:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        }
-        .rubric-level-1 { background: rgba(239, 68, 68, 0.2); }
-        .rubric-level-2 { background: rgba(245, 158, 11, 0.2); }
-        .rubric-level-3 { background: rgba(16, 185, 129, 0.2); }
-        .rubric-level-4 { background: rgba(59, 130, 246, 0.2); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="gradient-bg min-h-screen text-white">
-    <!-- Header -->
-    <header class="glass-card sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <a href="../index.html" class="text-2xl font-bold hover:text-blue-200 transition">
-                        <i class="fas fa-robot mr-2"></i>TecnoPIA
-                    </a>
-                    <span class="text-sm bg-white/20 px-3 py-1 rounded-full">Evaluación MEP</span>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>TecnoPIA</h2>
+            </div>
+            
+            <nav class="menu">
+                <a href="../dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="gestion-grupos.html" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Gestión Grupos</span>
+                </a>
+                <a href="evaluacion-mep.html" class="menu-item active">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Evaluación MEP</span>
+                </a>
+                <a href="completo.html" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Sistema Completo</span>
+                </a>
+                <a href="base.html" class="menu-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Versión Rápida</span>
+                </a>
+                <a href="ia.html" class="menu-item">
+                    <i class="fas fa-robot"></i>
+                    <span>IA Educativa</span>
+                </a>
+            </nav>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <a href="dashboard.html" class="hover:text-blue-200 transition">
-                        <i class="fas fa-tachometer-alt mr-1"></i>Dashboard
-                    </a>
-                    <a href="completo.html" class="hover:text-blue-200 transition">
-                        <i class="fas fa-clipboard-check mr-1"></i>Sistema Completo
-                    </a>
-                    <a href="../index.html" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition">
-                        <i class="fas fa-home mr-1"></i>Inicio
-                    </a>
+                <div class="user-details">
+                    <span class="user-name">Docente MEP</span>
+                    <span class="user-role">Evaluador PNFT</span>
                 </div>
             </div>
-        </div>
-    </header>
+        </aside>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
-        <!-- Evaluation Header -->
-        <div class="glass-card rounded-xl p-6 mb-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div>
-                    <h1 class="text-3xl font-bold mb-2">Evaluación Formación Tecnológica</h1>
-                    <p class="text-white/80">Registro de Trabajo Cotidiano según indicadores PNFT</p>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">
+                    <h1><i class="fas fa-clipboard-check"></i> Evaluación Específica MEP</h1>
+                    <p>Sistema completo de evaluación según indicadores PNFT oficiales</p>
                 </div>
-                <div class="mt-4 md:mt-0">
-                    <button onclick="guardarEvaluacion()" class="gradient-green hover:opacity-90 px-6 py-3 rounded-lg transition mr-3">
-                        <i class="fas fa-save mr-2"></i>Guardar Evaluación
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="exportarEvaluacion">
+                        <i class="fas fa-file-export"></i> Exportar Evaluación
                     </button>
-                    <button onclick="exportarEvaluacion()" class="bg-white/10 hover:bg-white/20 px-6 py-3 rounded-lg transition">
-                        <i class="fas fa-download mr-2"></i>Exportar
+                    <button class="btn btn-secondary" id="guardarEvaluacion">
+                        <i class="fas fa-save"></i> Guardar Progreso
                     </button>
                 </div>
-            </div>
-        </div>
+            </header>
 
-        <!-- Evaluation Setup -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <!-- Left: Group Selection -->
-            <div class="glass-card rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4">1. Seleccionar Grupo</h2>
-                <select id="selectGrupo" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 mb-4" onchange="cargarGrupo()">
-                    <option value="">-- Seleccione un grupo --</option>
-                </select>
-                <div id="grupoInfo" style="display: none;">
-                    <h3 class="font-bold mb-2" id="grupoNombre"></h3>
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                        <div><span class="text-white/70">Grado:</span> <span id="grupoGrado" class="font-bold"></span></div>
-                        <div><span class="text-white/70">Estudiantes:</span> <span id="grupoEstudiantes" class="font-bold"></span></div>
-                        <div><span class="text-white/70">Ciclo:</span> <span id="grupoCiclo" class="font-bold"></span></div>
-                        <div><span class="text-white/70">Asistencia:</span> <span id="grupoAsistencia" class="font-bold"></span></div>
+            <!-- Contenido Principal -->
+            <div class="content-grid">
+                <!-- Panel de Selección -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-cogs"></i> Configuración de Evaluación</h3>
                     </div>
-                </div>
-            </div>
-
-            <!-- Middle: Indicator Selection -->
-            <div class="glass-card rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4">2. Seleccionar Indicador</h2>
-                <select id="selectArea" class="w-full bg-white/10 border border-white/20 rounded-lg p-3 mb-3" onchange="cargarIndicadores()">
-                    <option value="">-- Seleccione área --</option>
-                </select>
-                <select id="selectIndicador" class="w-full bg-white/10 border border-white/20 rounded-lg p-3" onchange="seleccionarIndicador()">
-                    <option value="">-- Seleccione indicador --</option>
-                </select>
-                <div id="indicadorInfo" class="mt-4 p-3 bg-white/5 rounded-lg" style="display: none;">
-                    <h4 class="font-bold mb-1" id="indicadorTitulo"></h4>
-                    <p class="text-sm text-white/80" id="indicadorDescripcion"></p>
-                    <div class="mt-2 text-xs">
-                        <span class="bg-white/20 px-2 py-1 rounded mr-2" id="indicadorGrado"></span>
-                        <span class="bg-white/20 px-2 py-1 rounded" id="indicadorModulo"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right: Evaluation Type -->
-            <div class="glass-card rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4">3. Tipo de Evaluación</h2>
-                <div class="space-y-3">
-                    <label class="flex items-center p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                        <input type="radio" name="tipoEvaluacion" value="Trabajo Cotidiano" checked class="mr-3">
-                        <div>
-                            <span class="font-bold">Trabajo Cotidiano</span>
-                            <p class="text-sm text-white/70">Evaluación diaria de actividades</p>
-                        </div>
-                    </label>
-                    <label class="flex items-center p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                        <input type="radio" name="tipoEvaluacion" value="Tareas" class="mr-3">
-                        <div>
-                            <span class="font-bold">Tareas</span>
-                            <p class="text-sm text-white/70">Trabajos asignados para casa</p>
-                        </div>
-                    </label>
-                    <label class="flex items-center p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                        <input type="radio" name="tipoEvaluacion" value="Prueba Ejecución" class="mr-3">
-                        <div>
-                            <span class="font-bold">Prueba de Ejecución</span>
-                            <p class="text-sm text-white/70">Demostración práctica de habilidades</p>
-                        </div>
-                    </label>
-                    <label class="flex items-center p-3 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10">
-                        <input type="radio" name="tipoEvaluacion" value="Proyecto Tecnológico" class="mr-3">
-                        <div>
-                            <span class="font-bold">Proyecto Tecnológico</span>
-                            <p class="text-sm text-white/70">Proyecto integrador del ciclo</p>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rubric Display -->
-        <div class="glass-card rounded-xl p-6 mb-8" id="rubricSection" style="display: none;">
-            <h2 class="text-xl font-bold mb-4">Rúbrica de Evaluación</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="rubricDisplay">
-                <!-- Rubric levels will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Students Evaluation Table -->
-        <div class="glass-card rounded-xl p-6" id="evaluationTable" style="display: none;">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold">Evaluación de Estudiantes</h2>
-                <div class="flex space-x-2">
-                    <button onclick="evaluarTodos(3)" class="bg-green-500/20 hover:bg-green-500/30 px-3 py-1 rounded text-sm">
-                        <i class="fas fa-check mr-1"></i>Logrado Todos
-                    </button>
-                    <button onclick="limpiarEvaluacion()" class="bg-red-500/20 hover:bg-red-500/30 px-3 py-1 rounded text-sm">
-                        <i class="fas fa-times mr-1"></i>Limpiar
-                    </button>
-                </div>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-white/20">
-                            <th class="text-left py-3 px-2">Estudiante</th>
-                            <th class="text-center py-3 px-2">Nivel 1<br><span class="text-xs">Inicio</span></th>
-                            <th class="text-center py-3 px-2">Nivel 2<br><span class="text-xs">Proceso</span></th>
-                            <th class="text-center py-3 px-2">Nivel 3<br><span class="text-xs">Logrado</span></th>
-                            <th class="text-center py-3 px-2">Nivel 4<br><span class="text-xs">Sobresaliente</span></th>
-                            <th class="text-center py-3 px-2">Observaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentsEvaluationTable">
-                        <!-- Students will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Summary -->
-            <div class="mt-6 p-4 bg-white/5 rounded-lg">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="evaluationSummary">
-                    <!-- Summary will be loaded here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Tools -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <!-- Evidence -->
-            <div class="glass-card rounded-xl p-6">
-                <h3 class="font-bold mb-4"><i class="fas fa-camera mr-2"></i>Evidencia</h3>
-                <div class="space-y-3">
-                    <button onclick="agregarEvidencia('foto')" class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-lg transition text-left">
-                        <i class="fas fa-image mr-2"></i>Subir fotos
-                    </button>
-                    <button onclick="agregarEvidencia('video')" class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-lg transition text-left">
-                        <i class="fas fa-video mr-2"></i>Subir videos
-                    </button>
-                    <button onclick="agregarEvidencia('documento')" class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-lg transition text-left">
-                        <i class="fas fa-file-pdf mr-2"></i>Subir documentos
-                    </button>
-                </div>
-            </div>
-
-            <!-- YouTube Resources -->
-            <div class="glass-card rounded-xl p-6">
-                <h3 class="font-bold mb-4"><i class="fab fa-youtube mr-2"></i>Recursos YouTube</h3>
-                <div id="youtubeResources">
-                    <p class="text-white/70 text-sm">Seleccione un indicador para ver recursos</p>
-                </div>
-            </div>
-
-            <!-- Quick Actions -->
-            <div class="glass-card rounded-xl p-6">
-                <h3 class="font-bold mb-4"><i class="fas fa-bolt mr-2"></i>Acciones Rápidas</h3>
-                <div class="space-y-3">
-                    <button onclick="generarListaCotejo()" class="w-full gradient-purple hover:opacity-90 p-3 rounded-lg transition">
-                        <i class="fas fa-list-check mr-2"></i>Generar Lista de Cotejo
-                    </button>
-                    <button onclick="exportarPlantillaPNFT()" class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-lg transition">
-                        <i class="fas fa-file-word mr-2"></i>Exportar Plantilla PNFT
-                    </button>
-                    <button onclick="verEstadisticas()" class="w-full bg-white/10 hover:bg-white/20 p-3 rounded-lg transition">
-                        <i class="fas fa-chart-bar mr-2"></i>Ver Estadísticas
-                    </button>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="container mx-auto px-4 py-8 mt-12 border-t border-white/10">
-        <div class="text-center text-white/60">
-            <p class="mb-2">Sistema de Evaluación MEP - Formación Tecnológica</p>
-            <p>© 2024 Ministerio de Educación Pública de Costa Rica</p>
-        </div>
-    </footer>
-
-    <!-- JavaScript -->
-    <script>
-        // Global variables
-        let grupoSeleccionado = null;
-        let indicadorSeleccionado = null;
-        let evaluacionActual = null;
-        const youtubeVideos = {
-            'apropiacion': [
-                { titulo: 'Uso básico de computadora', url: 'https://youtu.be/ejemplo1', duracion: '5:30' },
-                { titulo: 'Herramientas digitales educativas', url: 'https://youtu.be/ejemplo2', duracion: '8:15' }
-            ],
-            'programacion': [
-                { titulo: 'Introducción a Scratch', url: 'https://youtu.be/ejemplo3', duracion: '10:20' },
-                { titulo: 'Programación por bloques', url: 'https://youtu.be/ejemplo4', duracion: '12:45' }
-            ],
-            'robotica': [
-                { titulo: 'Robótica educativa básica', url: 'https://youtu.be/ejemplo5', duracion: '7:30' },
-                { titulo: 'Programación de robots', url: 'https://youtu.be/ejemplo6', duracion: '15:10' }
-            ],
-            'ciencia-datos': [
-                { titulo: 'Análisis de datos simple', url: 'https://youtu.be/ejemplo7', duracion: '9:25' },
-                { titulo: 'Visualización de datos', url: 'https://youtu.be/ejemplo8', duracion: '11:40' }
-            ]
-        };
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarGrupos();
-            cargarAreas();
-            cargarIndicadores();
-        });
-
-        // Load groups into select
-        function cargarGrupos() {
-            const grupos = window.GestorGruposMEP?.obtenerGrupos() || [];
-            const select = document.getElementById('selectGrupo');
-            
-            select.innerHTML = '<option value="">-- Seleccione un grupo --</option>';
-            grupos.forEach(grupo => {
-                const option = document.createElement('option');
-                option.value = grupo.id;
-                option.textContent = `${grupo.nombre} (${grupo.grado}) - ${grupo.estudiantes.length} estudiantes`;
-                select.appendChild(option);
-            });
-        }
-
-        // Load areas into select
-        function cargarAreas() {
-            const areas = window.GestorIndicadoresPNFT?.obtenerAreas() || [];
-            const select = document.getElementById('selectArea');
-            
-            select.innerHTML = '<option value="">-- Seleccione área --</option>';
-            areas.forEach(area => {
-                const option = document.createElement('option');
-                option.value = area.id;
-                option.textContent = area.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        // Load indicators based on selected area
-        function cargarIndicadores() {
-            const areaId = document.getElementById('selectArea').value;
-            if (!areaId) return;
-            
-            const indicadores = window.GestorIndicadoresPNFT?.obtenerIndicadoresPorArea(areaId) || [];
-            const select = document.getElementById('selectIndicador');
-            
-            select.innerHTML = '<option value="">-- Seleccione indicador --</option>';
-            indicadores.forEach(ind => {
-                const option = document.createElement('option');
-                option.value = ind.id;
-                option.textContent = `${ind.grado} - ${ind.descripcion.substring(0, 50)}...`;
-                select.appendChild(option);
-            });
-        }
-
-        // Load group details
-        function cargarGrupo() {
-            const grupoId = document.getElementById('selectGrupo').value;
-            if (!grupoId) {
-                document.getElementById('grupoInfo').style.display = 'none';
-                grupoSeleccionado = null;
-                return;
-            }
-            
-            grupoSeleccionado = window.GestorGruposMEP?.obtenerGrupoPorId(grupoId);
-            if (grupoSeleccionado) {
-                document.getElementById('grupoInfo').style.display = 'block';
-                document.getElementById('grupoNombre').textContent = grupoSeleccionado.nombre;
-                document.getElementById('grupoGrado').textContent = grupoSeleccionado.grado;
-                document.getElementById('grupoEstudiantes').textContent = grupoSeleccionado.estudiantes.length;
-                document.getElementById('grupoCiclo').textContent = grupoSeleccionado.ciclo;
-                
-                // Calculate attendance average
-                const asistenciaPromedio = grupoSeleccionado.estudiantes.length > 0 ?
-                    grupoSeleccionado.estudiantes.reduce((sum, e) => sum + (e.asistencia?.porcentaje || 0), 0) / grupoSeleccionado.estudiantes.length : 0;
-                document.getElementById('grupoAsistencia').textContent = Math.round(asistenciaPromedio) + '%';
-                
-                // Load indicators for this grade
-                const gradoNumerico = grupoSeleccionado.grado.replace('°', '');
-                cargarIndicadoresPorGrado(gradoNumerico);
-            }
-        }
-
-        // Load indicators for specific grade
-        function cargarIndicadoresPorGrado(grado) {
-            const indicadores = window.GestorIndicadoresPNFT?.obtenerIndicadoresPorGrado(grado) || [];
-            const select = document.getElementById('selectIndicador');
-            
-            // Keep current selection if any
-            const currentValue = select.value;
-            select.innerHTML = '<option value="">-- Seleccione indicador --</option>';
-            
-            indicadores.forEach(ind => {
-                const option = document.createElement('option');
-                option.value = ind.id;
-                option.textContent = `${ind.descripcion.substring(0, 60)}...`;
-                select.appendChild(option);
-            });
-            
-            // Restore selection if still valid
-            if (currentValue && indicadores.find(i => i.id === currentValue)) {
-                select.value = currentValue;
-                seleccionarIndicador();
-            }
-        }
-
-        // Select indicator
-        function seleccionarIndicador() {
-            const indicadorId = document.getElementById('selectIndicador').value;
-            if (!indicadorId) {
-                document.getElementById('indicadorInfo').style.display = 'none';
-                indicadorSeleccionado = null;
-                ocultarEvaluacion();
-                return;
-            }
-            
-            indicadorSeleccionado = window.GestorIndicadoresPNFT?.obtenerIndicadorPorId(indicadorId);
-            if (indicadorSeleccionado) {
-                document.getElementById('indicadorInfo').style.display = 'block';
-                document.getElementById('indicadorTitulo').textContent = indicadorSeleccionado.descripcion;
-                document.getElementById('indicadorDescripcion').textContent = `Saberes: ${indicadorSeleccionado.saberes?.join(', ') || 'No especificado'}`;
-                document.getElementById('indicadorGrado').textContent = indicadorSeleccionado.grado;
-                document.getElementById('indicadorModulo').textContent = `Módulo ${indicadorSeleccionado.modulo}`;
-                
-                // Load rubric
-                cargarRubrica();
-                
-                // Load YouTube resources
-                cargarRecursosYouTube();
-                
-                // Show evaluation if group is selected
-                if (grupoSeleccionado) {
-                    mostrarEvaluacion();
-                }
-            }
-        }
-
-        // Load rubric
-        function cargarRubrica() {
-            const rubric = window.GestorIndicadoresPNFT?.rubricas || {};
-            const container = document.getElementById('rubricDisplay');
-            
-            if (rubric.niveles) {
-                container.innerHTML = rubric.niveles.map(nivel => `
-                    <div class="rubric-level-${nivel.id} rounded-lg p-4 hover-scale">
-                        <div class="font-bold text-lg mb-2">Nivel ${nivel.id}: ${nivel.nombre}</div>
-                        <div class="text-sm mb-2">${nivel.descripcion}</div>
-                        <div class="text-xs opacity-80">Puntaje: ${nivel.puntaje} • ${Math.round(nivel.porcentaje * 100)}%</div>
-                    </div>
-                `).join('');
-                
-                document.getElementById('rubricSection').style.display = 'block';
-            }
-        }
-
-        // Load YouTube resources
-        function cargarRecursosYouTube() {
-            if (!indicadorSeleccionado) return;
-            
-            const areaKey = indicadorSeleccionado.area === 'area1' ? 'apropiacion' :
-                          indicadorSeleccionado.area === 'area2' ? 'programacion' :
-                          indicadorSeleccionado.area === 'area3' ? 'robotica' : 'ciencia-datos';
-            
-            const videos = youtubeVideos[areaKey] || [];
-            const container = document.getElementById('youtubeResources');
-            
-            if (videos.length > 0) {
-                container.innerHTML = videos.map(video => `
-                    <a href="${video.url}" target="_blank" class="block bg-white/5 hover:bg-white/10 p-3 rounded-lg mb-2 transition">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm truncate">${video.titulo}</span>
-                            <span class="text-xs opacity-70">${video.duracion}</span>
-                        </div>
-                    </a>
-                `).join('');
-            } else {
-                container.innerHTML = '<p class="text-white/70 text-sm">No hay recursos disponibles para este indicador</p>';
-            }
-        }
-
-        // Show evaluation table
-        function mostrarEvaluacion() {
-            if (!grupoSeleccionado || !indicadorSeleccionado) {
-                alert('Por favor seleccione grupo e indicador primero');
-                return;
-            }
-            
-            // Load students
-            cargarEstudiantesParaEvaluacion();
-            document.getElementById('evaluationTable').style.display = 'block';
-            
-            // Scroll to evaluation
-            document.getElementById('evaluationTable').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Hide evaluation
-        function ocultarEvaluacion() {
-            document.getElementById('evaluationTable').style.display = 'none';
-        }
-
-        // Load students for evaluation
-        function cargarEstudiantesParaEvaluacion() {
-            if (!grupoSeleccionado) return;
-            
-            const container = document.getElementById('studentsEvaluationTable');
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            
-            container.innerHTML = estudiantes.map((estudiante, index) => `
-                <tr class="border-b border-white/10 hover:bg-white/5">
-                    <td class="py-3 px-2">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center mr-3">
-                                ${index + 1}
+                    <div class="card-body">
+                        <div class="config-row">
+                            <div class="form-group">
+                                <label for="grupoSelect"><i class="fas fa-users"></i> Grupo</label>
+                                <select id="grupoSelect" class="form-control">
+                                    <option value="">Seleccionar grupo...</option>
+                                </select>
                             </div>
-                            <div>
-                                <p class="font-medium">${estudiante.nombreCompleto}</p>
-                                <p class="text-xs text-white/70">${estudiante.id}</p>
+                            <div class="form-group">
+                                <label for="estudianteSelect"><i class="fas fa-user-graduate"></i> Estudiante</label>
+                                <select id="estudianteSelect" class="form-control" disabled>
+                                    <option value="">Primero seleccione un grupo</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="periodoSelect"><i class="fas fa-calendar-alt"></i> Periodo</label>
+                                <select id="periodoSelect" class="form-control">
+                                    <option value="1">I Trimestre</option>
+                                    <option value="2">II Trimestre</option>
+                                    <option value="3">III Trimestre</option>
+                                    <option value="final">Evaluación Final</option>
+                                </select>
                             </div>
                         </div>
-                    </td>
-                    ${[1, 2, 3, 4].map(nivel => `
-                        <td class="text-center py-3 px-2">
-                            <input type="radio" 
-                                   name="eval-${estudiante.id}" 
-                                   value="${nivel}"
-                                   ${nivel === 3 ? 'checked' : ''}
-                                   class="w-4 h-4"
-                                   onchange="actualizarResumen()">
-                        </td>
-                    `).join('')}
-                    <td class="py-3 px-2">
-                        <input type="text" 
-                               placeholder="Observaciones..." 
-                               class="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-sm"
-                               id="obs-${estudiante.id}">
-                    </td>
-                </tr>
-            `).join('');
-            
-            // Update summary
-            actualizarResumen();
-        }
-
-        // Update evaluation summary
-        function actualizarResumen() {
-            if (!grupoSeleccionado) return;
-            
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            const niveles = { 1: 0, 2: 0, 3: 0, 4: 0 };
-            let totalEvaluados = 0;
-            
-            estudiantes.forEach(estudiante => {
-                const radio = document.querySelector(`input[name="eval-${estudiante.id}"]:checked`);
-                if (radio) {
-                    const nivel = parseInt(radio.value);
-                    niveles[nivel]++;
-                    totalEvaluados++;
-                }
-            });
-            
-            const container = document.getElementById('evaluationSummary');
-            container.innerHTML = `
-                <div class="text-center">
-                    <div class="text-2xl font-bold">${totalEvaluados}</div>
-                    <div class="text-sm text-white/70">Evaluados</div>
+                        
+                        <div class="config-row">
+                            <div class="form-group">
+                                <label for="asignaturaSelect"><i class="fas fa-book"></i> Asignatura</label>
+                                <select id="asignaturaSelect" class="form-control">
+                                    <option value="matematica">Matemáticas</option>
+                                    <option value="espanol">Español</option>
+                                    <option value="ciencias">Ciencias</option>
+                                    <option value="estudios">Estudios Sociales</option>
+                                    <option value="ingles">Inglés</option>
+                                    <option value="tecnologia">Tecnología</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fechaEvaluacion"><i class="fas fa-calendar"></i> Fecha de Evaluación</label>
+                                <input type="date" id="fechaEvaluacion" class="form-control" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="tipoEvaluacion"><i class="fas fa-tasks"></i> Tipo de Evaluación</label>
+                                <select id="tipoEvaluacion" class="form-control">
+                                    <option value="diagnostica">Evaluación Diagnóstica</option>
+                                    <option value="formativa">Evaluación Formativa</option>
+                                    <option value="sumativa">Evaluación Sumativa</option>
+                                    <option value="autoevaluacion">Autoevaluación</option>
+                                    <option value="coevaluacion">Coevaluación</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold" style="color: #ef4444">${niveles[1]}</div>
-                    <div class="text-sm text-white/70">Nivel 1</div>
+
+                <!-- Indicadores PNFT -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list-check"></i> Indicadores de Desempeño PNFT</h3>
+                        <div class="card-actions">
+                            <button class="btn-icon" id="expandirTodo"><i class="fas fa-expand"></i> Expandir Todo</button>
+                            <button class="btn-icon" id="colapsarTodo"><i class="fas fa-compress"></i> Colapsar Todo</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Navegación por áreas -->
+                        <div class="areas-tabs">
+                            <button class="area-tab active" data-area="cognitivo">Área Cognitiva</button>
+                            <button class="area-tab" data-area="procedimental">Área Procedimental</button>
+                            <button class="area-tab" data-area="actitudinal">Área Actitudinal</button>
+                            <button class="area-tab" data-area="socioemocional">Área Socioemocional</button>
+                        </div>
+
+                        <!-- Área Cognitiva -->
+                        <div class="area-container active" id="area-cognitivo">
+                            <h4><i class="fas fa-brain"></i> Área Cognitiva - Indicadores de Conocimiento</h4>
+                            <div class="indicadores-grid">
+                                <!-- Indicador 1 -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>1. Comprensión de Conceptos</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-cognitivo-1">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Demuestra comprensión de los conceptos clave de la asignatura.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>No identifica conceptos básicos</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Identifica algunos conceptos con ayuda</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Comprende la mayoría de conceptos</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Domina y aplica todos los conceptos</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-1" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+
+                                <!-- Indicador 2 -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>2. Análisis y Síntesis</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-cognitivo-2">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Analiza información y sintetiza ideas de manera coherente.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>No logra analizar información</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Analiza con mucha guía del docente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Analiza y sintetiza adecuadamente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Analiza, sintetiza y genera nuevas ideas</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-2" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+
+                                <!-- Indicador 3 -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>3. Resolución de Problemas</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-cognitivo-3">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Aplica conocimientos para resolver problemas adecuadamente.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>No aborda problemas</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Resuelve con ayuda constante</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Resuelve problemas comunes</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Resuelve problemas complejos creativamente</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="cognitivo-3" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Área Procedimental -->
+                        <div class="area-container" id="area-procedimental">
+                            <h4><i class="fas fa-hands"></i> Área Procedimental - Habilidades y Destrezas</h4>
+                            <div class="indicadores-grid">
+                                <!-- Indicadores procedimentales (estructura similar) -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>4. Aplicación de Procedimientos</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-procedimental-1">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Aplica procedimientos y técnicas adecuadamente.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>No aplica procedimientos</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Aplica con supervisión constante</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Aplica procedimientos correctamente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Aplica y adapta procedimientos creativamente</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="procedimental-1" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Área Actitudinal -->
+                        <div class="area-container" id="area-actitudinal">
+                            <h4><i class="fas fa-heart"></i> Área Actitudinal - Valores y Actitudes</h4>
+                            <div class="indicadores-grid">
+                                <!-- Indicadores actitudinales -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>7. Responsabilidad</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-actitudinal-1">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Demuestra responsabilidad en sus deberes y compromisos.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>Incumple constantemente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Cumple con recordatorios</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Cumple regularmente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Supera expectativas de responsabilidad</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="actitudinal-1" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Área Socioemocional -->
+                        <div class="area-container" id="area-socioemocional">
+                            <h4><i class="fas fa-users"></i> Área Socioemocional - Habilidades Sociales</h4>
+                            <div class="indicadores-grid">
+                                <!-- Indicadores socioemocionales -->
+                                <div class="indicador-item">
+                                    <div class="indicador-header">
+                                        <h5>10. Trabajo en Equipo</h5>
+                                        <span class="indicador-puntaje">Puntaje: <strong id="puntaje-socioemocional-1">0</strong>/10</span>
+                                    </div>
+                                    <p class="indicador-descripcion">Colabora efectivamente en actividades grupales.</p>
+                                    <div class="indicador-escala">
+                                        <div class="escala-item" data-value="1">
+                                            <span>Insuficiente</span>
+                                            <p>No participa en equipo</p>
+                                        </div>
+                                        <div class="escala-item" data-value="4">
+                                            <span>En Proceso</span>
+                                            <p>Participa con dificultad</p>
+                                        </div>
+                                        <div class="escala-item" data-value="7">
+                                            <span>Satisfactorio</span>
+                                            <p>Colabora adecuadamente</p>
+                                        </div>
+                                        <div class="escala-item" data-value="10">
+                                            <span>Excelente</span>
+                                            <p>Lidera y facilita trabajo en equipo</p>
+                                        </div>
+                                    </div>
+                                    <div class="indicador-control">
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="1">1</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="2">2</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="3">3</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="4">4</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="5">5</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="6">6</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="7">7</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="8">8</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="9">9</button>
+                                        <button class="btn-escala" data-indicador="socioemocional-1" data-value="10">10</button>
+                                    </div>
+                                    <textarea class="indicador-observacion" placeholder="Observaciones específicas sobre este indicador..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold" style="color: #10b981">${niveles[3]}</div>
-                    <div class="text-sm text-white/70">Nivel 3</div>
+
+                <!-- Resumen y Resultados -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-bar"></i> Resumen de Evaluación</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="resumen-container">
+                            <div class="resumen-item">
+                                <div class="resumen-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <div class="resumen-details">
+                                    <h5>Área Cognitiva</h5>
+                                    <div class="resumen-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-cognitivo" style="width: 0%"></div>
+                                        </div>
+                                        <span id="puntaje-cognitivo-total">0/30</span>
+                                    </div>
+                                    <p id="nivel-cognitivo">No evaluado</p>
+                                </div>
+                            </div>
+                            
+                            <div class="resumen-item">
+                                <div class="resumen-icon">
+                                    <i class="fas fa-hands"></i>
+                                </div>
+                                <div class="resumen-details">
+                                    <h5>Área Procedimental</h5>
+                                    <div class="resumen-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-procedimental" style="width: 0%"></div>
+                                        </div>
+                                        <span id="puntaje-procedimental-total">0/30</span>
+                                    </div>
+                                    <p id="nivel-procedimental">No evaluado</p>
+                                </div>
+                            </div>
+                            
+                            <div class="resumen-item">
+                                <div class="resumen-icon">
+                                    <i class="fas fa-heart"></i>
+                                </div>
+                                <div class="resumen-details">
+                                    <h5>Área Actitudinal</h5>
+                                    <div class="resumen-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-actitudinal" style="width: 0%"></div>
+                                        </div>
+                                        <span id="puntaje-actitudinal-total">0/30</span>
+                                    </div>
+                                    <p id="nivel-actitudinal">No evaluado</p>
+                                </div>
+                            </div>
+                            
+                            <div class="resumen-item">
+                                <div class="resumen-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="resumen-details">
+                                    <h5>Área Socioemocional</h5>
+                                    <div class="resumen-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="progress-socioemocional" style="width: 0%"></div>
+                                        </div>
+                                        <span id="puntaje-socioemocional-total">0/30</span>
+                                    </div>
+                                    <p id="nivel-socioemocional">No evaluado</p>
+                                </div>
+                            </div>
+                            
+                            <div class="resumen-total">
+                                <div class="total-score">
+                                    <h4>Puntaje Total</h4>
+                                    <div class="score-display">
+                                        <span id="puntaje-total-global">0</span>
+                                        <small>/ 120</small>
+                                    </div>
+                                    <div class="score-grade">
+                                        <span id="calificacion-final">No evaluado</span>
+                                    </div>
+                                </div>
+                                <div class="total-actions">
+                                    <button class="btn btn-success" id="calcularEvaluacion">
+                                        <i class="fas fa-calculator"></i> Calcular Evaluación
+                                    </button>
+                                    <button class="btn btn-primary" id="generarInforme">
+                                        <i class="fas fa-file-pdf"></i> Generar Informe
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="text-2xl font-bold">${estudiantes.length}</div>
-                    <div class="text-sm text-white/70">Total</div>
+
+                <!-- Observaciones Generales -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-comment-dots"></i> Observaciones Generales y Recomendaciones</h3>
+                    </div>
+                    <div class="card-body">
+                        <textarea id="observacionesGenerales" class="form-control" rows="5" placeholder="Escriba aquí observaciones generales sobre el desempeño del estudiante, fortalezas, áreas de mejora y recomendaciones específicas..."></textarea>
+                        <div class="recomendaciones-automaticas">
+                            <h5><i class="fas fa-robot"></i> Recomendaciones Automáticas</h5>
+                            <div id="recomendacionesContainer">
+                                <p class="placeholder-text">Las recomendaciones aparecerán después de calcular la evaluación</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `;
-        }
+            </div>
+        </main>
+    </div>
 
-        // Evaluate all students with specific level
-        function evaluarTodos(nivel) {
-            if (!grupoSeleccionado) return;
-            
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            estudiantes.forEach(estudiante => {
-                const radio = document.querySelector(`input[name="eval-${estudiante.id}"][value="${nivel}"]`);
-                if (radio) radio.checked = true;
-            });
-            
-            actualizarResumen();
-        }
+    <!-- Modal de Exportación -->
+    <div class="modal" id="modalExportacion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-export"></i> Exportar Evaluación</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="export-option">
+                        <i class="fas fa-file-pdf"></i>
+                        <h4>PDF MEP Oficial</h4>
+                        <p>Formato oficial del Ministerio de Educación</p>
+                        <button class="btn btn-primary btn-export" data-format="pdf">Exportar PDF</button>
+                    </div>
+                    <div class="export-option">
+                        <i class="fas fa-file-excel"></i>
+                        <h4>Excel</h4>
+                        <p>Para análisis estadístico y seguimiento</p>
+                        <button class="btn btn-success btn-export" data-format="excel">Exportar Excel</button>
+                    </div>
+                    <div class="export-option">
+                        <i class="fas fa-file-word"></i>
+                        <h4>Word</h4>
+                        <p>Para edición y personalización</p>
+                        <button class="btn btn-info btn-export" data-format="word">Exportar Word</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Clear all evaluations
-        function limpiarEvaluacion() {
-            if (!grupoSeleccionado) return;
-            
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            estudiantes.forEach(estudiante => {
-                const radios = document.querySelectorAll(`input[name="eval-${estudiante.id}"]`);
-                radios.forEach(radio => radio.checked = false);
-                
-                const obs = document.getElementById(`obs-${estudiante.id}`);
-                if (obs) obs.value = '';
-            });
-            
-            actualizarResumen();
-        }
-
-        // Save evaluation
-        function guardarEvaluacion() {
-            if (!grupoSeleccionado || !indicadorSeleccionado) {
-                alert('Por favor seleccione grupo e indicador');
-                return;
-            }
-            
-            const tipoEvaluacion = document.querySelector('input[name="tipoEvaluacion"]:checked').value;
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            const resultados = [];
-            
-            // Collect evaluation data
-            estudiantes.forEach(estudiante => {
-                const radio = document.querySelector(`input[name="eval-${estudiante.id}"]:checked`);
-                const observaciones = document.getElementById(`obs-${estudiante.id}`)?.value || '';
-                
-                if (radio) {
-                    const nivel = parseInt(radio.value);
-                    resultados.push({
-                        estudianteId: estudiante.id,
-                        nivel: nivel,
-                        observaciones: observaciones
-                    });
-                }
-            });
-            
-            if (resultados.length === 0) {
-                alert('No hay estudiantes evaluados');
-                return;
-            }
-            
-            // Create evaluation in system
-            const evaluacion = window.GestorIndicadoresPNFT?.crearEvaluacion({
-                grupoId: grupoSeleccionado.id,
-                grupoNombre: grupoSeleccionado.nombre,
-                indicadorId: indicadorSeleccionado.id,
-                tipo: tipoEvaluacion,
-                fecha: new Date().toISOString().split('T')[0],
-                periodo: 1
-            });
-            
-            // Register results
-            resultados.forEach(resultado => {
-                window.GestorIndicadoresPNFT?.registrarResultado(
-                    evaluacion.id,
-                    resultado.estudianteId,
-                    { criterio1: resultado.nivel }
-                );
-            });
-            
-            // Complete evaluation
-            window.GestorIndicadoresPNFT?.completarEvaluacion(evaluacion.id);
-            
-            // Show success message
-            alert(`✅ Evaluación guardada exitosamente\n\n📊 Resumen:\n• ${resultados.length} estudiantes evaluados\n• Tipo: ${tipoEvaluacion}\n• Indicador: ${indicadorSeleccionado.descripcion.substring(0, 50)}...`);
-            
-            // Reset form
-            limpiarEvaluacion();
-        }
-
-        // Export evaluation
-        function exportarEvaluacion() {
-            alert('Funcionalidad de exportación en desarrollo...');
-            // To be implemented: Export to PDF/Excel
-        }
-
-        // Add evidence
-        function agregarEvidencia(tipo) {
-            alert(`Agregando evidencia de tipo: ${tipo}\n\nEsta funcionalidad permitirá subir archivos o tomar fotos desde la cámara.`);
-        }
-
-        // Generate checklist
-        function generarListaCotejo() {
-            if (!grupoSeleccionado || !indicadorSeleccionado) {
-                alert('Seleccione grupo e indicador primero');
-                return;
-            }
-            
-            const estudiantes = grupoSeleccionado.estudiantes.filter(e => e.activo);
-            let checklist = `LISTA DE COTEJO - ${grupoSeleccionado.nombre}\n`;
-            checklist += `Indicador: ${indicadorSeleccionado.descripcion}\n`;
-            checklist += `Fecha: ${new Date().toLocaleDateString('es-CR')}\n\n`;
-            checklist += 'Estudiante\t\tCumple\tObservaciones\n';
-            checklist += '-'.repeat(50) + '\n';
-            
-            estudiantes.forEach(est => {
-                checklist += `${est.nombreCompleto}\t\t[ ]\t\n`;
-            });
-            
-            // Create and download text file
-            const blob = new Blob([checklist], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `lista-cotejo-${grupoSeleccionado.nombre.replace(/\s+/g, '-')}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            alert('Lista de cotejo generada y descargada');
-        }
-
-        // Export PNFT template
-        function exportarPlantillaPNFT() {
-            if (!indicadorSeleccionado) {
-                alert('Seleccione un indicador primero');
-                return;
-            }
-            
-            // Create Word-like template
-            const template = `
-PLANTILLA PNFT - FORMACIÓN TECNOLÓGICA
-========================================
-
-I. DATOS GENERALES
-Institución: _________________________
-Docente: _____________________________
-Grupo: _______________________________
-Grado: ${indicadorSeleccionado.grado}
-Periodo: _____________________________
-
-II. INDICADOR DE LOGRO
-Código: ${indicadorSeleccionado.id}
-Descripción: ${indicadorSeleccionado.descripcion}
-Área: ${indicadorSeleccionado.area}
-Módulo: ${indicadorSeleccionado.modulo}
-Saberes específicos: ${indicadorSeleccionado.saberes?.join(', ') || 'No especificado'}
-
-III. RÚBRICA DE EVALUACIÓN
-Nivel 1 (Inicio): _________________________________________________________
-Nivel 2 (Proceso): ________________________________________________________
-Nivel 3 (Logrado): ________________________________________________________
-Nivel 4 (Sobresaliente): __________________________________________________
-
-IV. EVIDENCIAS DE APRENDIZAJE
-1. _________________________________________________________
-2. _________________________________________________________
-3. _________________________________________________________
-
-V. OBSERVACIONES
-_____________________________________________________________
-_____________________________________________________________
-_____________________________________________________________
-
-Fecha: ______________________
-Firma: ______________________
-            `;
-            
-            // Download as .doc file
-            const blob = new Blob([template], { type: 'application/msword' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `plantilla-pnft-${indicadorSeleccionado.id}.doc`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            alert('Plantilla PNFT generada en formato Word');
-        }
-
-        // View statistics
-        function verEstadisticas() {
-            if (!grupoSeleccionado) {
-                alert('Seleccione un grupo primero');
-                return;
-            }
-            
-            const estadisticas = window.CalculadoraMEP?.calcularEstadisticasGrupo(
-                grupoSeleccionado.estudiantes.filter(e => e.activo),
-                grupoSeleccionado.ciclo
-            );
-            
-            if (estadisticas) {
-                const mensaje = `
-📊 ESTADÍSTICAS DEL GRUPO
-
-Total estudiantes: ${estadisticas.totalEstudiantes}
-Promedio del grupo: ${estadisticas.promedioGrupo.toFixed(2)}
-Asistencia promedio: ${estadisticas.asistenciaPromedio.toFixed(1)}%
-Aprobados: ${estadisticas.aprobados} (${estadisticas.porcentajeAprobacion.toFixed(1)}%)
-Reprobados: ${estadisticas.reprobados}
-
-Distribución de calificaciones:
-A (90-100): ${estadisticas.distribucion.find(d => d.letra === 'A')?.cantidad || 0}
-B (80-89): ${estadisticas.distribucion.find(d => d.letra === 'B')?.cantidad || 0}
-C (65-79): ${estadisticas.distribucion.find(d => d.letra === 'C')?.cantidad || 0}
-D (50-64): ${estadisticas.distribucion.find(d => d.letra === 'D')?.cantidad || 0}
-F (0-49): ${estadisticas.distribucion.find(d => d.letra === 'F')?.cantidad || 0}
-                `;
-                
-                alert(mensaje);
-            }
-        }
-    </script>
-
-    <!-- Include external JavaScript -->
     <script src="../js/gestor-grupos-mep.js"></script>
     <script src="../js/gestor-indicadores.js"></script>
     <script src="../js/calculadora-mep.js"></script>
+    <script src="../js/registro-evaluacion.js"></script>
+    <script src="evaluacion-mep.js"></script>
 </body>
 </html>
