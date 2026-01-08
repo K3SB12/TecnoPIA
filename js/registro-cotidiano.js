@@ -1,321 +1,274 @@
-// Sistema de Registro Cotidiano para TecnoPIA
+// js/registro-cotidiano.js
 class RegistroCotidiano {
     constructor() {
-        this.registros = JSON.parse(localStorage.getItem('tecnoPIA_registros')) || [];
-        this.actividadesTipo = [
-            { id: 'exploracion', nombre: 'Exploración tecnológica', icono: 'fa-compass' },
-            { id: 'practica', nombre: 'Práctica guiada', icono: 'fa-hands-helping' },
-            { id: 'proyecto', nombre: 'Proyecto colaborativo', icono: 'fa-users' },
-            { id: 'ejercicio', nombre: 'Ejercicio individual', icono: 'fa-user-edit' },
-            { id: 'evaluacion', nombre: 'Evaluación formativa', icono: 'fa-clipboard-check' },
-            { id: 'reflexion', nombre: 'Reflexión metacognitiva', icono: 'fa-brain' }
-        ];
-        this.init();
+        this.actividades = [];
+        this.observaciones = {};
+        this.cargarDatos();
     }
-
-    init() {
-        // Crear registros demo si no existen
-        if (this.registros.length === 0) {
-            this.crearRegistrosDemo();
-        }
-    }
-
-    crearRegistrosDemo() {
-        const hoy = new Date();
-        const ayer = new Date(hoy);
-        ayer.setDate(ayer.getDate() - 1);
-        
-        this.registros = [
-            {
-                id: 'reg1',
-                grupoId: '1',
-                fecha: hoy.toISOString().split('T')[0],
-                horaInicio: '08:00',
-                horaFin: '09:30',
-                duracion: 90,
-                actividad: 'exploracion',
-                descripcion: 'Exploración de hardware de computadora',
-                indicadores: ['C2-AT-1'],
-                recursos: ['Computadoras', 'Imágenes de hardware'],
-                evidencias: ['fotos_hardware.jpg'],
-                observaciones: 'Los estudiantes mostraron interés en identificar las partes',
-                docente: 'Ana María Rodríguez',
-                estado: 'completada'
-            },
-            {
-                id: 'reg2',
-                grupoId: '2',
-                fecha: ayer.toISOString().split('T')[0],
-                horaInicio: '10:00',
-                horaFin: '11:30',
-                duracion: 90,
-                actividad: 'practica',
-                descripcion: 'Práctica de programación con bloques',
-                indicadores: ['C2-PA-1'],
-                recursos: ['Scratch', 'Tablets'],
-                evidencias: ['proyectos_scratch.sb3'],
-                observaciones: 'Algunos estudiantes necesitaron apoyo adicional',
-                docente: 'Ana María Rodríguez',
-                estado: 'completada'
+    
+    cargarDatos() {
+        try {
+            const actividadesGuardadas = localStorage.getItem('tecnoPIA_actividades');
+            if (actividadesGuardadas) {
+                this.actividades = JSON.parse(actividadesGuardadas);
             }
-        ];
-        
-        this.guardar();
-    }
-
-    // Crear nuevo registro
-    crearRegistro(registroData) {
-        const nuevoRegistro = {
-            id: `reg-${Date.now()}`,
-            fechaCreacion: new Date().toISOString(),
-            estado: 'activo',
-            ...registroData
-        };
-
-        this.registros.push(nuevoRegistro);
-        this.guardar();
-        return nuevoRegistro;
-    }
-
-    // Obtener registros por grupo y fecha
-    obtenerRegistros(grupoId, fecha = null) {
-        let filtrados = this.registros.filter(r => r.grupoId === grupoId && r.estado === 'activo');
-        
-        if (fecha) {
-            filtrados = filtrados.filter(r => r.fecha === fecha);
-        }
-        
-        return filtrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-    }
-
-    // Obtener registros del día actual
-    obtenerRegistrosHoy(grupoId = null) {
-        const hoy = new Date().toISOString().split('T')[0];
-        let filtrados = this.registros.filter(r => r.fecha === hoy && r.estado === 'activo');
-        
-        if (grupoId) {
-            filtrados = filtrados.filter(r => r.grupoId === grupoId);
-        }
-        
-        return filtrados;
-    }
-
-    // Obtener estadísticas de registros
-    obtenerEstadisticasRegistros(grupoId, periodo = 'mes') {
-        const registrosGrupo = this.registros.filter(r => r.grupoId === grupoId && r.estado === 'activo');
-        
-        // Filtrar por período
-        const fechaLimite = new Date();
-        switch(periodo) {
-            case 'semana':
-                fechaLimite.setDate(fechaLimite.getDate() - 7);
-                break;
-            case 'mes':
-                fechaLimite.setMonth(fechaLimite.getMonth() - 1);
-                break;
-            case 'trimestre':
-                fechaLimite.setMonth(fechaLimite.getMonth() - 3);
-                break;
-        }
-        
-        const registrosPeriodo = registrosGrupo.filter(r => new Date(r.fecha) >= fechaLimite);
-        
-        // Calcular estadísticas
-        const totalRegistros = registrosPeriodo.length;
-        const totalHoras = registrosPeriodo.reduce((sum, r) => sum + (r.duracion || 0), 0) / 60;
-        
-        const actividadesPorTipo = {};
-        this.actividadesTipo.forEach(tipo => {
-            actividadesPorTipo[tipo.id] = registrosPeriodo.filter(r => r.actividad === tipo.id).length;
-        });
-        
-        const indicadoresEvaluados = [];
-        registrosPeriodo.forEach(r => {
-            if (r.indicadores) {
-                indicadoresEvaluados.push(...r.indicadores);
-            }
-        });
-        
-        const indicadoresUnicos = [...new Set(indicadoresEvaluados)];
-        
-        return {
-            totalRegistros,
-            totalHoras: Math.round(totalHoras * 10) / 10,
-            actividadesPorTipo,
-            indicadoresEvaluados: indicadoresUnicos.length,
-            registrosPorDia: this.calcularRegistrosPorDia(registrosPeriodo),
-            promedioDiario: totalRegistros > 0 ? totalHoras / totalRegistros : 0
-        };
-    }
-
-    calcularRegistrosPorDia(registros) {
-        const dias = {};
-        registros.forEach(r => {
-            if (!dias[r.fecha]) {
-                dias[r.fecha] = { registros: 0, horas: 0 };
-            }
-            dias[r.fecha].registros++;
-            dias[r.fecha].horas += (r.duracion || 0) / 60;
-        });
-        
-        return Object.entries(dias).map(([fecha, datos]) => ({
-            fecha,
-            ...datos
-        })).sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-    }
-
-    // Generar reporte de actividades
-    generarReporteActividades(grupoId, fechaInicio, fechaFin) {
-        const registrosFiltrados = this.registros.filter(r => 
-            r.grupoId === grupoId && 
-            r.estado === 'activo' &&
-            new Date(r.fecha) >= new Date(fechaInicio) &&
-            new Date(r.fecha) <= new Date(fechaFin)
-        );
-        
-        const gestorGrupos = window.GestorGruposMEP;
-        const grupo = gestorGrupos?.obtenerGrupoPorId(grupoId);
-        
-        const gestorIndicadores = window.GestorIndicadoresPNFT;
-        
-        // Agrupar por indicador
-        const indicadoresMap = {};
-        registrosFiltrados.forEach(registro => {
-            if (registro.indicadores) {
-                registro.indicadores.forEach(indId => {
-                    if (!indicadoresMap[indId]) {
-                        indicadoresMap[indId] = {
-                            indicador: gestorIndicadores?.obtenerIndicadorPorId(indId),
-                            registros: [],
-                            totalHoras: 0,
-                            actividades: new Set()
-                        };
-                    }
-                    
-                    indicadoresMap[indId].registros.push(registro);
-                    indicadoresMap[indId].totalHoras += (registro.duracion || 0) / 60;
-                    indicadoresMap[indId].actividades.add(registro.actividad);
-                });
-            }
-        });
-        
-        // Calcular cobertura del PNFT
-        const todosIndicadores = gestorIndicadores?.obtenerIndicadoresPorGrado(grupo?.grado.replace('°', '') || '5');
-        const indicadoresEvaluados = Object.keys(indicadoresMap);
-        const coberturaPNFT = todosIndicadores ? 
-            (indicadoresEvaluados.length / todosIndicadores.length) * 100 : 0;
-        
-        return {
-            grupo: grupo,
-            periodo: {
-                inicio: fechaInicio,
-                fin: fechaFin
-            },
-            resumen: {
-                totalRegistros: registrosFiltrados.length,
-                totalHoras: registrosFiltrados.reduce((sum, r) => sum + (r.duracion || 0), 0) / 60,
-                diasConActividad: [...new Set(registrosFiltrados.map(r => r.fecha))].length,
-                actividadesDiferentes: [...new Set(registrosFiltrados.map(r => r.actividad))].length
-            },
-            indicadores: Object.entries(indicadoresMap).map(([indId, datos]) => ({
-                indicador: datos.indicador,
-                registros: datos.registros.length,
-                horas: Math.round(datos.totalHoras * 10) / 10,
-                actividades: Array.from(datos.actividades),
-                ultimaActividad: datos.registros.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))[0]?.fecha
-            })),
-            coberturaPNFT: Math.round(coberturaPNFT * 10) / 10,
-            recomendaciones: this.generarRecomendaciones(indicadoresMap, todosIndicadores)
-        };
-    }
-
-    generarRecomendaciones(indicadoresMap, todosIndicadores) {
-        const recomendaciones = [];
-        
-        // Identificar indicadores no trabajados
-        if (todosIndicadores) {
-            const indicadoresTrabajados = new Set(Object.keys(indicadoresMap));
-            const indicadoresNoTrabajados = todosIndicadores.filter(
-                ind => !indicadoresTrabajados.has(ind.id)
-            );
             
-            if (indicadoresNoTrabajados.length > 0) {
-                recomendaciones.push({
-                    tipo: 'prioridad',
-                    mensaje: `Hay ${indicadoresNoTrabajados.length} indicadores del PNFT que no se han trabajado`,
-                    detalles: indicadoresNoTrabajados.map(ind => ind.descripcion.substring(0, 50) + '...')
-                });
+            const observacionesGuardadas = localStorage.getItem('tecnoPIA_observaciones');
+            if (observacionesGuardadas) {
+                this.observaciones = JSON.parse(observacionesGuardadas);
             }
+        } catch (error) {
+            console.error('Error cargando datos del registro cotidiano:', error);
+        }
+    }
+    
+    guardarDatos() {
+        try {
+            localStorage.setItem('tecnoPIA_actividades', JSON.stringify(this.actividades));
+            localStorage.setItem('tecnoPIA_observaciones', JSON.stringify(this.observaciones));
+        } catch (error) {
+            console.error('Error guardando datos del registro cotidiano:', error);
+        }
+    }
+    
+    registrarActividad(actividad) {
+        const actividadCompleta = {
+            id: Date.now(),
+            fecha: new Date().toISOString(),
+            fechaLegible: new Date().toLocaleDateString('es-CR'),
+            ...actividad
+        };
+        
+        this.actividades.unshift(actividadCompleta); // Agregar al inicio
+        this.guardarDatos();
+        
+        // Limitar a 1000 actividades para evitar problemas de almacenamiento
+        if (this.actividades.length > 1000) {
+            this.actividades = this.actividades.slice(0, 1000);
+            this.guardarDatos();
         }
         
-        // Verificar distribución de actividades
-        const tiposActividad = Object.values(indicadoresMap).flatMap(d => Array.from(d.actividades));
-        const conteoActividades = {};
-        tiposActividad.forEach(tipo => {
-            conteoActividades[tipo] = (conteoActividades[tipo] || 0) + 1;
+        return actividadCompleta;
+    }
+    
+    registrarObservacion(grupoId, estudianteId, observacion) {
+        const key = `${grupoId}_${estudianteId}`;
+        
+        if (!this.observaciones[key]) {
+            this.observaciones[key] = [];
+        }
+        
+        const observacionCompleta = {
+            id: Date.now(),
+            fecha: new Date().toISOString(),
+            fechaLegible: new Date().toLocaleDateString('es-CR'),
+            ...observacion
+        };
+        
+        this.observaciones[key].unshift(observacionCompleta);
+        this.guardarDatos();
+        
+        return observacionCompleta;
+    }
+    
+    obtenerActividadesRecientes(limite = 50) {
+        return this.actividades.slice(0, limite);
+    }
+    
+    obtenerActividadesPorFecha(fecha) {
+        const fechaBusqueda = new Date(fecha).toDateString();
+        return this.actividades.filter(actividad => {
+            const actividadFecha = new Date(actividad.fecha).toDateString();
+            return actividadFecha === fechaBusqueda;
+        });
+    }
+    
+    obtenerActividadesPorGrupo(grupoId) {
+        return this.actividades.filter(actividad => actividad.grupoId === grupoId);
+    }
+    
+    obtenerObservacionesEstudiante(grupoId, estudianteId) {
+        const key = `${grupoId}_${estudianteId}`;
+        return this.observaciones[key] || [];
+    }
+    
+    obtenerEstadisticasDiarias() {
+        const hoy = new Date().toDateString();
+        const actividadesHoy = this.actividades.filter(actividad => {
+            const actividadFecha = new Date(actividad.fecha).toDateString();
+            return actividadFecha === hoy;
         });
         
-        const actividadMayoritaria = Object.entries(conteoActividades)
-            .sort((a, b) => b[1] - a[1])[0];
+        return {
+            total: actividadesHoy.length,
+            evaluaciones: actividadesHoy.filter(a => a.tipo === 'evaluacion').length,
+            observaciones: actividadesHoy.filter(a => a.tipo === 'observacion').length,
+            asistencias: actividadesHoy.filter(a => a.tipo === 'asistencia').length,
+            otras: actividadesHoy.filter(a => !['evaluacion', 'observacion', 'asistencia'].includes(a.tipo)).length
+        };
+    }
+    
+    generarReporteDiario() {
+        const actividadesHoy = this.obtenerActividadesPorFecha(new Date().toISOString());
+        const estadisticas = this.obtenerEstadisticasDiarias();
         
-        if (actividadMayoritaria && actividadMayoritaria[1] > tiposActividad.length * 0.5) {
-            recomendaciones.push({
-                tipo: 'variedad',
-                mensaje: 'Se observa predominancia de un solo tipo de actividad',
-                sugerencia: 'Considere diversificar las estrategias didácticas'
+        let reporte = `REPORTE DIARIO - ${new Date().toLocaleDateString('es-CR')}\n\n`;
+        reporte += `Total actividades: ${estadisticas.total}\n`;
+        reporte += `Evaluaciones: ${estadisticas.evaluaciones}\n`;
+        reporte += `Observaciones: ${estadisticas.observaciones}\n`;
+        reporte += `Asistencias: ${estadisticas.asistencias}\n`;
+        reporte += `Otras: ${estadisticas.otras}\n\n`;
+        
+        if (actividadesHoy.length > 0) {
+            reporte += 'Actividades realizadas:\n';
+            reporte += '----------------------\n';
+            
+            actividadesHoy.forEach(actividad => {
+                reporte += `• ${actividad.fechaLegible} - ${actividad.tipo.toUpperCase()}\n`;
+                if (actividad.descripcion) {
+                    reporte += `  ${actividad.descripcion}\n`;
+                }
+                if (actividad.grupo) {
+                    reporte += `  Grupo: ${actividad.grupo}\n`;
+                }
+                if (actividad.estudiante) {
+                    reporte += `  Estudiante: ${actividad.estudiante}\n`;
+                }
+                reporte += '\n';
             });
+        } else {
+            reporte += 'No se registraron actividades hoy.\n';
         }
         
-        return recomendaciones;
+        return reporte;
     }
-
-    // Quick registration for daily use
-    registroRapido(grupoId, actividad, indicadores, observaciones = '') {
-        const registro = this.crearRegistro({
-            grupoId,
-            fecha: new Date().toISOString().split('T')[0],
-            horaInicio: new Date().toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' }),
-            duracion: 40, // Duración por defecto de una lección
-            actividad,
-            descripcion: this.actividadesTipo.find(a => a.id === actividad)?.nombre || actividad,
-            indicadores: Array.isArray(indicadores) ? indicadores : [indicadores],
-            observaciones,
-            docente: 'Docente actual', // Se debería obtener del localStorage
-            estado: 'completada'
-        });
+    
+    exportarDatos(formato = 'json') {
+        const datos = {
+            actividades: this.actividades,
+            observaciones: this.observaciones,
+            fechaExportacion: new Date().toISOString(),
+            totalActividades: this.actividades.length,
+            totalObservaciones: Object.keys(this.observaciones).length
+        };
         
-        return registro;
-    }
-
-    // Save to localStorage
-    guardar() {
-        localStorage.setItem('tecnoPIA_registros', JSON.stringify(this.registros));
+        switch(formato) {
+            case 'json':
+                return JSON.stringify(datos, null, 2);
+                
+            case 'csv':
+                let csv = 'Fecha,Tipo,Descripcion,Grupo,Estudiante,Detalles\n';
+                
+                this.actividades.forEach(actividad => {
+                    const fecha = new Date(actividad.fecha).toLocaleDateString('es-CR');
+                    const tipo = actividad.tipo || '';
+                    const descripcion = actividad.descripcion || '';
+                    const grupo = actividad.grupo || '';
+                    const estudiante = actividad.estudiante || '';
+                    const detalles = actividad.detalles ? JSON.stringify(actividad.detalles) : '';
+                    
+                    csv += `"${fecha}","${tipo}","${descripcion}","${grupo}","${estudiante}","${detalles}"\n`;
+                });
+                
+                return csv;
+                
+            default:
+                return JSON.stringify(datos, null, 2);
+        }
     }
 }
 
-// Initialize global instance
-window.RegistroCotidiano = new RegistroCotidiano();
+// Funciones de utilidad para el registro cotidiano
+function inicializarRegistroCotidiano() {
+    window.registroCotidiano = new RegistroCotidiano();
+    
+    // Ejemplo de actividades automáticas que se pueden registrar
+    registrarActividadAutomatica('sistema_iniciado', {
+        tipo: 'sistema',
+        descripcion: 'Sistema TecnoPIA iniciado',
+        detalles: { usuario: 'docente', hora: new Date().toLocaleTimeString() }
+    });
+}
 
-// Utility functions for HTML
-window.registrarActividadDiaria = function(grupoId, actividad, indicadores) {
-    const registro = window.RegistroCotidiano.registroRapido(grupoId, actividad, indicadores);
-    console.log('Actividad registrada:', registro);
-    return registro;
-};
+function registrarActividadAutomatica(tipo, datos) {
+    if (!window.registroCotidiano) return;
+    
+    const actividadesAutomaticas = {
+        sistema_iniciado: {
+            tipo: 'sistema',
+            descripcion: 'Sistema TecnoPIA iniciado',
+            detalles: datos
+        },
+        evaluacion_registrada: {
+            tipo: 'evaluacion',
+            descripcion: 'Evaluación registrada',
+            grupo: datos.grupo,
+            estudiante: datos.estudiante,
+            detalles: datos
+        },
+        grupo_creado: {
+            tipo: 'gestion',
+            descripcion: 'Nuevo grupo creado',
+            grupo: datos.nombre,
+            detalles: datos
+        },
+        estudiante_agregado: {
+            tipo: 'gestion',
+            descripcion: 'Estudiante agregado a grupo',
+            grupo: datos.grupo,
+            estudiante: `${datos.nombre} ${datos.apellidos}`,
+            detalles: datos
+        },
+        observacion_registrada: {
+            tipo: 'observacion',
+            descripcion: 'Observación registrada',
+            grupo: datos.grupo,
+            estudiante: datos.estudiante,
+            detalles: datos
+        },
+        asistencia_registrada: {
+            tipo: 'asistencia',
+            descripcion: 'Asistencia registrada',
+            grupo: datos.grupo,
+            detalles: datos
+        }
+    };
+    
+    if (actividadesAutomaticas[tipo]) {
+        window.registroCotidiano.registrarActividad(actividadesAutomaticas[tipo]);
+    }
+}
 
-window.verRegistrosGrupo = function(grupoId) {
-    const registros = window.RegistroCotidiano.obtenerRegistros(grupoId);
-    console.table(registros.map(r => ({
-        Fecha: r.fecha,
-        Actividad: r.descripcion,
-        Duración: r.duracion + ' min',
-        Indicadores: r.indicadores?.length || 0
-    })));
-    return registros;
-};
+function registrarObservacionEstudiante(grupoId, estudianteId, tipo, contenido, contexto = {}) {
+    if (!window.registroCotidiano) return null;
+    
+    const observacion = {
+        tipo: tipo,
+        contenido: contenido,
+        contexto: contexto,
+        grupoId: grupoId,
+        estudianteId: estudianteId
+    };
+    
+    return window.registroCotidiano.registrarObservacion(grupoId, estudianteId, observacion);
+}
 
-window.generarReportePeriodo = function(grupoId, fechaInicio, fechaFin) {
-    const reporte = window.RegistroCotidiano.generarReporteActividades(grupoId, fechaInicio, fechaFin);
-    console.log('Reporte generado:', reporte);
-    return reporte;
-};
+function obtenerRegistroDiario() {
+    if (!window.registroCotidiano) return [];
+    return window.registroCotidiano.obtenerActividadesRecientes(20);
+}
+
+function generarReporteDiarioCompleto() {
+    if (!window.registroCotidiano) return 'Sistema de registro no inicializado';
+    return window.registroCotidiano.generarReporteDiario();
+}
+
+function exportarRegistroCompleto(formato = 'json') {
+    if (!window.registroCotidiano) return null;
+    return window.registroCotidiano.exportarDatos(formato);
+}
+
+// Inicializar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(inicializarRegistroCotidiano, 1000);
+});
