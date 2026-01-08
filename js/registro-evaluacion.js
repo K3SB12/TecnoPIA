@@ -1,686 +1,464 @@
-// registro-evaluacion.js - Sistema de registro y seguimiento de evaluación
-
-/**
- * SISTEMA DE REGISTRO DE EVALUACIÓN PARA FORMACIÓN TECNOLÓGICA
- * Registra trabajo cotidiano, tareas, proyectos y asistencia
- */
-
-class RegistroEvaluacionTecnologia {
+// js/registro-evaluacion.js
+class RegistroEvaluacion {
     constructor() {
-        this.estudiantes = this.cargarEstudiantes();
-        this.registros = this.cargarRegistros();
-        this.grupos = this.cargarGrupos();
-        this.configuracion = this.cargarConfiguracion();
+        this.evaluaciones = [];
+        this.seguimientos = {};
+        this.cargarDatos();
     }
     
-    // ========== GESTIÓN DE ESTUDIANTES ==========
+    cargarDatos() {
+        try {
+            const evaluacionesGuardadas = localStorage.getItem('tecnoPIA_evaluaciones');
+            if (evaluacionesGuardadas) {
+                this.evaluaciones = JSON.parse(evaluacionesGuardadas);
+            }
+            
+            const seguimientosGuardados = localStorage.getItem('tecnoPIA_seguimientos');
+            if (seguimientosGuardados) {
+                this.seguimientos = JSON.parse(seguimientosGuardados);
+            }
+        } catch (error) {
+            console.error('Error cargando datos de evaluación:', error);
+        }
+    }
     
-    /**
-     * Agrega un nuevo estudiante al sistema
-     * @param {Object} datosEstudiante - Datos del estudiante
-     * @returns {Object} - Estudiante creado
-     */
-    agregarEstudiante(datosEstudiante) {
-        const estudiante = {
-            id: `EST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    guardarDatos() {
+        try {
+            localStorage.setItem('tecnoPIA_evaluaciones', JSON.stringify(this.evaluaciones));
+            localStorage.setItem('tecnoPIA_seguimientos', JSON.stringify(this.seguimientos));
+        } catch (error) {
+            console.error('Error guardando datos de evaluación:', error);
+        }
+    }
+    
+    registrarEvaluacion(evaluacion) {
+        const evaluacionCompleta = {
+            id: Date.now(),
             fechaRegistro: new Date().toISOString(),
-            activo: true,
-            ...datosEstudiante,
-            historialNotas: [],
-            asistencia: {
-                totalClases: 0,
-                asistencias: 0,
-                ausencias: 0,
-                justificadas: 0,
-                porcentaje: 100
-            }
+            ...evaluacion
         };
         
-        this.estudiantes.push(estudiante);
-        this.guardarEstudiantes();
-        
-        console.log(`✅ Estudiante agregado: ${estudiante.nombre}`);
-        return estudiante;
-    }
-    
-    /**
-     * Importa lista de estudiantes desde CSV/Excel
-     * @param {string} datosCSV - Datos en formato CSV
-     * @returns {Array} - Estudiantes importados
-     */
-    importarEstudiantes(datosCSV) {
-        const lineas = datosCSV.split('\n');
-        const estudiantesImportados = [];
-        
-        // Saltar encabezado (primera línea)
-        for (let i = 1; i < lineas.length; i++) {
-            if (lineas[i].trim() === '') continue;
-            
-            const columnas = lineas[i].split(',').map(col => col.replace(/"/g, '').trim());
-            
-            if (columnas.length >= 2) {
-                const estudiante = this.agregarEstudiante({
-                    codigo: columnas[0] || `AUTO-${i}`,
-                    nombre: columnas[1],
-                    apellidos: columnas[2] || '',
-                    nivel: columnas[3] || 'No especificado',
-                    grupo: columnas[4] || 'General',
-                    correo: columnas[5] || '',
-                    telefono: columnas[6] || '',
-                    observaciones: columnas[7] || ''
-                });
-                
-                estudiantesImportados.push(estudiante);
-            }
+        // Calcular calificación automáticamente si hay puntuaciones
+        if (evaluacion.puntuaciones) {
+            evaluacionCompleta.calificacion = this.calcularCalificacion(evaluacion.puntuaciones);
+            evaluacionCompleta.promedio = this.calcularPromedio(evaluacion.puntuaciones);
         }
         
-        return estudiantesImportados;
-    }
-    
-    // ========== REGISTRO DE TRABAJO COTIDIANO (50-65%) ==========
-    
-    /**
-     * Registra evaluación de trabajo cotidiano
-     * @param {string} estudianteId - ID del estudiante
-     * @param {Object} criterios - Criterios evaluados
-     * @returns {Object} - Registro creado
-     */
-    registrarTrabajoCotidiano(estudianteId, criterios) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            throw new Error(`Estudiante no encontrado: ${estudianteId}`);
-        }
+        this.evaluaciones.push(evaluacionCompleta);
+        this.guardarDatos();
         
-        const puntuacion = this.calcularPuntuacionTC(criterios);
-        
-        const registro = {
-            id: `TC-${Date.now()}`,
-            tipo: 'trabajo_cotidiano',
-            estudianteId,
-            estudianteNombre: estudiante.nombre,
-            fecha: new Date().toISOString(),
-            periodo: this.obtenerPeriodoActual(),
-            criterios,
-            puntuacionBruta: puntuacion,
-            puntuacionFinal: puntuacion, // Para TC, la bruta es la final
-            porcentajeAplicado: this.obtenerPorcentajeTC(estudiante.nivel),
-            observaciones: criterios.observaciones || '',
-            evidencias: criterios.evidencias || [],
-            docente: this.configuracion.docenteActual || 'Docente'
-        };
-        
-        this.registros.push(registro);
-        
-        // Actualizar historial del estudiante
-        estudiante.historialNotas.push({
-            tipo: 'TC',
-            fecha: registro.fecha,
-            puntuacion: puntuacion,
-            registroId: registro.id
-        });
-        
-        this.guardarRegistros();
-        this.guardarEstudiantes();
-        
-        console.log(`📝 Trabajo cotidiano registrado para ${estudiante.nombre}: ${puntuacion}/100`);
-        return registro;
-    }
-    
-    /**
-     * Calcula puntuación de trabajo cotidiano basado en criterios
-     * @param {Object} criterios - Criterios evaluados
-     * @returns {number} - Puntuación (0-100)
-     */
-    calcularPuntuacionTC(criterios) {
-        let puntuacionTotal = 0;
-        let criteriosEvaluados = 0;
-        
-        const criteriosBase = {
-            participacion: { peso: 20, valor: criterios.participacion || 0 },
-            colaboracion: { peso: 20, valor: criterios.colaboracion || 0 },
-            aplicacionConceptos: { peso: 25, valor: criterios.aplicacionConceptos || 0 },
-            manejoHerramientas: { peso: 25, valor: criterios.manejoHerramientas || 0 },
-            creatividad: { peso: 10, valor: criterios.creatividad || 0 }
-        };
-        
-        // Calcular puntuación ponderada
-        for (const [criterio, datos] of Object.entries(criteriosBase)) {
-            if (datos.valor > 0) {
-                puntuacionTotal += (datos.valor * datos.peso) / 100;
-                criteriosEvaluados++;
-            }
-        }
-        
-        // Si no hay criterios evaluados, retornar 0
-        if (criteriosEvaluados === 0) {
-            return 0;
-        }
-        
-        // Ajustar si hay criterios adicionales
-        if (criterios.adicionales) {
-            criterios.adicionales.forEach(extra => {
-                puntuacionTotal += extra.puntuacion || 0;
+        // Registrar actividad automática
+        if (window.registroCotidiano) {
+            window.registroCotidiano.registrarActividad({
+                tipo: 'evaluacion',
+                descripcion: `Evaluación ${evaluacion.tipoEvaluacion} registrada`,
+                grupo: evaluacion.grupoId,
+                estudiante: evaluacion.estudianteNombre,
+                detalles: {
+                    asignatura: evaluacion.asignatura,
+                    periodo: evaluacion.periodo,
+                    calificacion: evaluacionCompleta.calificacion,
+                    promedio: evaluacionCompleta.promedio
+                }
             });
         }
         
-        // Asegurar que esté entre 0 y 100
-        return Math.min(Math.max(Math.round(puntuacionTotal), 0), 100);
+        return evaluacionCompleta;
     }
     
-    // ========== REGISTRO DE TAREAS (10%) ==========
-    
-    /**
-     * Registra evaluación de tarea
-     * @param {string} estudianteId - ID del estudiante
-     * @param {Object} tarea - Datos de la tarea
-     * @returns {Object} - Registro creado
-     */
-    registrarTarea(estudianteId, tarea) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            throw new Error(`Estudiante no encontrado: ${estudianteId}`);
-        }
+    calcularCalificacion(puntuaciones) {
+        const valores = Object.values(puntuaciones);
+        if (valores.length === 0) return 'No evaluado';
         
-        const registro = {
-            id: `TA-${Date.now()}`,
-            tipo: 'tarea',
-            estudianteId,
-            estudianteNombre: estudiante.nombre,
-            fechaAsignacion: tarea.fechaAsignacion || new Date().toISOString(),
-            fechaEntrega: tarea.fechaEntrega || new Date().toISOString(),
-            fechaRegistro: new Date().toISOString(),
-            tareaId: tarea.id || `TAREA-${Date.now()}`,
-            titulo: tarea.titulo || 'Tarea sin título',
-            descripcion: tarea.descripcion || '',
-            puntuacionBruta: tarea.puntuacion || 0,
-            puntuacionFinal: (tarea.puntuacion || 0) * 0.10, // 10% del total
-            porcentajeAplicado: 10, // Siempre 10% en todos los ciclos
-            entregado: tarea.entregado !== false,
-            puntual: this.verificarPuntualidad(tarea.fechaEntrega),
-            observaciones: tarea.observaciones || '',
-            archivos: tarea.archivos || [],
-            docente: this.configuracion.docenteActual || 'Docente'
+        const suma = valores.reduce((total, valor) => total + valor, 0);
+        const promedio = suma / valores.length;
+        
+        if (promedio >= 9) return 'Excelente (A)';
+        if (promedio >= 8) return 'Muy Bueno (B)';
+        if (promedio >= 7) return 'Bueno (C)';
+        if (promedio >= 6) return 'Satisfactorio (D)';
+        return 'Insuficiente (F)';
+    }
+    
+    calcularPromedio(puntuaciones) {
+        const valores = Object.values(puntuaciones);
+        if (valores.length === 0) return 0;
+        
+        const suma = valores.reduce((total, valor) => total + valor, 0);
+        return Math.round((suma / valores.length) * 10); // Convertir a porcentaje
+    }
+    
+    obtenerEvaluacionesEstudiante(estudianteId) {
+        return this.evaluaciones.filter(e => e.estudianteId === estudianteId);
+    }
+    
+    obtenerEvaluacionesGrupo(grupoId) {
+        return this.evaluaciones.filter(e => e.grupoId === grupoId);
+    }
+    
+    obtenerEvaluacionesPorPeriodo(periodo) {
+        return this.evaluaciones.filter(e => e.periodo === periodo);
+    }
+    
+    obtenerPromedioEstudiante(estudianteId) {
+        const evaluacionesEstudiante = this.obtenerEvaluacionesEstudiante(estudianteId);
+        if (evaluacionesEstudiante.length === 0) return 0;
+        
+        const sumaPromedios = evaluacionesEstudiante.reduce((total, eval) => total + (eval.promedio || 0), 0);
+        return Math.round(sumaPromedios / evaluacionesEstudiante.length);
+    }
+    
+    obtenerPromedioGrupo(grupoId) {
+        const evaluacionesGrupo = this.obtenerEvaluacionesGrupo(grupoId);
+        if (evaluacionesGrupo.length === 0) return 0;
+        
+        const sumaPromedios = evaluacionesGrupo.reduce((total, eval) => total + (eval.promedio || 0), 0);
+        return Math.round(sumaPromedios / evaluacionesGrupo.length);
+    }
+    
+    agregarSeguimiento(evaluacionId, seguimiento) {
+        const seguimientoCompleto = {
+            id: Date.now(),
+            fecha: new Date().toISOString(),
+            ...seguimiento
         };
         
-        this.registros.push(registro);
-        
-        // Actualizar historial del estudiante
-        estudiante.historialNotas.push({
-            tipo: 'TA',
-            fecha: registro.fechaRegistro,
-            puntuacion: tarea.puntuacion || 0,
-            registroId: registro.id,
-            tarea: tarea.titulo
-        });
-        
-        this.guardarRegistros();
-        this.guardarEstudiantes();
-        
-        console.log(`📝 Tarea registrada para ${estudiante.nombre}: ${tarea.puntuacion || 0}/100`);
-        return registro;
-    }
-    
-    // ========== REGISTRO DE PROYECTOS TECNOLÓGICOS (30% en III Ciclo) ==========
-    
-    /**
-     * Registra evaluación de proyecto tecnológico
-     * @param {string} estudianteId - ID del estudiante
-     * @param {Object} proyecto - Datos del proyecto
-     * @param {Object} rubrica - Rúbrica de evaluación
-     * @returns {Object} - Registro creado
-     */
-    registrarProyectoTecnologico(estudianteId, proyecto, rubrica) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            throw new Error(`Estudiante no encontrado: ${estudianteId}`);
+        if (!this.seguimientos[evaluacionId]) {
+            this.seguimientos[evaluacionId] = [];
         }
         
-        const puntuacion = this.evaluarConRubrica(proyecto, rubrica);
+        this.seguimientos[evaluacionId].push(seguimientoCompleto);
+        this.guardarDatos();
         
-        const registro = {
-            id: `PT-${Date.now()}`,
-            tipo: 'proyecto_tecnologico',
-            estudianteId,
-            estudianteNombre: estudiante.nombre,
-            fechaInicio: proyecto.fechaInicio || new Date().toISOString(),
-            fechaEntrega: proyecto.fechaEntrega || new Date().toISOString(),
-            fechaEvaluacion: new Date().toISOString(),
-            proyectoId: proyecto.id || `PROY-${Date.now()}`,
-            titulo: proyecto.titulo || 'Proyecto tecnológico',
-            descripcion: proyecto.descripcion || '',
-            areaTecnologica: proyecto.area || 'General',
-            nivelDificultad: proyecto.nivelDificultad || 'Medio',
-            rubricaUtilizada: rubrica.id,
-            criteriosEvaluados: rubrica.criterios,
-            puntuacionBruta: puntuacion,
-            puntuacionFinal: puntuacion * 0.30, // 30% del total en III Ciclo
-            porcentajeAplicado: 30,
-            presentado: proyecto.presentado !== false,
-            evidencias: proyecto.evidencias || [],
-            documentacion: proyecto.documentacion || [],
-            observaciones: proyecto.observaciones || '',
-            recomendaciones: proyecto.recomendaciones || '',
-            docente: this.configuracion.docenteActual || 'Docente'
-        };
-        
-        this.registros.push(registro);
-        
-        // Actualizar historial del estudiante
-        estudiante.historialNotas.push({
-            tipo: 'PT',
-            fecha: registro.fechaEvaluacion,
-            puntuacion: puntuacion,
-            registroId: registro.id,
-            proyecto: proyecto.titulo
-        });
-        
-        this.guardarRegistros();
-        this.guardarEstudiantes();
-        
-        console.log(`🚀 Proyecto tecnológico registrado para ${estudiante.nombre}: ${puntuacion}/100`);
-        return registro;
+        return seguimientoCompleto;
     }
     
-    /**
-     * Evalúa un proyecto usando una rúbrica
-     * @param {Object} proyecto - Proyecto a evaluar
-     * @param {Object} rubrica - Rúbrica de evaluación
-     * @returns {number} - Puntuación total
-     */
-    evaluarConRubrica(proyecto, rubrica) {
-        if (!rubrica || !rubrica.criterios || !Array.isArray(rubrica.criterios)) {
-            console.warn('Rúbrica no válida, usando evaluación básica');
-            return proyecto.puntuacionEstimada || 70;
+    obtenerSeguimientos(evaluacionId) {
+        return this.seguimientos[evaluacionId] || [];
+    }
+    
+    generarInformeEstudiante(estudianteId) {
+        const evaluaciones = this.obtenerEvaluacionesEstudiante(estudianteId);
+        const promedio = this.obtenerPromedioEstudiante(estudianteId);
+        
+        if (evaluaciones.length === 0) {
+            return {
+                estudianteId: estudianteId,
+                mensaje: 'No hay evaluaciones registradas para este estudiante',
+                promedio: 0,
+                evaluaciones: []
+            };
         }
         
-        let puntuacionTotal = 0;
-        let maximoPosible = 0;
-        
-        rubrica.criterios.forEach(criterio => {
-            const nivel = proyecto.niveles?.[criterio.id] || criterio.nivelDefault || 'basico';
-            const puntuacionCriterio = criterio.niveles?.[nivel]?.puntuacion || 0;
-            
-            puntuacionTotal += puntuacionCriterio * (criterio.peso || 1);
-            maximoPosible += (criterio.peso || 1) * (criterio.puntuacionMaxima || 4);
+        // Agrupar evaluaciones por período
+        const evaluacionesPorPeriodo = {};
+        evaluaciones.forEach(eval => {
+            if (!evaluacionesPorPeriodo[eval.periodo]) {
+                evaluacionesPorPeriodo[eval.periodo] = [];
+            }
+            evaluacionesPorPeriodo[eval.periodo].push(eval);
         });
         
-        // Calcular porcentaje
-        const porcentaje = maximoPosible > 0 ? (puntuacionTotal / maximoPosible) * 100 : 0;
-        
-        return Math.min(Math.max(Math.round(porcentaje), 0), 100);
-    }
-    
-    // ========== REGISTRO DE ASISTENCIA (10%) ==========
-    
-    /**
-     * Registra asistencia de estudiantes
-     * @param {string} fecha - Fecha de la clase
-     * @param {Array} listaAsistencia - Lista de asistencias
-     * @returns {Object} - Registro de asistencia
-     */
-    registrarAsistencia(fecha, listaAsistencia) {
-        const registro = {
-            id: `AS-${Date.now()}`,
-            tipo: 'asistencia',
-            fecha,
-            fechaRegistro: new Date().toISOString(),
-            totalEstudiantes: listaAsistencia.length,
-            lista: listaAsistencia,
-            docente: this.configuracion.docenteActual || 'Docente'
+        // Calcular promedio por área
+        const areas = {
+            cognitivo: { total: 0, count: 0 },
+            procedimental: { total: 0, count: 0 },
+            actitudinal: { total: 0, count: 0 },
+            socioemocional: { total: 0, count: 0 }
         };
         
-        // Actualizar estadísticas de cada estudiante
-        listaAsistencia.forEach(item => {
-            const estudiante = this.buscarEstudiante(item.estudianteId);
-            if (estudiante) {
-                estudiante.asistencia.totalClases++;
-                
-                if (item.asistio) {
-                    estudiante.asistencia.asistencias++;
-                } else if (item.justificado) {
-                    estudiante.asistencia.justificadas++;
-                } else {
-                    estudiante.asistencia.ausencias++;
-                }
-                
-                // Calcular porcentaje actualizado
-                estudiante.asistencia.porcentaje = estudiante.asistencia.totalClases > 0 ?
-                    (estudiante.asistencia.asistencias / estudiante.asistencia.totalClases) * 100 : 100;
+        evaluaciones.forEach(eval => {
+            if (eval.puntuaciones) {
+                Object.keys(eval.puntuaciones).forEach(key => {
+                    const area = key.split('-')[0];
+                    if (areas[area]) {
+                        areas[area].total += eval.puntuaciones[key];
+                        areas[area].count++;
+                    }
+                });
             }
         });
         
-        this.registros.push(registro);
-        this.guardarRegistros();
-        this.guardarEstudiantes();
-        
-        console.log(`📅 Asistencia registrada para ${fecha}: ${listaAsistencia.length} estudiantes`);
-        return registro;
-    }
-    
-    /**
-     * Calcula nota de asistencia para un estudiante
-     * @param {string} estudianteId - ID del estudiante
-     * @returns {number} - Nota de asistencia (0-100)
-     */
-    calcularNotaAsistencia(estudianteId) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            return 0;
-        }
-        
-        const porcentajeAsistencia = estudiante.asistencia.porcentaje;
-        
-        // Convertir porcentaje de asistencia a nota (0-100)
-        // Ejemplo: 100% asistencia = 100 puntos, 75% asistencia = 75 puntos
-        return Math.min(Math.max(Math.round(porcentajeAsistencia), 0), 100);
-    }
-    
-    // ========== CÁLCULOS Y REPORTES ==========
-    
-    /**
-     * Calcula nota final para un estudiante en un período
-     * @param {string} estudianteId - ID del estudiante
-     * @param {string} periodo - Período a evaluar
-     * @param {string} ciclo - Ciclo educativo
-     * @returns {Object} - Nota final y desglose
-     */
-    calcularNotaPeriodo(estudianteId, periodo, ciclo) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            throw new Error(`Estudiante no encontrado: ${estudianteId}`);
-        }
-        
-        // Filtrar registros del período
-        const registrosPeriodo = this.registros.filter(reg => 
-            reg.estudianteId === estudianteId && 
-            reg.periodo === periodo
-        );
-        
-        // Agrupar por tipo
-        const tc = registrosPeriodo.filter(r => r.tipo === 'trabajo_cotidiano');
-        const ta = registrosPeriodo.filter(r => r.tipo === 'tarea');
-        const pt = registrosPeriodo.filter(r => r.tipo === 'proyecto_tecnologico');
-        
-        // Calcular promedios
-        const promedioTC = tc.length > 0 ? 
-            tc.reduce((sum, r) => sum + r.puntuacionBruta, 0) / tc.length : 0;
-        
-        const promedioTA = ta.length > 0 ? 
-            ta.reduce((sum, r) => sum + r.puntuacionBruta, 0) / ta.length : 0;
-        
-        const promedioPT = pt.length > 0 ? 
-            pt.reduce((sum, r) => sum + r.puntuacionBruta, 0) / pt.length : 0;
-        
-        const notaAS = this.calcularNotaAsistencia(estudianteId);
-        
-        // Usar la calculadora MEP
-        const calculadora = new CalculadoraMEP();
-        const puntuaciones = {
-            TC: promedioTC,
-            TA: promedioTA,
-            PE: promedioTC, // Para ciclos 1-2, usar TC como PE
-            PT: promedioPT,
-            AS: notaAS
-        };
-        
-        return calculadora.calcularNotaFinal(ciclo, puntuaciones);
-    }
-    
-    /**
-     * Genera reporte de progreso para un estudiante
-     * @param {string} estudianteId - ID del estudiante
-     * @returns {Object} - Reporte de progreso
-     */
-    generarReporteProgreso(estudianteId) {
-        const estudiante = this.buscarEstudiante(estudianteId);
-        if (!estudiante) {
-            throw new Error(`Estudiante no encontrado: ${estudianteId}`);
-        }
-        
-        const registrosEstudiante = this.registros.filter(r => r.estudianteId === estudianteId);
+        const promediosAreas = {};
+        Object.keys(areas).forEach(area => {
+            promediosAreas[area] = areas[area].count > 0 
+                ? Math.round((areas[area].total / areas[area].count) * 10) 
+                : 0;
+        });
         
         return {
-            estudiante: {
-                id: estudiante.id,
-                nombre: estudiante.nombre,
-                nivel: estudiante.nivel,
-                grupo: estudiante.grupo
-            },
-            estadisticas: {
-                totalRegistros: registrosEstudiante.length,
-                trabajoCotidiano: registrosEstudiante.filter(r => r.tipo === 'trabajo_cotidiano').length,
-                tareas: registrosEstudiante.filter(r => r.tipo === 'tarea').length,
-                proyectos: registrosEstudiante.filter(r => r.tipo === 'proyecto_tecnologico').length,
-                asistencia: {
-                    porcentaje: estudiante.asistencia.porcentaje,
-                    asistencias: estudiante.asistencia.asistencias,
-                    ausencias: estudiante.asistencia.ausencias,
-                    justificadas: estudiante.asistencia.justificadas,
-                    totalClases: estudiante.asistencia.totalClases
-                }
-            },
-            tendencia: this.analizarTendencia(registrosEstudiante),
-            fortalezas: this.identificarFortalezas(registrosEstudiante),
-            areasMejora: this.identificarAreasMejora(registrosEstudiante),
-            recomendaciones: this.generarRecomendaciones(registrosEstudiante)
+            estudianteId: estudianteId,
+            estudianteNombre: evaluaciones[0].estudianteNombre,
+            totalEvaluaciones: evaluaciones.length,
+            promedioGeneral: promedio,
+            promediosAreas: promediosAreas,
+            evaluacionesPorPeriodo: evaluacionesPorPeriodo,
+            ultimaEvaluacion: evaluaciones[0],
+            recomendaciones: this.generarRecomendacionesEstudiante(promediosAreas)
         };
     }
     
-    // ========== FUNCIONES AUXILIARES ==========
-    
-    buscarEstudiante(estudianteId) {
-        return this.estudiantes.find(e => e.id === estudianteId);
-    }
-    
-    obtenerPorcentajeTC(nivel) {
-        const porcentajes = {
-            '1°': 65, '2°': 65, '3°': 65,
-            '4°': 60, '5°': 60, '6°': 60,
-            '7°': 50, '8°': 50, '9°': 50
-        };
-        
-        return porcentajes[nivel] || 60;
-    }
-    
-    obtenerPeriodoActual() {
-        const fecha = new Date();
-        const año = fecha.getFullYear();
-        const mes = fecha.getMonth() + 1;
-        
-        if (mes >= 1 && mes <= 4) return `I-${año}`;
-        if (mes >= 5 && mes <= 8) return `II-${año}`;
-        return `III-${año}`;
-    }
-    
-    verificarPuntualidad(fechaEntrega) {
-        if (!fechaEntrega) return true;
-        
-        const fechaLimite = new Date(fechaEntrega);
-        const hoy = new Date();
-        
-        return hoy <= fechaLimite;
-    }
-    
-    // ========== PERSISTENCIA ==========
-    
-    cargarEstudiantes() {
-        try {
-            const datos = localStorage.getItem('tecnoPIA_estudiantes');
-            return datos ? JSON.parse(datos) : [];
-        } catch (error) {
-            console.error('Error al cargar estudiantes:', error);
-            return [];
-        }
-    }
-    
-    guardarEstudiantes() {
-        try {
-            localStorage.setItem('tecnoPIA_estudiantes', JSON.stringify(this.estudiantes));
-        } catch (error) {
-            console.error('Error al guardar estudiantes:', error);
-        }
-    }
-    
-    cargarRegistros() {
-        try {
-            const datos = localStorage.getItem('tecnoPIA_registros');
-            return datos ? JSON.parse(datos) : [];
-        } catch (error) {
-            console.error('Error al cargar registros:', error);
-            return [];
-        }
-    }
-    
-    guardarRegistros() {
-        try {
-            localStorage.setItem('tecnoPIA_registros', JSON.stringify(this.registros));
-        } catch (error) {
-            console.error('Error al guardar registros:', error);
-        }
-    }
-    
-    cargarGrupos() {
-        try {
-            const datos = localStorage.getItem('tecnoPIA_grupos');
-            return datos ? JSON.parse(datos) : [];
-        } catch (error) {
-            console.error('Error al cargar grupos:', error);
-            return [];
-        }
-    }
-    
-    cargarConfiguracion() {
-        try {
-            const datos = localStorage.getItem('tecnoPIA_configuracion');
-            return datos ? JSON.parse(datos) : {
-                docenteActual: 'Docente MEP',
-                institucion: 'Centro Educativo',
-                añoLectivo: new Date().getFullYear()
-            };
-        } catch (error) {
-            console.error('Error al cargar configuración:', error);
-            return {
-                docenteActual: 'Docente MEP',
-                institucion: 'Centro Educativo',
-                añoLectivo: new Date().getFullYear()
-            };
-        }
-    }
-    
-    // ========== ANÁLISIS DE DATOS ==========
-    
-    analizarTendencia(registros) {
-        if (registros.length < 2) {
-            return 'Datos insuficientes';
-        }
-        
-        const ultimosRegistros = registros
-            .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-            .slice(0, 5);
-        
-        const puntuaciones = ultimosRegistros.map(r => r.puntuacionBruta || 0);
-        const promedio = puntuaciones.reduce((a, b) => a + b, 0) / puntuaciones.length;
-        
-        if (puntuaciones.length < 2) {
-            return 'Estable';
-        }
-        
-        const primer = puntuaciones[0];
-        const ultimo = puntuaciones[puntuaciones.length - 1];
-        
-        if (ultimo > primer + 10) return 'Mejorando significativamente';
-        if (ultimo > primer + 5) return 'Mejorando';
-        if (ultimo < primer - 10) return 'Disminuyendo significativamente';
-        if (ultimo < primer - 5) return 'Disminuyendo';
-        return 'Estable';
-    }
-    
-    identificarFortalezas(registros) {
-        const fortalezas = [];
-        
-        // Analizar tipos de evaluación con mejores resultados
-        const porTipo = {};
-        registros.forEach(reg => {
-            if (!porTipo[reg.tipo]) {
-                porTipo[reg.tipo] = { suma: 0, cantidad: 0 };
-            }
-            porTipo[reg.tipo].suma += reg.puntuacionBruta || 0;
-            porTipo[reg.tipo].cantidad++;
-        });
-        
-        for (const [tipo, datos] of Object.entries(porTipo)) {
-            const promedio = datos.suma / datos.cantidad;
-            if (promedio >= 80) {
-                const nombreTipo = this.obtenerNombreTipo(tipo);
-                fortalezas.push(`${nombreTipo} (${Math.round(promedio)}/100)`);
-            }
-        }
-        
-        return fortalezas.length > 0 ? fortalezas : ['Participación constante'];
-    }
-    
-    identificarAreasMejora(registros) {
-        const areasMejora = [];
-        
-        // Identificar evaluaciones bajas recientes
-        const evaluacionesBajas = registros
-            .filter(r => (r.puntuacionBruta || 0) < 70)
-            .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-            .slice(0, 3);
-        
-        evaluacionesBajas.forEach(reg => {
-            const nombreTipo = this.obtenerNombreTipo(reg.tipo);
-            areasMejora.push(`${nombreTipo}: ${Math.round(reg.puntuacionBruta || 0)}/100`);
-        });
-        
-        return areasMejora.length > 0 ? areasMejora : ['Mantener nivel actual'];
-    }
-    
-    generarRecomendaciones(registros) {
+    generarRecomendacionesEstudiante(promediosAreas) {
         const recomendaciones = [];
-        const promedioGeneral = registros.length > 0 ?
-            registros.reduce((sum, r) => sum + (r.puntuacionBruta || 0), 0) / registros.length : 0;
         
-        if (promedioGeneral < 70) {
-            recomendaciones.push("Reforzar conceptos básicos y solicitar apoyo adicional");
-        } else if (promedioGeneral < 80) {
-            recomendaciones.push("Practicar habilidades específicas para alcanzar nivel avanzado");
-        } else if (promedioGeneral < 90) {
-            recomendaciones.push("Profundizar en áreas de interés y desarrollar proyectos creativos");
-        } else {
-            recomendaciones.push("Mantener excelente desempeño y explorar retos tecnológicos avanzados");
-        }
-        
-        // Verificar asistencia
-        const estudianteId = registros[0]?.estudianteId;
-        if (estudianteId) {
-            const estudiante = this.buscarEstudiante(estudianteId);
-            if (estudiante && estudiante.asistencia.porcentaje < 85) {
-                recomendaciones.push("Mejorar puntualidad y asistencia para optimizar aprendizaje");
+        Object.keys(promediosAreas).forEach(area => {
+            const promedio = promediosAreas[area];
+            
+            if (promedio < 60) {
+                recomendaciones.push({
+                    area: area,
+                    nivel: 'Necesita mejora urgente',
+                    recomendacion: this.obtenerRecomendacionPorArea(area, 'bajo')
+                });
+            } else if (promedio < 80) {
+                recomendaciones.push({
+                    area: area,
+                    nivel: 'En proceso de desarrollo',
+                    recomendacion: this.obtenerRecomendacionPorArea(area, 'medio')
+                });
+            } else {
+                recomendaciones.push({
+                    area: area,
+                    nivel: 'Desarrollo satisfactorio',
+                    recomendacion: this.obtenerRecomendacionPorArea(area, 'alto')
+                });
             }
-        }
+        });
         
         return recomendaciones;
     }
     
-    obtenerNombreTipo(tipo) {
-        const nombres = {
-            'trabajo_cotidiano': 'Trabajo Cotidiano',
-            'tarea': 'Tareas',
-            'proyecto_tecnologico': 'Proyectos Tecnológicos',
-            'asistencia': 'Asistencia'
+    obtenerRecomendacionPorArea(area, nivel) {
+        const recomendaciones = {
+            cognitivo: {
+                bajo: 'Reforzar conceptos básicos con ejercicios prácticos y tutorías individualizadas.',
+                medio: 'Profundizar en aplicaciones avanzadas de los conceptos aprendidos.',
+                alto: 'Desafiar con problemas complejos y proyectos de investigación.'
+            },
+            procedimental: {
+                bajo: 'Practicar procedimientos paso a paso con supervisión constante.',
+                medio: 'Fomentar aplicación independiente de procedimientos en nuevos contextos.',
+                alto: 'Promover creación de nuevos procedimientos y optimización de existentes.'
+            },
+            actitudinal: {
+                bajo: 'Establecer metas conductuales claras y sistema de refuerzo positivo.',
+                medio: 'Fomentar autonomía y responsabilidad en cumplimiento de compromisos.',
+                alto: 'Reconocer como modelo positivo y asignar roles de liderazgo.'
+            },
+            socioemocional: {
+                bajo: 'Trabajar habilidades sociales básicas y participación grupal guiada.',
+                medio: 'Promover roles activos en trabajo colaborativo y resolución de conflictos.',
+                alto: 'Fomentar liderazgo y mediación en dinámicas grupales.'
+            }
         };
         
-        return nombres[tipo] || tipo;
+        return recomendaciones[area]?.[nivel] || 'No hay recomendación disponible.';
+    }
+    
+    generarReporteGrupal(grupoId) {
+        const evaluaciones = this.obtenerEvaluacionesGrupo(grupoId);
+        const promedioGrupo = this.obtenerPromedioGrupo(grupoId);
+        
+        if (evaluaciones.length === 0) {
+            return {
+                grupoId: grupoId,
+                mensaje: 'No hay evaluaciones registradas para este grupo',
+                promedioGrupo: 0,
+                totalEvaluaciones: 0,
+                estudiantesEvaluados: 0
+            };
+        }
+        
+        // Agrupar evaluaciones por estudiante
+        const evaluacionesPorEstudiante = {};
+        evaluaciones.forEach(eval => {
+            if (!evaluacionesPorEstudiante[eval.estudianteId]) {
+                evaluacionesPorEstudiante[eval.estudianteId] = {
+                    nombre: eval.estudianteNombre,
+                    evaluaciones: [],
+                    promedio: 0
+                };
+            }
+            evaluacionesPorEstudiante[eval.estudianteId].evaluaciones.push(eval);
+        });
+        
+        // Calcular promedio por estudiante
+        Object.keys(evaluacionesPorEstudiante).forEach(estudianteId => {
+            const evalEstudiante = evaluacionesPorEstudiante[estudianteId];
+            const suma = evalEstudiante.evaluaciones.reduce((total, eval) => total + (eval.promedio || 0), 0);
+            evalEstudiante.promedio = Math.round(suma / evalEstudiante.evaluaciones.length);
+        });
+        
+        // Distribución de calificaciones
+        const promediosEstudiantes = Object.values(evaluacionesPorEstudiante).map(e => e.promedio);
+        const distribucion = {
+            excelente: promediosEstudiantes.filter(p => p >= 90).length,
+            bueno: promediosEstudiantes.filter(p => p >= 70 && p < 90).length,
+            regular: promediosEstudiantes.filter(p => p >= 50 && p < 70).length,
+            insuficiente: promediosEstudiantes.filter(p => p < 50).length
+        };
+        
+        return {
+            grupoId: grupoId,
+            promedioGrupo: promedioGrupo,
+            totalEvaluaciones: evaluaciones.length,
+            estudiantesEvaluados: Object.keys(evaluacionesPorEstudiante).length,
+            distribucionCalificaciones: distribucion,
+            evaluacionesPorEstudiante: evaluacionesPorEstudiante,
+            tendencia: this.calcularTendenciaGrupo(grupoId)
+        };
+    }
+    
+    calcularTendenciaGrupo(grupoId) {
+        const evaluaciones = this.obtenerEvaluacionesGrupo(grupoId);
+        if (evaluaciones.length < 2) return 'estable';
+        
+        // Ordenar por fecha
+        evaluaciones.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        
+        // Dividir en primeros y últimos
+        const mitad = Math.floor(evaluaciones.length / 2);
+        const primeras = evaluaciones.slice(0, mitad);
+        const ultimas = evaluaciones.slice(-mitad);
+        
+        // Calcular promedios
+        const promedioPrimeras = primeras.reduce((sum, eval) => sum + (eval.promedio || 0), 0) / primeras.length;
+        const promedioUltimas = ultimas.reduce((sum, eval) => sum + (eval.promedio || 0), 0) / ultimas.length;
+        
+        const diferencia = promedioUltimas - promedioPrimeras;
+        
+        if (diferencia > 10) return 'mejora_significativa';
+        if (diferencia > 5) return 'mejora_moderada';
+        if (diferencia < -10) return 'deterioro_significativo';
+        if (diferencia < -5) return 'deterioro_moderado';
+        return 'estable';
+    }
+    
+    exportarDatosEstudiante(estudianteId, formato = 'json') {
+        const informe = this.generarInformeEstudiante(estudianteId);
+        
+        switch(formato) {
+            case 'json':
+                return JSON.stringify(informe, null, 2);
+                
+            case 'csv':
+                let csv = 'Periodo,TipoEvaluacion,Asignatura,Fecha,Promedio,Calificacion\n';
+                
+                if (informe.evaluaciones) {
+                    Object.keys(informe.evaluacionesPorPeriodo || {}).forEach(periodo => {
+                        informe.evaluacionesPorPeriodo[periodo].forEach(eval => {
+                            csv += `"${periodo}","${eval.tipoEvaluacion}","${eval.asignatura}","${eval.fecha}",${eval.promedio || 0},"${eval.calificacion || 'No evaluado'}"\n`;
+                        });
+                    });
+                }
+                
+                return csv;
+                
+            case 'pdf':
+                // Esto sería implementado con una librería de generación de PDF
+                return this.generarContenidoPDF(informe);
+                
+            default:
+                return JSON.stringify(informe, null, 2);
+        }
+    }
+    
+    generarContenidoPDF(informe) {
+        // Contenido básico para PDF
+        return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Informe de Evaluación - ${informe.estudianteNombre}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .info { margin-bottom: 20px; }
+                    .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    .table th { background-color: #f2f2f2; }
+                    .recomendaciones { margin-top: 30px; padding: 20px; background-color: #f9f9f9; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>INFORME DE EVALUACIÓN</h1>
+                    <h2>${informe.estudianteNombre}</h2>
+                </div>
+                
+                <div class="info">
+                    <p><strong>Estudiante:</strong> ${informe.estudianteNombre}</p>
+                    <p><strong>Total de evaluaciones:</strong> ${informe.totalEvaluaciones}</p>
+                    <p><strong>Promedio general:</strong> ${informe.promedioGeneral}%</p>
+                </div>
+                
+                <h3>Evaluaciones por Período</h3>
+                <table class="table">
+                    <tr>
+                        <th>Período</th>
+                        <th>Tipo</th>
+                        <th>Asignatura</th>
+                        <th>Fecha</th>
+                        <th>Promedio</th>
+                        <th>Calificación</th>
+                    </tr>
+                    ${Object.keys(informe.evaluacionesPorPeriodo || {}).map(periodo => 
+                        informe.evaluacionesPorPeriodo[periodo].map(eval => `
+                            <tr>
+                                <td>${periodo}</td>
+                                <td>${eval.tipoEvaluacion}</td>
+                                <td>${eval.asignatura}</td>
+                                <td>${eval.fecha}</td>
+                                <td>${eval.promedio || 0}%</td>
+                                <td>${eval.calificacion || 'No evaluado'}</td>
+                            </tr>
+                        `).join('')
+                    ).join('')}
+                </table>
+                
+                <div class="recomendaciones">
+                    <h3>Recomendaciones</h3>
+                    ${informe.recomendaciones ? informe.recomendaciones.map(rec => `
+                        <p><strong>${rec.area}:</strong> ${rec.recomendacion}</p>
+                    `).join('') : '<p>No hay recomendaciones disponibles.</p>'}
+                </div>
+                
+                <div style="margin-top: 50px; font-size: 12px; color: #666; text-align: center;">
+                    <p>Documento generado automáticamente por TecnoPIA - ${new Date().toLocaleDateString('es-CR')}</p>
+                </div>
+            </body>
+            </html>
+        `;
     }
 }
 
-// Exportar para uso global
-window.RegistroEvaluacionTecnologia = RegistroEvaluacionTecnologia;
+// Funciones globales para el registro de evaluaciones
+function inicializarRegistroEvaluacion() {
+    window.registroEvaluacion = new RegistroEvaluacion();
+}
 
-// Inicialización automática
+function registrarNuevaEvaluacion(datosEvaluacion) {
+    if (!window.registroEvaluacion) return null;
+    return window.registroEvaluacion.registrarEvaluacion(datosEvaluacion);
+}
+
+function obtenerInformeEstudiante(estudianteId) {
+    if (!window.registroEvaluacion) return null;
+    return window.registroEvaluacion.generarInformeEstudiante(estudianteId);
+}
+
+function obtenerReporteGrupal(grupoId) {
+    if (!window.registroEvaluacion) return null;
+    return window.registroEvaluacion.generarReporteGrupal(grupoId);
+}
+
+function exportarInformeEstudiante(estudianteId, formato = 'json') {
+    if (!window.registroEvaluacion) return null;
+    return window.registroEvaluacion.exportarDatosEstudiante(estudianteId, formato);
+}
+
+// Inicializar al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Sistema de Registro de Evaluación cargado');
-    console.log('📊 Gestión completa de trabajo cotidiano, tareas, proyectos y asistencia');
-    console.log('🎯 Integrado con Calculadora MEP para cálculos oficiales');
+    setTimeout(inicializarRegistroEvaluacion, 1000);
 });
