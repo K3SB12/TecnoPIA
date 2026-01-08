@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoPIA - Versión Rápida</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar Compacta -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>TecnoPIA</h2>
+            </div>
+            
+            <nav class="menu">
+                <a href="../dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="gestion-grupos.html" class="menu-item">
+                    <i class="fas fa-users"></i>
+                    <span>Grupos</span>
+                </a>
+                <a href="evaluacion-mep.html" class="menu-item">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Evaluación</span>
+                </a>
+                <a href="base.html" class="menu-item active">
+                    <i class="fas fa-bolt"></i>
+                    <span>Rápido</span>
+                </a>
+                <a href="completo.html" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Completo</span>
+                </a>
+            </nav>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header Simplificado -->
+            <header class="header">
+                <div class="header-title">
+                    <h1><i class="fas fa-bolt"></i> Evaluación Rápida</h1>
+                    <p>Versión simplificada para evaluación diaria en el aula</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="evaluacionRapida">
+                        <i class="fas fa-stopwatch"></i> Evaluación Express
+                    </button>
+                    <button class="btn btn-secondary" id="registroRapido">
+                        <i class="fas fa-pen-fancy"></i> Registro Rápido
+                    </button>
+                </div>
+            </header>
+
+            <!-- Contenido Principal Simplificado -->
+            <div class="content-grid">
+                <!-- Panel de Evaluación Rápida -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-stopwatch"></i> Evaluación Express</h3>
+                        <p>Complete rápidamente para evaluación en tiempo real</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="evaluacion-express">
+                            <div class="express-header">
+                                <div class="express-group">
+                                    <label for="expressGrupo"><i class="fas fa-users"></i> Grupo</label>
+                                    <select id="expressGrupo" class="form-control-sm">
+                                        <option value="">Seleccionar grupo...</option>
+                                    </select>
+                                </div>
+                                <div class="express-date">
+                                    <label for="expressFecha"><i class="fas fa-calendar"></i> Fecha</label>
+                                    <input type="date" id="expressFecha" class="form-control-sm" value="">
+                                </div>
+                                <div class="express-type">
+                                    <label for="expressTipo"><i class="fas fa-tasks"></i> Tipo</label>
+                                    <select id="expressTipo" class="form-control-sm">
+                                        <option value="formativa">Formativa</option>
+                                        <option value="participacion">Participación</option>
+                                        <option value="tarea">Tarea</option>
+                                        <option value="quiz">Quiz</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="express-students" id="expressStudents">
+                                <div class="express-placeholder">
+                                    <i class="fas fa-user-graduate fa-3x"></i>
+                                    <p>Seleccione un grupo para ver estudiantes</p>
+                                </div>
+                            </div>
+                            
+                            <div class="express-actions">
+                                <button class="btn btn-success" id="guardarExpress" disabled>
+                                    <i class="fas fa-save"></i> Guardar Todo
+                                </button>
+                                <button class="btn btn-primary" id="exportarExpress" disabled>
+                                    <i class="fas fa-file-export"></i> Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Registro Rápido -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-pen-fancy"></i> Registro Rápido</h3>
+                        <p>Notas y observaciones instantáneas</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="registro-rapido">
+                            <div class="form-group">
+                                <label for="rapidoTipo"><i class="fas fa-tag"></i> Tipo de Registro</label>
+                                <select id="rapidoTipo" class="form-control">
+                                    <option value="observacion">Observación</option>
+                                    <option value="asistencia">Asistencia</option>
+                                    <option value="incidente">Incidente</option>
+                                    <option value="logro">Logro</option>
+                                    <option value="recordatorio">Recordatorio</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="rapidoContenido"><i class="fas fa-edit"></i> Contenido</label>
+                                <textarea id="rapidoContenido" class="form-control" rows="4" placeholder="Escriba aquí su observación rápida..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="rapidoGrupo"><i class="fas fa-users"></i> Grupo (Opcional)</label>
+                                <select id="rapidoGrupo" class="form-control">
+                                    <option value="">Sin grupo específico</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="rapidoEstudiante"><i class="fas fa-user-graduate"></i> Estudiante (Opcional)</label>
+                                <select id="rapidoEstudiante" class="form-control" disabled>
+                                    <option value="">Sin estudiante específico</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" id="guardarRapido">
+                                <i class="fas fa-paper-plane"></i> Guardar Registro
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Actividades Recientes -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Actividades Recientes</h3>
+                        <button class="btn-icon" id="refrescarActividades">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="actividades-recientes" id="listaActividades">
+                            <div class="actividad-placeholder">
+                                <i class="fas fa-clock fa-2x"></i>
+                                <p>Cargando actividades...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal de Evaluación Express -->
+    <div class="modal" id="modalExpress">
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3><i class="fas fa-stopwatch"></i> Evaluación Express</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="express-evaluation">
+                    <h4 id="expressStudentName"></h4>
+                    <div class="express-rating">
+                        <div class="rating-options">
+                            <button class="rating-option" data-value="10">
+                                <i class="fas fa-star"></i>
+                                <span>Excelente</span>
+                                <small>10 pts</small>
+                            </button>
+                            <button class="rating-option" data-value="8">
+                                <i class="fas fa-thumbs-up"></i>
+                                <span>Bueno</span>
+                                <small>8 pts</small>
+                            </button>
+                            <button class="rating-option" data-value="6">
+                                <i class="fas fa-check"></i>
+                                <span>Satisfactorio</span>
+                                <small>6 pts</small>
+                            </button>
+                            <button class="rating-option" data-value="4">
+                                <i class="fas fa-exclamation"></i>
+                                <span>En proceso</span>
+                                <small>4 pts</small>
+                            </button>
+                            <button class="rating-option" data-value="2">
+                                <i class="fas fa-times"></i>
+                                <span>Insuficiente</span>
+                                <small>2 pts</small>
+                            </button>
+                        </div>
+                        
+                        <div class="express-comment">
+                            <label for="expressComment">Comentario (opcional)</label>
+                            <textarea id="expressComment" placeholder="Breve comentario..."></textarea>
+                        </div>
+                        
+                        <div class="express-actions">
+                            <button class="btn btn-secondary modal-close">Cancelar</button>
+                            <button class="btn btn-primary" id="guardarEvaluacionIndividual">
+                                <i class="fas fa-check"></i> Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/gestor-grupos-mep.js"></script>
+    <script src="../js/registro-cotidiano.js"></script>
+    <script src="../js/registro-evaluacion.js"></script>
+    <script src="base.js"></script>
+</body>
+</html>
