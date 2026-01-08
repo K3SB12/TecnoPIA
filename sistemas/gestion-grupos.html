@@ -1,720 +1,403 @@
-                                    class="w-full text-left p-3 glass rounded-lg hover:bg-green-900/30 transition">
-                                    <i class="fas fa-file-excel mr-3 text-green-400"></i>
-                                    Exportar a Excel
-                                </button>
-                                <button onclick="generarReporteAdmin('consolidado')" 
-                                        class="w-full text-left p-3 glass rounded-lg hover:bg-green-900/30 transition">
-                                    <i class="fas fa-clipboard-check mr-3 text-orange-400"></i>
-                                    Reporte Consolidado
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TecnoPIA - Gestión de Grupos</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>TecnoPIA</h2>
+            </div>
+            
+            <nav class="menu">
+                <a href="../dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="gestion-grupos.html" class="menu-item active">
+                    <i class="fas fa-users"></i>
+                    <span>Gestión Grupos</span>
+                </a>
+                <a href="evaluacion-mep.html" class="menu-item">
+                    <i class="fas fa-clipboard-check"></i>
+                    <span>Evaluación MEP</span>
+                </a>
+                <a href="completo.html" class="menu-item">
+                    <i class="fas fa-star"></i>
+                    <span>Sistema Completo</span>
+                </a>
+                <a href="base.html" class="menu-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Versión Rápida</span>
+                </a>
+                <a href="ia.html" class="menu-item">
+                    <i class="fas fa-robot"></i>
+                    <span>IA Educativa</span>
+                </a>
+            </nav>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name">Docente MEP</span>
+                    <span class="user-role">Gestor de Grupos</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-title">
+                    <h1><i class="fas fa-users"></i> Gestión de Grupos y Estudiantes</h1>
+                    <p>Administre grupos, estudiantes y asigne evaluaciones</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="nuevoGrupo">
+                        <i class="fas fa-plus-circle"></i> Nuevo Grupo
+                    </button>
+                    <button class="btn btn-success" id="importarEstudiantes">
+                        <i class="fas fa-file-import"></i> Importar CSV
+                    </button>
+                    <button class="btn btn-secondary" id="exportarGrupos">
+                        <i class="fas fa-file-export"></i> Exportar Datos
+                    </button>
+                </div>
+            </header>
+
+            <!-- Contenido Principal -->
+            <div class="content-grid">
+                <!-- Panel de Grupos -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> Grupos Activos</h3>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="buscarGrupos" placeholder="Buscar grupos...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="grupos-container" id="listaGrupos">
+                            <!-- Los grupos se cargarán aquí dinámicamente -->
+                            <div class="grupo-placeholder">
+                                <i class="fas fa-users fa-3x"></i>
+                                <p>No hay grupos creados aún</p>
+                                <button class="btn btn-primary" id="crearPrimerGrupo">
+                                    <i class="fas fa-plus"></i> Crear primer grupo
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Estudiantes -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3><i class="fas fa-user-graduate"></i> Estudiantes del Grupo Seleccionado</h3>
+                        <div class="card-actions">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="buscarEstudiantes" placeholder="Buscar estudiantes..." disabled>
+                            </div>
+                            <button class="btn btn-primary" id="agregarEstudiante" disabled>
+                                <i class="fas fa-user-plus"></i> Agregar Estudiante
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="grupo-info" id="grupoInfo" style="display: none;">
+                            <h4 id="nombreGrupoSeleccionado"></h4>
+                            <div class="grupo-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-user-graduate"></i>
+                                    <span id="totalEstudiantes">0</span>
+                                    <small>Estudiantes</small>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span id="promedioGrupo">0%</span>
+                                    <small>Promedio</small>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span id="evaluadosGrupo">0</span>
+                                    <small>Evaluados</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="estudiantes-container" id="listaEstudiantes">
+                            <div class="estudiante-placeholder">
+                                <i class="fas fa-user-graduate fa-3x"></i>
+                                <p>Seleccione un grupo para ver sus estudiantes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Estadísticas -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-pie"></i> Estadísticas del Grupo</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-container" id="estadisticasGrupo">
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-bar fa-3x"></i>
+                                <p>Seleccione un grupo para ver estadísticas</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Acciones Rápidas -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions">
+                            <button class="quick-action" id="asignarEvaluacionGrupal" disabled>
+                                <i class="fas fa-clipboard-check"></i>
+                                <span>Asignar Evaluación Grupal</span>
+                            </button>
+                            <button class="quick-action" id="generarReportesGrupales" disabled>
+                                <i class="fas fa-file-pdf"></i>
+                                <span>Generar Reportes</span>
+                            </button>
+                            <button class="quick-action" id="enviarComunicaciones" disabled>
+                                <i class="fas fa-envelope"></i>
+                                <span>Enviar Comunicaciones</span>
+                            </button>
+                            <button class="quick-action" id="configurarGrupo" disabled>
+                                <i class="fas fa-cog"></i>
+                                <span>Configurar Grupo</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para Nuevo Grupo -->
+    <div class="modal" id="modalNuevoGrupo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Crear Nuevo Grupo</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevoGrupo">
+                    <div class="form-group">
+                        <label for="nombreGrupo"><i class="fas fa-users"></i> Nombre del Grupo</label>
+                        <input type="text" id="nombreGrupo" class="form-control" placeholder="Ej: 7-1, 8-2, etc." required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nivelGrupo"><i class="fas fa-graduation-cap"></i> Nivel</label>
+                            <select id="nivelGrupo" class="form-control" required>
+                                <option value="">Seleccionar nivel...</option>
+                                <option value="primero">Primero</option>
+                                <option value="segundo">Segundo</option>
+                                <option value="tercero">Tercero</option>
+                                <option value="cuarto">Cuarto</option>
+                                <option value="quinto">Quinto</option>
+                                <option value="sexto">Sexto</option>
+                                <option value="septimo">Séptimo</option>
+                                <option value="octavo">Octavo</option>
+                                <option value="noveno">Noveno</option>
+                                <option value="decimo">Décimo</option>
+                                <option value="undecimo">Undécimo</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="annoGrupo"><i class="fas fa-calendar"></i> Año</label>
+                            <select id="annoGrupo" class="form-control" required>
+                                <option value="">Seleccionar año...</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                            </select>
                         </div>
                     </div>
                     
-                    <!-- Gráficos de Rendimiento -->
-                    <div class="glass-dark rounded-xl p-5 mb-6">
-                        <h4 class="font-semibold mb-4 text-yellow-300">
-                            <i class="fas fa-chart-pie mr-2"></i>Gráficos de Rendimiento
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="h-64 flex items-center justify-center bg-gray-900/50 rounded-lg">
-                                <canvas id="grafico-distribucion"></canvas>
-                            </div>
-                            <div class="h-64 flex items-center justify-center bg-gray-900/50 rounded-lg">
-                                <canvas id="grafico-tendencia"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modales -->
-    
-    <!-- Modal Crear Grupo -->
-    <div id="modal-crear-grupo" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
-        <div class="glass rounded-2xl p-6 w-full max-w-md mx-4">
-            <h3 class="text-xl font-bold mb-4 text-blue-300">
-                <i class="fas fa-plus-circle mr-2"></i>Crear Nuevo Grupo
-            </h3>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Ciclo Educativo</label>
-                    <select id="nuevo-grupo-ciclo" class="w-full input-grupo">
-                        <option value="ciclo1">I Ciclo (1°-3° Primaria)</option>
-                        <option value="ciclo2">II Ciclo (4°-6° Primaria)</option>
-                        <option value="ciclo3">III Ciclo (7°-9° Secundaria)</option>
-                        <option value="materno">Materno/Transición</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Código del Grupo</label>
-                    <input type="text" id="nuevo-grupo-codigo" 
-                           class="w-full input-grupo" 
-                           placeholder="Ej: 1-1, 7-A, MAT-1">
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Nombre Descriptivo</label>
-                    <input type="text" id="nuevo-grupo-nombre" 
-                           class="w-full input-grupo" 
-                           placeholder="Ej: Grupo 1-1 Tecnología">
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Horario</label>
-                        <input type="text" id="nuevo-grupo-horario" 
-                               class="w-full input-grupo" 
-                               placeholder="Ej: Lunes 8-10am">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Aula</label>
-                        <input type="text" id="nuevo-grupo-aula" 
-                               class="w-full input-grupo" 
-                               placeholder="Ej: Taller Tecnología">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Límite de Estudiantes</label>
-                    <input type="number" id="nuevo-grupo-limite" 
-                           class="w-full input-grupo" 
-                           value="30" min="1" max="40">
-                </div>
-                
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button onclick="cerrarModal('modal-crear-grupo')" 
-                            class="px-4 py-2 glass border border-gray-700 rounded-lg hover:border-gray-500">
-                        Cancelar
-                    </button>
-                    <button onclick="crearGrupo()" 
-                            class="btn-modern gradient-primary text-white px-5 py-2 rounded-lg">
-                        <i class="fas fa-save mr-2"></i>Crear Grupo
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Agregar Estudiante -->
-    <div id="modal-agregar-estudiante" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
-        <div class="glass rounded-2xl p-6 w-full max-w-lg mx-4">
-            <h3 class="text-xl font-bold mb-4 text-green-300">
-                <i class="fas fa-user-plus mr-2"></i>Agregar Estudiante
-            </h3>
-            
-            <div class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Cédula</label>
-                        <input type="text" id="estudiante-cedula" 
-                               class="w-full input-grupo" 
-                               placeholder="Ej: 123456789">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Código Estudiante</label>
-                        <input type="text" id="estudiante-codigo" 
-                               class="w-full input-grupo" 
-                               placeholder="Ej: EST-001">
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Nombre</label>
-                        <input type="text" id="estudiante-nombre" 
-                               class="w-full input-grupo" 
-                               placeholder="Nombre">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Apellidos</label>
-                        <input type="text" id="estudiante-apellidos" 
-                               class="w-full input-grupo" 
-                               placeholder="Apellidos">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Grupo(s)</label>
-                    <div class="flex flex-wrap gap-2 mt-2" id="selector-grupos-estudiante">
-                        <!-- Se llena dinámicamente con checkboxes de grupos -->
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Fecha Nacimiento</label>
-                        <input type="date" id="estudiante-nacimiento" 
-                               class="w-full input-grupo">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-1">Género</label>
-                        <select id="estudiante-genero" class="w-full input-grupo">
-                            <option value="">Seleccionar</option>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
-                            <option value="O">Otro</option>
+                    <div class="form-group">
+                        <label for="asignaturaGrupo"><i class="fas fa-book"></i> Asignatura Principal</label>
+                        <select id="asignaturaGrupo" class="form-control" required>
+                            <option value="">Seleccionar asignatura...</option>
+                            <option value="matematica">Matemáticas</option>
+                            <option value="espanol">Español</option>
+                            <option value="ciencias">Ciencias</option>
+                            <option value="estudios">Estudios Sociales</option>
+                            <option value="ingles">Inglés</option>
+                            <option value="tecnologia">Tecnología</option>
+                            <option value="artes">Artes</option>
+                            <option value="musica">Música</option>
+                            <option value="educacion fisica">Educación Física</option>
                         </select>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="horarioGrupo"><i class="fas fa-clock"></i> Horario</label>
+                        <input type="text" id="horarioGrupo" class="form-control" placeholder="Ej: Lunes 8:00-10:00, Miércoles 9:00-11:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="descripcionGrupo"><i class="fas fa-file-alt"></i> Descripción (Opcional)</label>
+                        <textarea id="descripcionGrupo" class="form-control" rows="3" placeholder="Agregue una descripción del grupo..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Crear Grupo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nuevo Estudiante -->
+    <div class="modal" id="modalNuevoEstudiante">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Agregar Nuevo Estudiante</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevoEstudiante">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombreEstudiante"><i class="fas fa-user"></i> Nombre</label>
+                            <input type="text" id="nombreEstudiante" class="form-control" placeholder="Nombre del estudiante" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apellidosEstudiante"><i class="fas fa-user"></i> Apellidos</label>
+                            <input type="text" id="apellidosEstudiante" class="form-control" placeholder="Apellidos del estudiante" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cedulaEstudiante"><i class="fas fa-id-card"></i> Cédula/Identificación</label>
+                            <input type="text" id="cedulaEstudiante" class="form-control" placeholder="Número de identificación">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fechaNacimiento"><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento</label>
+                            <input type="date" id="fechaNacimiento" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="generoEstudiante"><i class="fas fa-venus-mars"></i> Género</label>
+                            <select id="generoEstudiante" class="form-control">
+                                <option value="">No especificado</option>
+                                <option value="masculino">Masculino</option>
+                                <option value="femenino">Femenino</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="telefonoEstudiante"><i class="fas fa-phone"></i> Teléfono</label>
+                            <input type="tel" id="telefonoEstudiante" class="form-control" placeholder="Número de contacto">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="correoEstudiante"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                        <input type="email" id="correoEstudiante" class="form-control" placeholder="correo@ejemplo.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="observacionesEstudiante"><i class="fas fa-sticky-note"></i> Observaciones (Opcional)</label>
+                        <textarea id="observacionesEstudiante" class="form-control" rows="3" placeholder="Información adicional del estudiante..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Agregar Estudiante
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Importar CSV -->
+    <div class="modal" id="modalImportarCSV">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-import"></i> Importar Estudiantes desde CSV</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-instructions">
+                    <h4><i class="fas fa-info-circle"></i> Instrucciones</h4>
+                    <p>Suba un archivo CSV con los siguientes campos (en cualquier orden):</p>
+                    <ul>
+                        <li><strong>nombre</strong>: Nombre del estudiante</li>
+                        <li><strong>apellidos</strong>: Apellidos del estudiante</li>
+                        <li><strong>cedula</strong>: Número de identificación (opcional)</li>
+                        <li><strong>correo</strong>: Correo electrónico (opcional)</li>
+                        <li><strong>telefono</strong>: Teléfono (opcional)</li>
+                    </ul>
+                    <p>La primera fila debe contener los nombres de las columnas.</p>
                 </div>
                 
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1">Observaciones</label>
-                    <textarea id="estudiante-observaciones" 
-                              class="w-full input-grupo h-24" 
-                              placeholder="Notas importantes..."></textarea>
+                <div class="import-upload">
+                    <div class="upload-area" id="dropArea">
+                        <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                        <p>Arrastre y suelte su archivo CSV aquí</p>
+                        <p>o</p>
+                        <button class="btn btn-primary" id="browseFiles">
+                            <i class="fas fa-folder-open"></i> Seleccionar Archivo
+                        </button>
+                        <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                    </div>
+                    
+                    <div class="import-preview" id="importPreview" style="display: none;">
+                        <h5>Vista Previa de Datos</h5>
+                        <div class="preview-table-container">
+                            <table class="preview-table" id="previewTable">
+                                <!-- Vista previa de datos -->
+                            </table>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button onclick="cerrarModal('modal-agregar-estudiante')" 
-                            class="px-4 py-2 glass border border-gray-700 rounded-lg hover:border-gray-500">
-                        Cancelar
-                    </button>
-                    <button onclick="guardarEstudiante()" 
-                            class="btn-modern gradient-primary text-white px-5 py-2 rounded-lg">
-                        <i class="fas fa-save mr-2"></i>Guardar Estudiante
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmarImportacion" disabled>
+                        <i class="fas fa-file-import"></i> Importar Estudiantes
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="glass-dark py-8 px-6 mt-12 border-t border-gray-800">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <div class="flex items-center space-x-3">
-                        <div class="gradient-primary w-8 h-8 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-users text-white text-sm"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                Gestión de Grupos MEP
-                            </h2>
-                            <p class="text-xs text-gray-400">Sistema completo para docentes</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center md:text-right">
-                    <p class="text-sm text-gray-400">
-                        © 2024 TecnoPIA. Sistema docente MEP Formación Tecnológica.
-                    </p>
-                    <p class="text-xs text-gray-500 mt-1">
-                        <i class="fas fa-exclamation-circle mr-1"></i>
-                        Compatible con múltiples grupos por nivel
-                    </p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="../js/calculadora-mep.js"></script>
-    <script src="../js/registro-evaluacion.js"></script>
-    <script src="../js/gestor-grupos.js"></script>
-    
-    <!-- Chart.js para gráficos -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script>
-        // Variables globales
-        let gestorGrupos = null;
-        let registroEvaluacion = null;
-        let grupoSeleccionado = null;
-        let cicloSeleccionado = null;
-        
-        // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ Sistema de Gestión de Grupos cargado');
-            
-            // Inicializar gestores
-            gestorGrupos = new GestorGrupos();
-            registroEvaluacion = new RegistroEvaluacionTecnologia();
-            
-            // Cargar datos iniciales
-            cargarGrupos();
-            inicializarTabs();
-            inicializarCalendario();
-            actualizarEstadisticas();
-        });
-        
-        // ========== FUNCIONALIDAD DE TABS ==========
-        function inicializarTabs() {
-            const tabs = {
-                'tab-grupos': 'content-grupos',
-                'tab-calendario': 'content-calendario',
-                'tab-estudiantes': 'content-estudiantes',
-                'tab-evaluaciones': 'content-evaluaciones',
-                'tab-reportes': 'content-reportes'
-            };
-            
-            for (const [tabId, contentId] of Object.entries(tabs)) {
-                document.getElementById(tabId).addEventListener('click', function() {
-                    // Remover clase active de todos los tabs
-                    document.querySelectorAll('.tab-btn').forEach(t => {
-                        t.classList.remove('active');
-                    });
-                    
-                    document.querySelectorAll('.tab-content').forEach(c => {
-                        c.classList.remove('active');
-                    });
-                    
-                    // Activar tab seleccionado
-                    this.classList.add('active');
-                    document.getElementById(contentId).classList.add('active');
-                    
-                    // Cargar contenido específico del tab
-                    switch(contentId) {
-                        case 'content-grupos':
-                            cargarGrupos();
-                            break;
-                        case 'content-calendario':
-                            actualizarCalendario();
-                            break;
-                        case 'content-estudiantes':
-                            cargarEstudiantes();
-                            break;
-                        case 'content-evaluaciones':
-                            cargarGruposEvaluacion();
-                            break;
-                        case 'content-reportes':
-                            actualizarReportes();
-                            break;
-                    }
-                });
-            }
-        }
-        
-        // ========== GESTIÓN DE GRUPOS ==========
-        function cargarGrupos(filtro = 'todos') {
-            const grid = document.getElementById('grid-grupos');
-            
-            if (!gestorGrupos || gestorGrupos.grupos.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-gray-500">
-                        <i class="fas fa-users text-4xl mb-4 block"></i>
-                        <p class="text-lg mb-3">No hay grupos creados</p>
-                        <p class="text-sm text-gray-400 mb-6">Comience creando su primer grupo</p>
-                        <button onclick="mostrarModalCrearGrupo()" 
-                                class="btn-modern gradient-primary text-white px-6 py-3 rounded-lg">
-                            <i class="fas fa-plus mr-2"></i>Crear Primer Grupo
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            let grupos = filtro === 'todos' 
-                ? gestorGrupos.grupos 
-                : gestorGrupos.grupos.filter(g => g.ciclo === filtro);
-            
-            if (grupos.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-gray-500">
-                        <i class="fas fa-search text-3xl mb-4 block"></i>
-                        <p class="text-lg">No hay grupos en este filtro</p>
-                        <button onclick="mostrarModalCrearGrupo()" 
-                                class="mt-4 btn-modern gradient-primary text-white px-4 py-2 rounded-lg">
-                            Crear nuevo grupo
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            grupos.forEach(grupo => {
-                const badgeClass = `badge-${grupo.ciclo}`;
-                const badgeText = grupo.ciclo === 'ciclo1' ? 'I' : 
-                                grupo.ciclo === 'ciclo2' ? 'II' : 
-                                grupo.ciclo === 'ciclo3' ? 'III' : 'M';
-                
-                const estadisticas = gestorGrupos.obtenerEstadisticasGrupo(grupo.id);
-                
-                html += `
-                    <div class="glass-dark rounded-xl p-5 hover:border-blue-500 border border-transparent transition-all duration-300">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="badge ${badgeClass}">${badgeText}</span>
-                                    <h3 class="text-lg font-bold">${grupo.codigo}</h3>
-                                </div>
-                                <p class="text-sm text-gray-400">${grupo.nombreCompleto}</p>
-                            </div>
-                            <button onclick="editarGrupo('${grupo.id}')" 
-                                    class="text-gray-500 hover:text-white">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-3 mb-4">
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Estudiantes:</span>
-                                <span class="font-medium">${grupo.estudiantes.length}/${grupo.configuracion?.maxEstudiantes || 30}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Horario:</span>
-                                <span class="font-medium">${grupo.horario || 'Por definir'}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-400">Aula:</span>
-                                <span class="font-medium">${grupo.aula || 'Taller'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div class="text-center p-2 bg-gray-900/50 rounded">
-                                <div class="text-lg font-bold ${estadisticas?.promedioGeneral >= 70 ? 'text-green-400' : 'text-yellow-400'}">
-                                    ${estadisticas?.promedioGeneral?.toFixed(1) || '--'}%
-                                </div>
-                                <div class="text-xs text-gray-400">Promedio</div>
-                            </div>
-                            <div class="text-center p-2 bg-gray-900/50 rounded">
-                                <div class="text-lg font-bold text-blue-400">
-                                    ${estadisticas?.asistenciaPromedio?.toFixed(0) || '--'}%
-                                </div>
-                                <div class="text-xs text-gray-400">Asistencia</div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex gap-2">
-                            <button onclick="seleccionarGrupo('${grupo.id}')" 
-                                    class="btn-modern gradient-primary text-white flex-1 py-2 rounded-lg text-sm">
-                                <i class="fas fa-eye mr-2"></i>Ver
-                            </button>
-                            <button onclick="eliminarGrupo('${grupo.id}')" 
-                                    class="btn-modern glass border border-gray-700 px-3 py-2 rounded-lg text-sm hover:border-red-500">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            grid.innerHTML = html;
-        }
-        
-        function filtrarGrupos(filtro) {
-            cargarGrupos(filtro);
-        }
-        
-        function mostrarModalCrearGrupo() {
-            document.getElementById('modal-crear-grupo').classList.remove('hidden');
-        }
-        
-        function cerrarModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-        }
-        
-        function crearGrupo() {
-            const ciclo = document.getElementById('nuevo-grupo-ciclo').value;
-            const codigo = document.getElementById('nuevo-grupo-codigo').value.trim();
-            const nombre = document.getElementById('nuevo-grupo-nombre').value.trim() || `Grupo ${codigo}`;
-            const horario = document.getElementById('nuevo-grupo-horario').value.trim();
-            const aula = document.getElementById('nuevo-grupo-aula').value.trim();
-            const limite = parseInt(document.getElementById('nuevo-grupo-limite').value);
-            
-            if (!codigo) {
-                alert('Por favor ingrese un código para el grupo');
-                return;
-            }
-            
-            try {
-                const nuevoGrupo = gestorGrupos.crearGrupo(ciclo, codigo, {
-                    horario,
-                    aula,
-                    maxEstudiantes: limite,
-                    docente: 'Docente Actual'
-                });
-                
-                cerrarModal('modal-crear-grupo');
-                cargarGrupos();
-                
-                // Resetear formulario
-                document.getElementById('nuevo-grupo-codigo').value = '';
-                document.getElementById('nuevo-grupo-nombre').value = '';
-                document.getElementById('nuevo-grupo-horario').value = '';
-                document.getElementById('nuevo-grupo-aula').value = '';
-                
-                alert(`✅ Grupo ${codigo} creado exitosamente`);
-                
-            } catch (error) {
-                alert(`Error: ${error.message}`);
-            }
-        }
-        
-        function seleccionarGrupo(grupoId) {
-            grupoSeleccionado = grupoId;
-            const grupo = gestorGrupos.grupos.find(g => g.id === grupoId);
-            
-            if (grupo) {
-                // Ir a la pestaña de evaluación con este grupo seleccionado
-                document.getElementById('tab-evaluaciones').click();
-                alert(`Grupo ${grupo.codigo} seleccionado para evaluación`);
-            }
-        }
-        
-        // ========== CALENDARIO ESCOLAR ==========
-        function inicializarCalendario() {
-            const calendarEl = document.getElementById('calendario-escolar');
-            
-            if (!calendarEl) return;
-            
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                },
-                events: [
-                    {
-                        title: 'Inicio I Trimestre',
-                        start: '2024-02-05',
-                        color: '#3b82f6'
-                    },
-                    {
-                        title: 'Evaluación Trabajo Cotidiano',
-                        start: '2024-03-15',
-                        color: '#10b981'
-                    },
-                    {
-                        title: 'Entrega Proyectos',
-                        start: '2024-04-20',
-                        color: '#8b5cf6'
-                    }
-                ],
-                dateClick: function(info) {
-                    alert('Fecha clickeada: ' + info.dateStr);
-                }
-            });
-            
-            calendar.render();
-            window.calendarioEscolar = calendar;
-        }
-        
-        function actualizarCalendario() {
-            // Actualizar eventos según el grupo seleccionado
-            if (window.calendarioEscolar) {
-                window.calendarioEscolar.refetchEvents();
-            }
-        }
-        
-        // ========== GESTIÓN DE ESTUDIANTES ==========
-        function cargarEstudiantes() {
-            // Esta función cargaría la lista de estudiantes
-            console.log('Cargando estudiantes...');
-            // Implementación real cargaría desde registroEvaluacion.estudiantes
-        }
-        
-        function mostrarModalAgregarEstudiante() {
-            // Cargar lista de grupos para el selector
-            cargarGruposParaEstudiante();
-            document.getElementById('modal-agregar-estudiante').classList.remove('hidden');
-        }
-        
-        function cargarGruposParaEstudiante() {
-            const container = document.getElementById('selector-grupos-estudiante');
-            
-            if (!gestorGrupos || gestorGrupos.grupos.length === 0) {
-                container.innerHTML = '<p class="text-sm text-gray-500">No hay grupos creados</p>';
-                return;
-            }
-            
-            let html = '';
-            gestorGrupos.grupos.forEach(grupo => {
-                html += `
-                    <label class="inline-flex items-center">
-                        <input type="checkbox" value="${grupo.id}" 
-                               class="mr-2 rounded border-gray-600 bg-gray-800">
-                        <span class="text-sm">${grupo.codigo}</span>
-                    </label>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        function guardarEstudiante() {
-            // Implementar guardado de estudiante
-            alert('Estudiante guardado (implementación pendiente)');
-            cerrarModal('modal-agregar-estudiante');
-        }
-        
-        // ========== EVALUACIONES ==========
-        function cargarGruposEvaluacion() {
-            const container = document.getElementById('grupos-evaluacion');
-            
-            if (!gestorGrupos || gestorGrupos.grupos.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-8 text-gray-500">
-                        <p>No hay grupos para evaluar</p>
-                        <button onclick="mostrarModalCrearGrupo()" class="mt-2 text-blue-400 hover:text-blue-300">
-                            Crear primer grupo
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            let html = '';
-            gestorGrupos.grupos.forEach(grupo => {
-                const badgeClass = `badge-${grupo.ciclo}`;
-                const badgeText = grupo.ciclo === 'ciclo1' ? 'I' : 
-                                grupo.ciclo === 'ciclo2' ? 'II' : 
-                                grupo.ciclo === 'ciclo3' ? 'III' : 'M';
-                
-                html += `
-                    <button onclick="evaluarGrupo('${grupo.id}')" 
-                            class="glass-dark p-4 rounded-xl text-center hover:border-blue-500 border border-transparent transition">
-                        <div class="${badgeClass} w-10 h-10 rounded-lg flex items-center justify-center mx-auto mb-3">
-                            <span class="font-bold">${badgeText}</span>
-                        </div>
-                        <h4 class="font-semibold mb-1">${grupo.codigo}</h4>
-                        <p class="text-xs text-gray-400">${grupo.estudiantes.length} estudiantes</p>
-                    </button>
-                `;
-            });
-            
-            container.innerHTML = html;
-        }
-        
-        function evaluarGrupo(grupoId) {
-            grupoSeleccionado = grupoId;
-            // Redirigir a la página de evaluación con el grupo seleccionado
-            window.location.href = `evaluacion-mep.html?grupo=${grupoId}`;
-        }
-        
-        // ========== REPORTES ==========
-        function actualizarReportes() {
-            // Implementar gráficos con Chart.js
-            setTimeout(() => {
-                crearGraficos();
-            }, 100);
-        }
-        
-        function crearGraficos() {
-            const ctxDistribucion = document.getElementById('grafico-distribucion');
-            const ctxTendencia = document.getElementById('grafico-tendencia');
-            
-            if (!ctxDistribucion || !ctxTendencia) return;
-            
-            // Gráfico de distribución de notas
-            new Chart(ctxDistribucion, {
-                type: 'pie',
-                data: {
-                    labels: ['Excelente', 'Bueno', 'Aprobado', 'Reprobado'],
-                    datasets: [{
-                        data: [25, 35, 25, 15],
-                        backgroundColor: [
-                            '#10b981',
-                            '#3b82f6',
-                            '#f59e0b',
-                            '#ef4444'
-                        ]
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Gráfico de tendencia
-            new Chart(ctxTendencia, {
-                type: 'line',
-                data: {
-                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
-                    datasets: [{
-                        label: 'Promedio del Grupo',
-                        data: [65, 68, 72, 75, 78, 80],
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                        fill: true
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 60,
-                            max: 100,
-                            ticks: {
-                                color: '#94a3b8'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: '#94a3b8'
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: '#94a3b8'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // ========== FUNCIONES DE UTILIDAD ==========
-        function actualizarEstadisticas() {
-            // Esta función actualizaría las estadísticas en tiempo real
-            document.getElementById('total-estudiantes').textContent = 
-                registroEvaluacion?.estudiantes?.length || 0;
-        }
-        
-        // Función para manejar la exportación a Excel
-        function exportarExcel() {
-            alert('Exportando a Excel... (implementación pendiente)');
-        }
-        
-        // Función para generar reportes
-        function generarReporteGrupo(tipo) {
-            alert(`Generando reporte ${tipo}... (implementación pendiente)`);
-        }
-        
-        // Función para evaluar diferentes componentes
-        function evaluarTrabajoCotidiano() {
-            if (!grupoSeleccionado) {
-                alert('Por favor seleccione un grupo primero');
-                return;
-            }
-            alert('Iniciando evaluación de trabajo cotidiano...');
-        }
-        
-        function evaluarTareas() {
-            alert('Iniciando evaluación de tareas...');
-        }
-        
-        function evaluarPruebasEjecucion() {
-            alert('Iniciando evaluación de pruebas de ejecución...');
-        }
-        
-        function evaluarProyectos() {
-            alert('Iniciando evaluación de proyectos tecnológicos...');
-        }
-    </script>
+    <script src="../js/gestor-grupos-mep.js"></script>
+    <script src="gestion-grupos.js"></script>
 </body>
 </html>
